@@ -27,7 +27,7 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 
 ### Lessons learned for my future self
 
-- **CloudFormation Setup**: When we upload the CloudFormation template to AWS, it will ask us to set the credentials for the database and also IP allowlisting for the SSH service at the EC2 instances. By default, `0.0.0.0/0` is allowed for SSH, so make sure to change this to my IP for security.
+- **CloudFormation Setup**: When we upload the [CloudFormation template](https://github.com/pmerson/AWS-CF-templates) to AWS, it will ask us to set the credentials for the database and also IP allowlisting for the SSH service at the EC2 instances. By default, `0.0.0.0/0` is allowed for SSH, so make sure to change this to my IP for security.
 
 - **Docker Tag**: `docker tag "soobinrho/17647-A1-bookstore-microservice:$(git rev-parse --short HEAD)"` to set the tag name as the current git commit hash.
 
