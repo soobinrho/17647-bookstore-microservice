@@ -45,4 +45,6 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 
 5. Deploy the FastAPI service to EC2 instances. Figure out a secure way to set the creds for the DB instances (maybe `.env` files).
 
+6. Create `url.txt` at top directory. "This file should just contain one line which is the BASEURL of the service, for example: `http://ALB-808421417.us-east-1.elb.amazonaws.com:80`. The BASEURL needs to contain both the public IP address and the port number."
+
 <br>
