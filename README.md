@@ -8,6 +8,6 @@ A bookstore backend built in the microservice architecture.
 
 | Service Purpose | Where & How |
 | --------------- | ----------- |
-| API Service | Python FastAPI deployed on two instances of AWS EC2 for better availability. |
-| Database | MySQL deployed on two instances of AWS Aurora MySQL. |
-| LLM for Summary of Books | External API calls to Genmini. |
+| **API Service** | Python FastAPI deployed on two instances of AWS EC2 for better availability. |
+| **Database** | MySQL deployed on two instances of AWS Aurora MySQL. |
+| **LLM for Summary of Books** | External API calls to Genmini. |
