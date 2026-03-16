@@ -6,17 +6,17 @@
 
 A bookstore backend built in the microservice architecture.
 
-| Service Purpose | Where & How |
+| Service | Where & How |
 | --------------- | ----------- |
 | **API Service** | Python FastAPI deployed on two instances of AWS EC2 for better availability. |
 | **Database** | MySQL deployed on two instances of AWS Aurora MySQL. |
-| **LLM for Summary of Books** | External API calls to Genmini. |
+| **LLM for Summary of Books** | External API calls to Gemini. |
 
 <br>
 
 ### Notes for my future self
 
-Professor Merson provided a CloudFormation template for all of our assignments, so provisioning of EC2 instances, Aurora MySQL instances, and network & security configurations has already been automated.
+Professor Merson provided a CloudFormation template for all of our assignments, so provisioning of load balancer, EC2 instances, Aurora MySQL instances, and network & security configurations has already been automated.
 Remember, one disadvantage of the microservice architecture compared to the monolithic architecture is that deployment in microservice can get more convoluted, solution of which is automation of deployment.
 
 Don't deploy microservice systems manually unless absolutely necessary (e.g. testing and debugging).
@@ -30,6 +30,26 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 - **CloudFormation Setup**: When we upload the [CloudFormation template](https://github.com/pmerson/AWS-CF-templates) to AWS, it will ask us to set the credentials for the database and also IP allowlisting for the SSH service at the EC2 instances. By default, `0.0.0.0/0` is allowed for SSH, so make sure to change this to my IP for security.
 
 - **Docker Tag**: `docker tag "soobinrho/17647-A1-bookstore-microservice:$(git rev-parse --short HEAD)"` to set the tag name as the current git commit hash.
+
+- **EC2's default username**: `ec2-user`.
+
+- After containerizing the API service, don't forget to SSH into both of the EC2 instances and then `docker run ...` to start the service.
+
+<br>
+
+### API Endpoints
+
+| **Resource** | **GET** | **POST** | **PUT** |
+| -------- | --- | ---- | --- |
+| `/status` | `OK` | N/A | N/A |
+| `/books` | N/A | Create a new book. | N/A |
+| `/books/{ISBN}` | Retrieve a book. | N/A | Update an existing book. |
+| `/books/isbn/{ISBN}` | Retrieve a book. | N/A | N/A |
+| `/customers` | N/A | Create a new customer. | N/A |
+| `/customers/{id}` | Retreieve a customer. | N/A | N/A |
+| `/customers?userId={userid}` | Retreieve a customer. | N/A | N/A |
+
+\* Note: Follow the assignment's instructions on the endpoints exactly.
 
 <br>
 
@@ -45,6 +65,6 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 
 5. Deploy the FastAPI service to EC2 instances. Figure out a secure way to set the creds for the DB instances (maybe `.env` files).
 
-6. Create `url.txt` at top directory. "This file should just contain one line which is the BASEURL of the service, for example: `http://ALB-808421417.us-east-1.elb.amazonaws.com:80`. The BASEURL needs to contain both the public IP address and the port number."
+6. Create `url.txt` at top directory. "This file should just contain one line which is the BASEURL of the service, for example: `http://ALB-808421417.us-east-1.elb.amazonaws.com:80`. The BASEURL needs to contain both the public IP address and the port number." We can find it on the `EC2` - `Load balancers` - `DNS name` section.
 
 <br>
