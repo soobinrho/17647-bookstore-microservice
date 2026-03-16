@@ -33,6 +33,8 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 
 - **EC2's default username**: `ec2-user`.
 
+- **AWS Academy**: Go to the AWS CloudFormation page and delete all resources after getting a full score on Autograder so that they stop getting billed.
+
 - After containerizing the API service, don't forget to SSH into both of the EC2 instances and then `docker run ...` to start the service.
 
 <br>
@@ -49,22 +51,60 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 | `/customers/{id}` | Retreieve a customer. | N/A | N/A |
 | `/customers?userId={userid}` | Retreieve a customer. | N/A | N/A |
 
-\* Note: Follow the assignment's instructions on the endpoints exactly.
+\* Note: Follow the assignment's instructions on the endpoints exactly, including the subtle uppercase and lowercase differences.
 
 <br>
 
 ### Plan (delete this section after I complete everything)
 
-1. Locally create a FastAPI service and meet all the specs required by Professor Merson's specifications. Since the SQL server will not be Dockerized and will be spawned as AWS Aurora MySQL servers, just use `print("TODO: DUMMY DATA")` so that I don't have to worry about reads and writes for the DB. For now, finish setting up all the required API endpoints, status code handling, and error handling. In the same way, just use a dummy function `def get_book_summary_from_llm(book_name: str, book_author: str) -> str` with a `print("500 WORDS SUMMARY OF BOOK. TOOD: Replace with actual LLM API call.")` for now.
+1. Locally create a FastAPI service and meet all the specs required by Professor Merson's specifications. Since the SQL server will not be Dockerized and will be spawned as AWS Aurora MySQL servers, just use `print("TODO: DUMMY DATA")` so that I don't have to worry about reads and writes for the DB. For now, finish setting up all the required API endpoints, status code handling, and error handling. In the same way, just use a dummy function `def get_book_summary_from_llm(book_name: str, book_author: str, ISBN: str) -> str` with a `print("500 WORDS SUMMARY OF BOOK. TOOD: Replace with actual LLM API call.")` for now.
 
 2. Finish the code for the DB reads and writes using a local MariaDB instance deployed on Docker. This will not go to the final version of the assignment. The final version will use the AWS Aurora MySQL instances, so the local instance is just for writing and testing.
 
-3. Write the LLM code. Prompt should be `You're Frank Herbert the author of Dune. I am a huge fan of yours. Please write a 500-word summary of the following book: {book_name} by the author {book_author}. I don't care if the book actually exists or not, so please feel free to make up something based on the book name and the book author. Please respond with a summary of the book in exactly 500 words.`
+3. Write the LLM code. Prompt should be `You're Frank Herbert the author of Dune. I am a huge fan of yours. Please write a 500-word summary of the following book: {book_name} by the author {book_author} with ISBN {ISBN}. I don't care if the book actually exists or not, so please feel free to make up something based on the book name and the book author. Please respond with a summary of the book in exactly 500 words.`
 
 4. Dockerize.
 
 5. Deploy the FastAPI service to EC2 instances. Figure out a secure way to set the creds for the DB instances (maybe `.env` files).
 
-6. Create `url.txt` at top directory. "This file should just contain one line which is the BASEURL of the service, for example: `http://ALB-808421417.us-east-1.elb.amazonaws.com:80`. The BASEURL needs to contain both the public IP address and the port number." We can find it on the `EC2` - `Load balancers` - `DNS name` section.
+6. Connect to the Aurora MySQL server from an EC2 using the master user credentials we set up when setting up the CloudFormation.
+
+```SQL
+CREATE DATABASE IF NOT EXISTS bookstore;
+CREATE USER 'bookstore_app_api_service'@'%' IDENTIFIED BY 'SECURE_PASSWORD';
+GRANT ALL PRIVILEGES ON bookstore.* TO 'bookstore_app'@'%';
+```
+
+Exit and re-login as `bookstore_app_api_service` with `mysql -h bookstore-db-dev.cluster-abcdefg.us-east-1.rds.amazonaws.com -P 3306 -u bookstore_app -p`
+
+```SQL
+USE bookstore;
+CREATE TABLE bookstore.books (
+  ISBN VARCHAR(50) PRIMARY KEY,
+  title VARCHAR(255),
+  author VARCHAR(255),
+  description TEXT,
+  genre VARCHAR(255),
+  price REAL,
+  quantity REAL,
+  summary TEXT 
+);
+CREATE TABLE bookstore.customers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  userId VARCHAR(255),
+  name VARCHAR(255),
+  phone VARCHAR(50),
+  address VARCHAR(255),
+  address2 VARCHAR(255),
+  city VARCHAR(100),
+  state VARCHAR(50),
+  zipcode VARCHAR(10)
+);
+
+TODO: After completing everything, delete this PLAN section and create a `## Database Design` section with the above queries.
+
+```
+
+7. Create `url.txt` at top directory. "This file should just contain one line which is the BASEURL of the service, for example: `http://ALB-808421417.us-east-1.elb.amazonaws.com:80`. The BASEURL needs to contain both the public IP address and the port number." We can find it on the `EC2` - `Load balancers` - `DNS name` section.
 
 <br>
