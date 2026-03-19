@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status, Response
+from fastapi.responses import JSONResponse
 
 
 # ============================================
@@ -56,8 +57,12 @@ async def get_placeholder():
 # =============
 # Uncategorized
 # =============
-@app.get("/status", tags=["uncategorized"])
-async def get_placeholder():
-  return [{"name": "value"}]
+@app.get(
+  "/status",
+  tags=["uncategorized"],
+  status_code=status.HTTP_200_OK,
+)
+async def get_status(response: Response):
+  return JSONResponse(content="OK", headers={"Content-Type": "text/plain"})
 
 
