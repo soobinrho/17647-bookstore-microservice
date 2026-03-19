@@ -39,38 +39,65 @@ app = FastAPI(
     }
 )
 
-
 # =====
 # Books
 # =====
-@app.post("/books", tags=["books"])
+@app.post(
+  "/books",
+  tags=["books"],
+  status_code=status.HTTP_201_CREATED
+)
 async def post_books():
   return [{"name": "value"}]
 
-@app.get("/books/{ISBN}", tags=["books"])
+@app.get(
+  "/books/{ISBN}",
+  tags=["books"],
+  status_code=status.HTTP_200_OK
+)
 async def get_books(ISBN):
   return [{"name": "value"}]
 
-@app.put("/books/{ISBN}", tags=["books"])
+@app.put(
+  "/books/{ISBN}",
+  tags=["books"],
+  status_code=status.HTTP_200_OK
+)
 async def put_books(ISBN):
   return [{"name": "value"}]
 
-@app.get("/books/isbn/{ISBN}", tags=["books"])
+@app.get(
+  "/books/isbn/{ISBN}",
+  tags=["books"],
+  status_code=status.HTTP_200_OK
+)
 async def get_books(ISBN):
   return [{"name": "value"}]
 
 # =========
 # Customers
 # =========
-@app.post("/customers", tags=["customers"])
+@app.post(
+  "/customers",
+  tags=["customers"],
+  status_code=status.HTTP_201_CREATED
+)
 async def post_customers():
   return [{"name": "value"}]
 
-@app.get("/customers/{id}", tags=["customers"])
+@app.get(
+  "/customers/{id}",
+  tags=["customers"],
+  status_code=status.HTTP_200_OK
+)
 async def get_customers(id):
   return [{"name": "value"}]
 
-@app.get("/customers", tags=["customers"])
+@app.get(
+  "/customers",
+  tags=["customers"],
+  status_code=status.HTTP_200_OK
+)
 async def get_customers_query_param_userid(userid):
   return [{"name": "value"}]
 
