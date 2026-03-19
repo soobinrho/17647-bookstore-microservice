@@ -62,8 +62,16 @@ async def get_books(ISBN):
 # =========
 # Customers
 # =========
+@app.post("/customers", tags=["customers"])
+async def post_customers():
+  return [{"name": "value"}]
+
+@app.get("/customers/{id}", tags=["customers"])
+async def get_customers(id):
+  return [{"name": "value"}]
+
 @app.get("/customers", tags=["customers"])
-async def get_placeholder():
+async def get_customers_query_param_userid(userid):
   return [{"name": "value"}]
 
 # =============
