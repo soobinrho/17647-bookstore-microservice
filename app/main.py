@@ -43,8 +43,20 @@ app = FastAPI(
 # =====
 # Books
 # =====
-@app.get("/books", tags=["books"])
-async def get_placeholder():
+@app.post("/books", tags=["books"])
+async def post_books():
+  return [{"name": "value"}]
+
+@app.get("/books/{ISBN}", tags=["books"])
+async def get_books(ISBN):
+  return [{"name": "value"}]
+
+@app.put("/books/{ISBN}", tags=["books"])
+async def put_books(ISBN):
+  return [{"name": "value"}]
+
+@app.get("/books/isbn/{ISBN}", tags=["books"])
+async def get_books(ISBN):
   return [{"name": "value"}]
 
 # =========
