@@ -202,13 +202,13 @@ async def post_books(book_request_body: BookRequestBody):
     create_book(book)
     book = get_book_by_ISBN(book_request_body.ISBN)
     return {
-        "ISBN": book.ISBN,
-        "title": book.title,
-        "Author": book.author,
-        "description": book.description,
-        "genre": book.genre,
-        "price": book.price,
-        "quantity": book.quantity,
+        "ISBN": str(book.ISBN),
+        "title": str(book.title),
+        "Author": str(book.author),
+        "description": str(book.description),
+        "genre": str(book.genre),
+        "price": str(book.price),
+        "quantity": str(book.quantity),
     }
 
 
@@ -236,13 +236,13 @@ async def put_books(book_request_body: BookRequestBody):
 
     book = get_book_by_ISBN(book_request_body.ISBN)
     return {
-        "ISBN": book.ISBN,
-        "title": book.title,
-        "Author": book.author,
-        "description": book.description,
-        "genre": book.genre,
-        "price": book.price,
-        "quantity": book.quantity,
+        "ISBN": str(book.ISBN),
+        "title": str(book.title),
+        "Author": str(book.author),
+        "description": str(book.description),
+        "genre": str(book.genre),
+        "price": str(book.price),
+        "quantity": str(book.quantity),
     }
 
 
@@ -265,14 +265,14 @@ async def get_books(ISBN):
 
     book = get_book_by_ISBN(ISBN)
     return {
-        "ISBN": book.ISBN,
-        "title": book.title,
-        "Author": book.author,
-        "description": book.description,
-        "genre": book.genre,
-        "price": book.price,
-        "quantity": book.quantity,
-        "summary": book.summary,
+        "ISBN": str(book.ISBN),
+        "title": str(book.title),
+        "Author": str(book.author),
+        "description": str(book.description),
+        "genre": str(book.genre),
+        "price": str(book.price),
+        "quantity": str(book.quantity),
+        "summary": str(book.summary),
     }
 
 
@@ -295,14 +295,14 @@ async def get_books_duplicate_enpoint(ISBN):
 
     book = get_book_by_ISBN(ISBN)
     return {
-        "ISBN": book.ISBN,
-        "title": book.title,
-        "Author": book.author,
-        "description": book.description,
-        "genre": book.genre,
-        "price": book.price,
-        "quantity": book.quantity,
-        "summary": book.summary,
+        "ISBN": str(book.ISBN),
+        "title": str(book.title),
+        "Author": str(book.author),
+        "description": str(book.description),
+        "genre": str(book.genre),
+        "price": str(book.price),
+        "quantity": str(book.quantity),
+        "summary": str(book.summary),
     }
 
 
@@ -336,15 +336,15 @@ async def post_customers(customer_request_body: CustomerRequestBody):
     create_customer(customer)
     customer = get_customer_by_userId(customer_request_body.userId)
     return {
-        "id": customer.customer_id,
-        "userId": customer.userId,
-        "name": customer.name,
-        "phone": customer.phone,
-        "address": customer.address,
-        "address2": customer.address2,
-        "city": customer.city,
-        "state": customer.state,
-        "zipcode": customer.zipcode,
+        "id": str(customer.customer_id),
+        "userId": str(customer.userId),
+        "name": str(customer.name),
+        "phone": str(customer.phone),
+        "address": str(customer.address),
+        "address2": str(customer.address2),
+        "city": str(customer.city),
+        "state": str(customer.state),
+        "zipcode": str(customer.zipcode),
     }
 
 
@@ -358,15 +358,15 @@ async def get_customers(id):
         )
 
     return {
-        "id": customer.customer_id,
-        "userId": customer.userId,
-        "name": customer.name,
-        "phone": customer.phone,
-        "address": customer.address,
-        "address2": customer.address2,
-        "city": customer.city,
-        "state": customer.state,
-        "zipcode": customer.zipcode,
+        "id": str(customer.customer_id),
+        "userId": str(customer.userId),
+        "name": str(customer.name),
+        "phone": str(customer.phone),
+        "address": str(customer.address),
+        "address2": str(customer.address2),
+        "city": str(customer.city),
+        "state": str(customer.state),
+        "zipcode": str(customer.zipcode),
     }
 
 
@@ -380,15 +380,15 @@ async def get_customers_by_userId(userid):
         )
 
     return {
-        "id": customer.customer_id,
-        "userId": customer.userId,
-        "name": customer.name,
-        "phone": customer.phone,
-        "address": customer.address,
-        "address2": customer.address2,
-        "city": customer.city,
-        "state": customer.state,
-        "zipcode": customer.zipcode,
+        "id": str(customer.customer_id),
+        "userId": str(customer.userId),
+        "name": str(customer.name),
+        "phone": str(customer.phone),
+        "address": str(customer.address),
+        "address2": str(customer.address2),
+        "city": str(customer.city),
+        "state": str(customer.state),
+        "zipcode": str(customer.zipcode),
     }
 
 
