@@ -53,7 +53,7 @@ tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo
 
 # Run a containerized MariaDB. Note that the final assignment deploys AWS Aurora MySQL.
 # So, these MariaDB containers are used just for development purposes.
-sudo docker run --rm --detach --name dev-bookstore-main-db -p 3306:3306 --add-host host.docker.internal:host-gateway --env MARIADB_RANDOM_ROOT_PASSWORD='True' --env MARIADB_USER='bookstore_main_db' --env MARIADB_PASSWORD='<SNIP>' --env MARIADB_DATABASE=bookstore mariadb:latest
+sudo docker run --rm --detach --name dev-bookstore-main-db -p 3306:3306 --add-host host.docker.internal:host-gateway --env MARIADB_RANDOM_ROOT_PASSWORD='True' --env MARIADB_USER='bookstore' --env MARIADB_PASSWORD='<SNIP>' --env MARIADB_DATABASE=bookstore mariadb:latest
 
 # Finally, run a dev server.
 uv run fastapi dev
@@ -64,7 +64,7 @@ uv run fastapi dev
 sudo docker build -t soobinrho/17647-bookstore-api-service:latest -t soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD) .
 
 # Test.
-sudo docker run --rm --name dev-bookstore-main-api -p 80:80 --add-host host.docker.internal:host-gateway --env BOOKSTORE_BACKEND_DB_USER='bookstore_main_db' --env BOOKSTORE_BACKEND_DB_PASS='<SNIP>' --env BOOKSTORE_BACKEND_DB_URL='host.docker.internal' --env GEMINI_API_KEY='<SNIP>' soobinrho/17647-bookstore-api-service:latest
+sudo docker run --rm --name dev-bookstore-main-api -p 80:80 --add-host host.docker.internal:host-gateway --env BOOKSTORE_BACKEND_DB_USER='bookstore' --env BOOKSTORE_BACKEND_DB_PASS='<SNIP>' --env BOOKSTORE_BACKEND_DB_URL='host.docker.internal' --env GEMINI_API_KEY='<SNIP>' soobinrho/17647-bookstore-api-service:latest
 
 # Publish to Docker Hub.
 sudo docker push soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD)
