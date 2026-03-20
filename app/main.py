@@ -336,7 +336,7 @@ async def post_customers(customer_request_body: CustomerRequestBody):
     create_customer(customer)
     customer = get_customer_by_userId(customer_request_body.userId)
     return {
-        "id": str(customer.customer_id),
+        "id": customer.customer_id,
         "userId": str(customer.userId),
         "name": str(customer.name),
         "phone": str(customer.phone),
@@ -349,7 +349,7 @@ async def post_customers(customer_request_body: CustomerRequestBody):
 
 
 @app.get("/customers/{id}", tags=["customers"], status_code=status.HTTP_200_OK)
-async def get_customers(id):
+async def get_customers(id: int):
     customer = get_customer_by_id(id)
     if customer is None:
         return JSONResponse(
@@ -358,7 +358,7 @@ async def get_customers(id):
         )
 
     return {
-        "id": str(customer.customer_id),
+        "id": customer.customer_id,
         "userId": str(customer.userId),
         "name": str(customer.name),
         "phone": str(customer.phone),
@@ -380,7 +380,7 @@ async def get_customers_by_userId(userid):
         )
 
     return {
-        "id": str(customer.customer_id),
+        "id": customer.customer_id,
         "userId": str(customer.userId),
         "name": str(customer.name),
         "phone": str(customer.phone),
