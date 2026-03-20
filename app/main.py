@@ -207,16 +207,14 @@ async def post_books(book_request_body: BookRequestBody):
         "Author": str(book.author),
         "description": str(book.description),
         "genre": str(book.genre),
-        "price": str(book.price),
-        "quantity": str(book.quantity),
+        "price": f"{book.price}",
+        "quantity": f"{book.quantity}",
     }
 
 
 @app.put("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
-async def put_books(
-    book_request_body: BookRequestBody, ISBN: str | int | float | bool | None = None
-):
-    if ISBN is not None and book_request_body.ISBN != ISBN:
+async def put_books(book_request_body: BookRequestBody, ISBN: str | int | float | bool):
+    if book_request_body.ISBN != ISBN:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={
@@ -251,8 +249,8 @@ async def put_books(
         "Author": str(book.author),
         "description": str(book.description),
         "genre": str(book.genre),
-        "price": str(book.price),
-        "quantity": str(book.quantity),
+        "price": f"{book.price}",
+        "quantity": f"{book.quantity}",
     }
 
 
@@ -280,9 +278,8 @@ async def get_books(ISBN):
         "Author": str(book.author),
         "description": str(book.description),
         "genre": str(book.genre),
-        "price": str(book.price),
-        "quantity": str(book.quantity),
-        "summary": str(book.summary),
+        "price": f"{book.price}",
+        "quantity": f"{book.quantity}",
     }
 
 
@@ -310,8 +307,8 @@ async def get_books_duplicate_enpoint(ISBN):
         "Author": str(book.author),
         "description": str(book.description),
         "genre": str(book.genre),
-        "price": str(book.price),
-        "quantity": str(book.quantity),
+        "price": f"{book.price}",
+        "quantity": f"{book.quantity}",
         "summary": str(book.summary),
     }
 
