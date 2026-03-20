@@ -382,6 +382,12 @@ async def get_customers(id: int):
 
 @app.get("/customers", tags=["customers"], status_code=status.HTTP_200_OK)
 async def get_customers_by_userId(userId):
+    if not check_is_valid_email(userId):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Retrieval failed. Invalid email."},
+        )
+
     customer = get_customer_by_userId(userId)
     if customer is None:
         return JSONResponse(
