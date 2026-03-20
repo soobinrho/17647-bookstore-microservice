@@ -1,11 +1,14 @@
 from fastapi import FastAPI, status, Response, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from google import genai
+from dotenv import load_dotenv
 from .input_data_validations import (
     check_is_valid_price,
     check_is_valid_email,
     check_is_valid_state_abbr,
 )
+import os
 
 # ============================================
 # FastAPI Automatic API Documentation Metadata
@@ -44,10 +47,13 @@ app = FastAPI(
     },
 )
 
-
 # ================
 # Helper Functions
 # ================
+load_dotenv()
+DB_USER = os.environ.get("BOOKSTORE_BACKEND_DB_USER", None)
+DB_PASS = os.environ.get("BOOKSTORE_BACKEND_DB_PASS", None)
+
 RESPONSE_INVALID_PRICE = JSONResponse(
     status_code=status.HTTP_400_BAD_REQUEST,
     content={
@@ -58,7 +64,7 @@ RESPONSE_INVALID_PRICE = JSONResponse(
 RESPONSE_INVALID_EMAIL = JSONResponse(
     status_code=status.HTTP_400_BAD_REQUEST,
     content={
-        "message": 'Invalid email. It must match the regular expression "[^@]+@[^@]+\.[^@]+".'
+        "message": 'Invalid email. It must match the regular expression "[^@]+@[^@]+\\.[^@]+".'
     },
 )
 
@@ -68,6 +74,32 @@ RESPONSE_INVALID_STATE = JSONResponse(
         "message": "Invalid state. It must be a valid 2-letter U.S. state abbreviation."
     },
 )
+
+
+def get_LLM_book_500_words_summary(title: str, author: str, ISBN: str) -> str:
+    # Source: https://github.com/googleapis/python-genai?tab=readme-ov-file#client-context-managers
+    # try:
+    #     with genai.Client() as client:
+    #         prompt = (
+    #             "You're Frank Herbert the author of Dune. I am a huge fan of yours. "
+    #             + f"Please write a 500-word summary of the following book: {title} "
+    #             + f"by the author {author} with ISBN {ISBN}. I don't care if the book "
+    #             + "actually exists or not, so please feel free to make up something "
+    #             + "based on the book name and the book author. Please respond with a "
+    #             + "summary of the book in exactly 500 words."
+    #         )
+    #         summary = (
+    #             client.models.generate_content(
+    #                 # TODO: Check if possible to run without specifying a model.
+    #                 # model="gemini-3-flash-preview", contents=prompt
+    #                 contents=prompt
+    #             )
+    #         ).text
+    # except Exception as e:
+    #     summary = f"Gemini API returned the following error:\n{e}"
+
+    summary = "Here's a placeholder for the 500-words summary."
+    return summary
 
 
 @app.exception_handler(RequestValidationError)
@@ -143,6 +175,12 @@ async def get_books(ISBN):
             content={"message": "Retrieval failed. This ISBN does not exist."},
         )
 
+    is_summary_generated = False
+    if not is_summary_generated:
+        pass
+        # summary = get_LLM_book_500_words_summary(title, Author, ISBN)
+        # TODO: update the DB with the summary.
+
     # TODO: Return the DB object.
     return {
         "ISBN": "placeholder",
@@ -152,6 +190,7 @@ async def get_books(ISBN):
         "genre": "placeholder",
         "price": "placeholder",
         "quantity": "placeholder",
+        "summary": "placeholder",
     }
 
 
@@ -164,6 +203,12 @@ async def get_books_duplicate_enpoint(ISBN):
             content={"message": "Retrieval failed. This ISBN does not exist."},
         )
 
+    is_summary_generated = False
+    if not is_summary_generated:
+        pass
+        # summary = get_LLM_book_500_words_summary(title, Author, ISBN)
+        # TODO: update the DB with the summary.
+
     # TODO: Return the DB object.
     return {
         "ISBN": "placeholder",
@@ -173,6 +218,7 @@ async def get_books_duplicate_enpoint(ISBN):
         "genre": "placeholder",
         "price": "placeholder",
         "quantity": "placeholder",
+        "summary": "placeholder",
     }
 
 
