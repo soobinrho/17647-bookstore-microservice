@@ -67,7 +67,8 @@ sudo docker build -t soobinrho/17647-bookstore-api-service:latest -t soobinrho/1
 sudo docker run --rm --name dev-bookstore-main-api -p 80:80 --add-host host.docker.internal:host-gateway --env BOOKSTORE_BACKEND_DB_USER='bookstore_main_db' --env BOOKSTORE_BACKEND_DB_PASS='<SNIP>' --env BOOKSTORE_BACKEND_DB_URL='host.docker.internal' --env GEMINI_API_KEY='<SNIP>' soobinrho/17647-bookstore-api-service:latest
 
 # Publish to Docker Hub.
-sudo docker push soobinrho/17647-bookstore-api-service:latest soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD)
+sudo docker push soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD)
+sudo docker push soobinrho/17647-bookstore-api-service:latest
 ```
 
 <br>
