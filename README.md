@@ -31,6 +31,25 @@ A bookstore backend built in the microservice architecture.
 
 <br>
 
+### Dev Workflows
+
+```bash
+# Not required, but I personally use VS Code with Ruff extension:
+#   https://github.com/astral-sh/ruff-vscode
+
+# Install uv: Python package manager.
+# Reference: https://docs.astral.sh/uv/getting-started/installation/
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Download all Python packages as listed on `uv.lock`.
+uv sync
+
+# Run a dev server.
+uv run fastapi dev
+```
+
+<br>
+
 ### Notes for my future self
 
 Professor Merson provided a CloudFormation template for all of our assignments, so provisioning of load balancer, EC2 instances, Aurora MySQL instances, and network & security configurations has already been automated.
