@@ -8,6 +8,7 @@ from .bookstore_models import Books, Customers, BookRequestBody, CustomerRequest
 from .input_data_validations import (
     check_is_valid_price,
     check_is_valid_email,
+    check_is_valid_quantity,
     check_is_valid_state_abbr,
 )
 import os
@@ -70,6 +71,11 @@ RESPONSE_INVALID_PRICE = JSONResponse(
     content={
         "message": "Invalid price. It must be a valid number, and it must have between 0 to 2 decimal places."
     },
+)
+
+RESPONSE_INVALID_QUANTITY = JSONResponse(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    content={"message": "Invalid quantity. It must be a valid number."},
 )
 
 RESPONSE_INVALID_EMAIL = JSONResponse(
@@ -184,6 +190,9 @@ async def post_books(book_request_body: BookRequestBody):
     if not check_is_valid_price(book_request_body.price):
         return RESPONSE_INVALID_PRICE
 
+    if not check_is_valid_quantity(book_request_body.quantity):
+        return RESPONSE_INVALID_QUANTITY
+
     if check_does_ISBN_exist(book_request_body.ISBN):
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -208,7 +217,7 @@ async def post_books(book_request_body: BookRequestBody):
         "description": str(book.description),
         "genre": str(book.genre),
         "price": float(book.price),
-        "quantity": int(book.quantity),
+        "quantity": float(book.quantity),
     }
 
 
@@ -224,6 +233,9 @@ async def put_books(book_request_body: BookRequestBody, ISBN: str | int | float 
 
     if not check_is_valid_price(book_request_body.price):
         return RESPONSE_INVALID_PRICE
+
+    if not check_is_valid_quantity(book_request_body.quantity):
+        return RESPONSE_INVALID_QUANTITY
 
     if not check_does_ISBN_exist(book_request_body.ISBN):
         return JSONResponse(
@@ -250,7 +262,7 @@ async def put_books(book_request_body: BookRequestBody, ISBN: str | int | float 
         "description": str(book.description),
         "genre": str(book.genre),
         "price": float(book.price),
-        "quantity": int(book.quantity),
+        "quantity": float(book.quantity),
     }
 
 
@@ -279,7 +291,7 @@ async def get_books(ISBN):
         "description": str(book.description),
         "genre": str(book.genre),
         "price": float(book.price),
-        "quantity": int(book.quantity),
+        "quantity": float(book.quantity),
         "summary": str(book.summary),
     }
 
@@ -309,7 +321,7 @@ async def get_books_duplicate_enpoint(ISBN):
         "description": str(book.description),
         "genre": str(book.genre),
         "price": float(book.price),
-        "quantity": int(book.quantity),
+        "quantity": float(book.quantity),
         "summary": str(book.summary),
     }
 

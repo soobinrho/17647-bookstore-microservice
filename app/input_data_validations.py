@@ -21,6 +21,19 @@ def check_is_valid_price(price) -> bool:
     return True
 
 
+def check_is_valid_quantity(quantity) -> bool:
+    quantity = str(quantity)
+    if len(str(quantity)) == 0:
+        return False
+
+    try:
+        _ = float(quantity)
+    except ValueError:
+        return False
+
+    return True
+
+
 def check_is_valid_email(userId) -> bool:
     userId = str(userId)
     if len(userId) == 0:
