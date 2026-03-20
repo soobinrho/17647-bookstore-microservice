@@ -44,7 +44,15 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # Download all Python packages as listed on `uv.lock`.
 uv sync
 
-# Run a dev server.
+# Generate a random MariaDB password. Add this to the `.env` file.
+cp .env.example .env
+tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo
+
+# Run a containerized MariaDB. Note that the final assignment deploys AWS Aurora MySQL.
+# So, these MariaDB containers are used just for development purposes.
+sudo docker run --detach --name dev-bookstore-main-db -p 3306:3306 --env MARIADB_RANDOM_ROOT_PASSWORD='True' --env MARIADB_USER='bookstore_main_db' --env MARIADB_PASSWORD='<SNIP>' --env MARIADB_DATABASE=bookstore mariadb:latest
+
+# Finally, run a dev server.
 uv run fastapi dev
 ```
 

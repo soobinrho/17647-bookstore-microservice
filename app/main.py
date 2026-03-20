@@ -1,14 +1,30 @@
 from fastapi import FastAPI, status, Response, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from sqlmodel import Session, SQLModel, create_engine, select
 from google import genai
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
+from .db.bookstore_models import Books, Customers
 from .input_data_validations import (
     check_is_valid_price,
     check_is_valid_email,
     check_is_valid_state_abbr,
 )
 import os
+
+
+# ======================
+# Database Configuration
+# ======================
+load_dotenv(find_dotenv())
+DB_USER = os.environ.get("BOOKSTORE_BACKEND_DB_USER", None)
+DB_PASS = os.environ.get("BOOKSTORE_BACKEND_DB_PASS", None)
+DB_URL = os.environ.get("BOOKSTORE_BACKEND_DB_URL", None)
+engine = create_engine(
+    f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}/bookstore",
+    echo=True,  # Debugging
+)
+SQLModel.metadata.create_all(engine)
 
 # ============================================
 # FastAPI Automatic API Documentation Metadata
@@ -50,10 +66,6 @@ app = FastAPI(
 # ================
 # Helper Functions
 # ================
-load_dotenv()
-DB_USER = os.environ.get("BOOKSTORE_BACKEND_DB_USER", None)
-DB_PASS = os.environ.get("BOOKSTORE_BACKEND_DB_PASS", None)
-
 RESPONSE_INVALID_PRICE = JSONResponse(
     status_code=status.HTTP_400_BAD_REQUEST,
     content={
@@ -102,6 +114,38 @@ def get_LLM_book_500_words_summary(title: str, author: str, ISBN: str) -> str:
     return summary
 
 
+def check_does_ISBN_exist(ISBN: str) -> bool:
+    with Session(engine) as session:
+        book = session.get(Books, ISBN)
+        return book is not None
+
+
+def check_does_customer_id_exist(id: str) -> bool:
+    with Session(engine) as session:
+        customer = session.get(Customers, id)
+        return customer is not None
+
+
+def get_book_by_ISBN(ISBN: str) -> Books:
+    with Session(engine) as session:
+        book = session.get(Books, ISBN)
+        return book
+
+
+def get_customer_by_id(id: str) -> Customers:
+    with Session(engine) as session:
+        customer = session.get(Customers, id)
+        return customer
+
+
+def get_customer_by_userId(userId: str) -> Customers:
+    with Session(engine) as session:
+        customer = session.exec(
+            select(Customers).where(Customers.userId == userId)
+        ).first()
+        return customer
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     # By default, FastAPI returns 422. This function switches it to 400 because
@@ -113,6 +157,36 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"detail": exc.errors()},
     )
 
+    # DEBUG START
+
+    # TODO: Delete test code.
+    with Session(engine) as session:
+        book1 = Books(
+            ISBN="1",
+            title="title",
+            author="author",
+            description="description",
+            genre="genre",
+            price="123.45",
+            quantity="1",
+        )
+        customer1 = Customers(
+            userId="test@test.com",
+            name="name",
+            phone="phone",
+            address="test",
+            city="city",
+            state="SD",
+            zipcode="12345",
+        )
+
+        session.add(book1)
+        session.add(customer1)
+        session.commit()
+
+
+# DEBUG END
+
 
 # =====
 # Books
@@ -122,9 +196,7 @@ async def post_books(ISBN, title, Author, description, genre, price, quantity):
     if not check_is_valid_price(price):
         return RESPONSE_INVALID_PRICE
 
-    # TODO: MariaDB integration.
-    does_record_already_exist = False
-    if does_record_already_exist:
+    if check_does_ISBN_exist(ISBN):
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             content={"message": "This ISBN already exists in the system."},
@@ -147,8 +219,7 @@ async def put_books(ISBN, title, Author, description, genre, price, quantity):
     if not check_is_valid_price(price):
         return RESPONSE_INVALID_PRICE
 
-    is_ISBN_not_found = False
-    if is_ISBN_not_found:
+    if not check_does_ISBN_exist(ISBN):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"message": "Update failed. This ISBN does not exist."},
@@ -168,57 +239,51 @@ async def put_books(ISBN, title, Author, description, genre, price, quantity):
 
 @app.get("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_books(ISBN):
-    is_ISBN_not_found = False
-    if is_ISBN_not_found:
+    book = get_book_by_ISBN(ISBN)
+    if book is None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"message": "Retrieval failed. This ISBN does not exist."},
         )
 
-    is_summary_generated = False
-    if not is_summary_generated:
-        pass
+    if book.summary is None:
+        print("TODO: update the DB with the summary.")
         # summary = get_LLM_book_500_words_summary(title, Author, ISBN)
-        # TODO: update the DB with the summary.
 
-    # TODO: Return the DB object.
     return {
-        "ISBN": "placeholder",
-        "title": "placeholder",
-        "Author": "placeholder",
-        "description": "placeholder",
-        "genre": "placeholder",
-        "price": "placeholder",
-        "quantity": "placeholder",
-        "summary": "placeholder",
+        "ISBN": book.ISBN,
+        "title": book.title,
+        "Author": book.author,
+        "description": book.description,
+        "genre": book.genre,
+        "price": book.price,
+        "quantity": book.quantity,
+        "summary": book.summary,
     }
 
 
 @app.get("/books/isbn/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_books_duplicate_enpoint(ISBN):
-    is_ISBN_not_found = False
-    if is_ISBN_not_found:
+    book = get_book_by_ISBN(ISBN)
+    if book is None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"message": "Retrieval failed. This ISBN does not exist."},
         )
 
-    is_summary_generated = False
-    if not is_summary_generated:
-        pass
+    if book.summary is None:
+        print("TODO: update the DB with the summary.")
         # summary = get_LLM_book_500_words_summary(title, Author, ISBN)
-        # TODO: update the DB with the summary.
 
-    # TODO: Return the DB object.
     return {
-        "ISBN": "placeholder",
-        "title": "placeholder",
-        "Author": "placeholder",
-        "description": "placeholder",
-        "genre": "placeholder",
-        "price": "placeholder",
-        "quantity": "placeholder",
-        "summary": "placeholder",
+        "ISBN": book.ISBN,
+        "title": book.title,
+        "Author": book.author,
+        "description": book.description,
+        "genre": book.genre,
+        "price": book.price,
+        "quantity": book.quantity,
+        "summary": book.summary,
     }
 
 
@@ -235,8 +300,7 @@ async def post_customers(
     if not check_is_valid_state_abbr(state):
         return RESPONSE_INVALID_STATE
 
-    does_record_already_exist = False
-    if does_record_already_exist:
+    if check_does_customer_id_exist(id):
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             content={"message": "This user ID already exists in the system."},
@@ -258,47 +322,45 @@ async def post_customers(
 
 @app.get("/customers/{id}", tags=["customers"], status_code=status.HTTP_200_OK)
 async def get_customers(id):
-    is_id_not_found = False
-    if is_id_not_found:
+    customer = get_customer_by_id(id)
+    if customer is None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"message": "Retrieval failed. This ID does not exist."},
         )
 
-    # TODO: Return the DB object.
     return {
-        "id": "placeholder",
-        "userId": "placeholder",
-        "name": "placeholder",
-        "phone": "placeholder",
-        "address": "placeholder",
-        "address2": "placeholder",
-        "city": "placeholder",
-        "state": "placeholder",
-        "zipcode": "placeholder",
+        "id": customer.customer_id,
+        "userId": customer.userId,
+        "name": customer.name,
+        "phone": customer.phone,
+        "address": customer.address,
+        "address2": customer.address2,
+        "city": customer.city,
+        "state": customer.state,
+        "zipcode": customer.zipcode,
     }
 
 
 @app.get("/customers", tags=["customers"], status_code=status.HTTP_200_OK)
-async def get_customers_query_param_userid(userid):
-    is_id_not_found = False
-    if is_id_not_found:
+async def get_customers_by_userId(userid):
+    customer = get_customer_by_userId(userid)
+    if customer is None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"message": "Retrieval failed. This ID does not exist."},
         )
 
-    # TODO: Return the DB object.
     return {
-        "id": "placeholder",
-        "userId": "placeholder",
-        "name": "placeholder",
-        "phone": "placeholder",
-        "address": "placeholder",
-        "address2": "placeholder",
-        "city": "placeholder",
-        "state": "placeholder",
-        "zipcode": "placeholder",
+        "id": customer.customer_id,
+        "userId": customer.userId,
+        "name": customer.name,
+        "phone": customer.phone,
+        "address": customer.address,
+        "address2": customer.address2,
+        "city": customer.city,
+        "state": customer.state,
+        "zipcode": customer.zipcode,
     }
 
 
