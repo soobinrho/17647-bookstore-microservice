@@ -4,7 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from sqlmodel import Session, SQLModel, create_engine, select
 from google import genai
 from dotenv import load_dotenv, find_dotenv
-from .db.bookstore_models import Books, Customers
+from .db.bookstore_models import Books, Customers, BookRequestBody, CustomerRequestBody
 from .input_data_validations import (
     check_is_valid_price,
     check_is_valid_email,
@@ -180,27 +180,27 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # Books
 # =====
 @app.post("/books", tags=["books"], status_code=status.HTTP_201_CREATED)
-async def post_books(ISBN, title, Author, description, genre, price, quantity):
-    if not check_is_valid_price(price):
+async def post_books(book_request_body: BookRequestBody):
+    if not check_is_valid_price(book_request_body.price):
         return RESPONSE_INVALID_PRICE
 
-    if check_does_ISBN_exist(ISBN):
+    if check_does_ISBN_exist(book_request_body.ISBN):
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             content={"message": "This ISBN already exists in the system."},
         )
 
     book = Books(
-        ISBN=ISBN,
-        title=title,
-        author=Author,
-        description=description,
-        genre=genre,
-        price=price,
-        quantity=quantity,
+        ISBN=book_request_body.ISBN,
+        title=book_request_body.title,
+        author=book_request_body.Author,
+        description=book_request_body.description,
+        genre=book_request_body.genre,
+        price=book_request_body.price,
+        quantity=book_request_body.quantity,
     )
     create_book(book)
-    book = get_book_by_ISBN(ISBN)
+    book = get_book_by_ISBN(book_request_body.ISBN)
     return {
         "ISBN": book.ISBN,
         "title": book.title,
@@ -213,28 +213,28 @@ async def post_books(ISBN, title, Author, description, genre, price, quantity):
 
 
 @app.put("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
-async def put_books(ISBN, title, Author, description, genre, price, quantity):
-    if not check_is_valid_price(price):
+async def put_books(book_request_body: BookRequestBody):
+    if not check_is_valid_price(book_request_body.price):
         return RESPONSE_INVALID_PRICE
 
-    if not check_does_ISBN_exist(ISBN):
+    if not check_does_ISBN_exist(book_request_body.ISBN):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"message": "Update failed. This ISBN does not exist."},
         )
 
     with Session(engine) as session:
-        book = session.get(Books, ISBN)
-        book.title = title
-        book.author = Author
-        book.description = description
-        book.genre = genre
-        book.price = price
-        book.quantity = quantity
+        book = session.get(Books, book_request_body.ISBN)
+        book.title = book_request_body.title
+        book.author = book_request_body.Author
+        book.description = book_request_body.description
+        book.genre = book_request_body.genre
+        book.price = book_request_body.price
+        book.quantity = book_request_body.quantity
         session.add(book)
         session.commit()
 
-    book = get_book_by_ISBN(ISBN)
+    book = get_book_by_ISBN(book_request_body.ISBN)
     return {
         "ISBN": book.ISBN,
         "title": book.title,
@@ -310,33 +310,31 @@ async def get_books_duplicate_enpoint(ISBN):
 # Customers
 # =========
 @app.post("/customers", tags=["customers"], status_code=status.HTTP_201_CREATED)
-async def post_customers(
-    userId, name, phone, address, city, state, zipcode, address2=None
-):
-    if not check_is_valid_email(userId):
+async def post_customers(customer_request_body: CustomerRequestBody):
+    if not check_is_valid_email(customer_request_body.userId):
         return RESPONSE_INVALID_EMAIL
 
-    if not check_is_valid_state_abbr(state):
+    if not check_is_valid_state_abbr(customer_request_body.state):
         return RESPONSE_INVALID_STATE
 
-    if check_does_user_id_exist(userId):
+    if check_does_user_id_exist(customer_request_body.userId):
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             content={"message": "This user ID already exists in the system."},
         )
 
     customer = Customers(
-        userId=userId,
-        name=name,
-        phone=phone,
-        address=address,
-        address2=address2,
-        city=city,
-        state=state,
-        zipcode=zipcode,
+        userId=customer_request_body.userId,
+        name=customer_request_body.name,
+        phone=customer_request_body.phone,
+        address=customer_request_body.address,
+        address2=customer_request_body.address2,
+        city=customer_request_body.city,
+        state=customer_request_body.state,
+        zipcode=customer_request_body.zipcode,
     )
     create_customer(customer)
-    customer = get_customer_by_userId(userId)
+    customer = get_customer_by_userId(customer_request_body.userId)
     return {
         "id": customer.customer_id,
         "userId": customer.userId,

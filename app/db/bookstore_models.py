@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel, Field, Column
 from sqlalchemy.dialects.mysql import LONGTEXT
+from pydantic import BaseModel
 
 
 # I know str doesn't make sense for some of these columns, but the instruction
@@ -22,6 +23,28 @@ class Customers(SQLModel, table=True):
     phone: str
     address: str
     address2: str | None = Field(default=None)
+    city: str
+    state: str
+    zipcode: str
+
+
+# These are for HTTP request bodies.
+class BookRequestBody(BaseModel):
+    ISBN: str
+    title: str
+    author: str
+    description: str
+    genre: str
+    price: str
+    quantity: str
+
+
+class CustomerRequestBody(BaseModel):
+    userId: str
+    name: str
+    phone: str
+    address: str
+    address2: str | None = None
     city: str
     state: str
     zipcode: str
