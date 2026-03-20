@@ -1,5 +1,1 @@
-Create `url.txt` at top directory.
-"This file should just contain one line which is the BASEURL of the service, for example: `http://ALB-808421417.us-east-1.elb.amazonaws.com:80`.
-The BASEURL needs to contain both the public IP address and the port number."
-We can find it on the `EC2` - `Load balancers` - `DNS name` section.
-
+http://bookstore-ALB-1584088743.us-east-1.elb.amazonaws.com:80
