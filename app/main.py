@@ -226,15 +226,26 @@ async def put_books(ISBN, title, Author, description, genre, price, quantity):
             content={"message": "Update failed. This ISBN does not exist."},
         )
 
-    # TODO: Return the DB object.
+    with Session(engine) as session:
+        book = session.get(Books, ISBN)
+        book.title = title
+        book.author = Author
+        book.description = description
+        book.genre = genre
+        book.price = price
+        book.quantity = quantity
+        session.add(book)
+        session.commit()
+
+    book = get_book_by_ISBN(ISBN)
     return {
-        "ISBN": ISBN,
-        "title": title,
-        "Author": Author,
-        "description": description,
-        "genre": genre,
-        "price": price,
-        "quantity": quantity,
+        "ISBN": book.ISBN,
+        "title": book.title,
+        "Author": book.author,
+        "description": book.description,
+        "genre": book.genre,
+        "price": book.price,
+        "quantity": book.quantity,
     }
 
 
