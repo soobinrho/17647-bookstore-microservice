@@ -63,7 +63,7 @@ uv run fastapi dev
 # ====================
 sudo docker build -t soobinrho/17647-bookstore-api-service:latest -t soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD) .
 
-# Test.
+# Test. The API service should now be able to call the MariaDB service.
 sudo docker run --rm --name dev-bookstore-main-api -p 80:80 --add-host host.docker.internal:host-gateway --env BOOKSTORE_BACKEND_DB_USER='bookstore' --env BOOKSTORE_BACKEND_DB_PASS='<SNIP>' --env BOOKSTORE_BACKEND_DB_URL='host.docker.internal' --env GEMINI_API_KEY='<SNIP>' soobinrho/17647-bookstore-api-service:latest
 
 # Publish to Docker Hub.
