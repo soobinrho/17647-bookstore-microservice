@@ -207,8 +207,8 @@ async def post_books(book_request_body: BookRequestBody):
         "Author": str(book.author),
         "description": str(book.description),
         "genre": str(book.genre),
-        "price": f"{book.price}",
-        "quantity": f"{book.quantity}",
+        "price": float(book.price),
+        "quantity": int(book.quantity),
     }
 
 
@@ -249,8 +249,8 @@ async def put_books(book_request_body: BookRequestBody, ISBN: str | int | float 
         "Author": str(book.author),
         "description": str(book.description),
         "genre": str(book.genre),
-        "price": f"{book.price}",
-        "quantity": f"{book.quantity}",
+        "price": float(book.price),
+        "quantity": int(book.quantity),
     }
 
 
@@ -278,8 +278,9 @@ async def get_books(ISBN):
         "Author": str(book.author),
         "description": str(book.description),
         "genre": str(book.genre),
-        "price": f"{book.price}",
-        "quantity": f"{book.quantity}",
+        "price": float(book.price),
+        "quantity": int(book.quantity),
+        "summary": str(book.summary),
     }
 
 
@@ -307,8 +308,8 @@ async def get_books_duplicate_enpoint(ISBN):
         "Author": str(book.author),
         "description": str(book.description),
         "genre": str(book.genre),
-        "price": f"{book.price}",
-        "quantity": f"{book.quantity}",
+        "price": float(book.price),
+        "quantity": int(book.quantity),
         "summary": str(book.summary),
     }
 
