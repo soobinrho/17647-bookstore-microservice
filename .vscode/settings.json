@@ -1,8 +1,13 @@
 {
 "python.analysis.autoImportCompletions": true,
 "cSpell.words": [
+    "Autograder",
     "dotenv",
+    "fastapi",
     "genai",
-    "Soobin"
+    "Merson",
+    "Soobin",
+    "soobinrho",
+    "urandom"
 ]
 }

@@ -22,8 +22,8 @@ A bookstore backend built in the microservice architecture.
 | `/books/{ISBN}` | Retrieve a book. | N/A | Update an existing book. |
 | `/books/isbn/{ISBN}` | Retrieve a book. | N/A | N/A |
 | `/customers` | N/A | Create a new customer. | N/A |
-| `/customers/{id}` | Retreieve a customer. | N/A | N/A |
-| `/customers?userId={userid}` | Retreieve a customer. | N/A | N/A |
+| `/customers/{id}` | Retrieve a customer. | N/A | N/A |
+| `/customers?userId={userid}` | Retrieve a customer. | N/A | N/A |
 | `/status` | `OK` | N/A | N/A |
 
 \* Note: Follow the assignment's instructions on the endpoints exactly, including the subtle uppercase and lowercase differences.<br>
@@ -64,6 +64,7 @@ uv run fastapi dev
 sudo docker build -t soobinrho/17647-bookstore-api-service:latest -t soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD) .
 
 # Test. The API service should now be able to call the MariaDB service.
+sudo docker run --rm --detach --name dev-bookstore-main-db -p 3306:3306 --add-host host.docker.internal:host-gateway --env MARIADB_RANDOM_ROOT_PASSWORD='True' --env MARIADB_USER='bookstore' --env MARIADB_PASSWORD='<SNIP>' --env MARIADB_DATABASE='bookstore' mariadb:latest
 sudo docker run --rm --name dev-bookstore-main-api -p 80:80 --add-host host.docker.internal:host-gateway --env BOOKSTORE_BACKEND_DB_USER='bookstore' --env BOOKSTORE_BACKEND_DB_PASS='<SNIP>' --env BOOKSTORE_BACKEND_DB_URL='host.docker.internal' --env GEMINI_API_KEY='<SNIP>' soobinrho/17647-bookstore-api-service:latest
 
 # Publish to Docker Hub.
@@ -110,7 +111,7 @@ Professor Merson provided a CloudFormation template for all of our assignments, 
 Remember, one disadvantage of the microservice architecture compared to the monolithic architecture is that deployment in microservice can get more convoluted, solution of which is automation of deployment.
 
 Don't deploy microservice systems manually unless absolutely necessary (e.g. testing and debugging).
-This was a fun assignment as it was my first time deploying a proper microservice system and also happend to be my first time deploying to AWS.
+This was a fun assignment as it was my first time deploying a proper microservice system and also happened to be my first time deploying to AWS.
 Up to this point, I only had experience with Hetzner and DigitalOcean.
 
 <br>
