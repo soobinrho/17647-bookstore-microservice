@@ -213,7 +213,17 @@ async def post_books(book_request_body: BookRequestBody):
 
 
 @app.put("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
-async def put_books(book_request_body: BookRequestBody):
+async def put_books(
+    book_request_body: BookRequestBody, ISBN: str | int | float | bool | None = None
+):
+    if ISBN is not None and book_request_body.ISBN != ISBN:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "message": "Update failed. Different ISBNs in payload and query param."
+            },
+        )
+
     if not check_is_valid_price(book_request_body.price):
         return RESPONSE_INVALID_PRICE
 
