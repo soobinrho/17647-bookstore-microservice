@@ -1,7 +1,7 @@
 [project]
 name = "bookstore"
 version = "0.1.0"
-description = "https://github.com/soobinrho/17647-A1-bookstore-microservice"
+description = "https://github.com/soobinrho/17647-bookstore-microservice"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [

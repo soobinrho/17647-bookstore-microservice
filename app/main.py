@@ -33,7 +33,7 @@ SQLModel.metadata.create_all(engine)
 description = """
 ## Bookstore API Backend for Books and Customers
 
-Reference: https://github.com/soobinrho/17647-A1-bookstore-microservice
+Reference: https://github.com/soobinrho/17647-bookstore-microservice
 
 <br>
 """
