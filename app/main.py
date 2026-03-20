@@ -371,8 +371,8 @@ async def get_customers(id: int):
 
 
 @app.get("/customers", tags=["customers"], status_code=status.HTTP_200_OK)
-async def get_customers_by_userId(userid):
-    customer = get_customer_by_userId(userid)
+async def get_customers_by_userId(userId):
+    customer = get_customer_by_userId(userId)
     if customer is None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
