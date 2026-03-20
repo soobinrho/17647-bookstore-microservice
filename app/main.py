@@ -4,7 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from sqlmodel import Session, SQLModel, create_engine, select
 from google import genai
 from dotenv import load_dotenv, find_dotenv
-from .db.bookstore_models import Books, Customers, BookRequestBody, CustomerRequestBody
+from .bookstore_models import Books, Customers, BookRequestBody, CustomerRequestBody
 from .input_data_validations import (
     check_is_valid_price,
     check_is_valid_email,

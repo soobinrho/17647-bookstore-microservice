@@ -41,6 +41,7 @@ dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "google-genai" },
     { name = "pymysql" },
+    { name = "ruff" },
     { name = "sqlalchemy" },
     { name = "sqlmodel" },
 ]
@@ -56,6 +57,7 @@ requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.135.1" },
     { name = "google-genai", specifier = ">=1.68.0" },
     { name = "pymysql", specifier = ">=1.1.2" },
+    { name = "ruff", specifier = ">=0.15.7" },
     { name = "sqlalchemy", specifier = ">=2.0.48" },
     { name = "sqlmodel", specifier = ">=0.0.37" },
 ]
