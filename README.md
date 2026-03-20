@@ -75,10 +75,9 @@ sudo docker push soobinrho/17647-bookstore-api-service:latest
 
 ### AWS EC2 & Aurora MySQL Setup
 
-1. SSH into EC2's; pull the API service container; and connect to the database.
+1. SSH into EC2's and connect to the database cluster.
 
 ```bash
-docker pull soobinrho/17647-bookstore-api-service:latest
 mysql -h bookstore-db-dev.cluster-cv4ayms4g8af.us-east-1.rds.amazonaws.com -P 3306 -u bookstore -p'<SNIP>'
 ```
 
@@ -95,6 +94,7 @@ CREATE DATABASE IF NOT EXISTS bookstore;
 3. Start the container. Run it in both of the EC2 instances.
 
 ```bash
+docker pull soobinrho/17647-bookstore-api-service:latest
 docker run --detach --name bookstore-main-api -p 80:80 --add-host host.docker.internal:host-gateway --env BOOKSTORE_BACKEND_DB_USER='bookstore' --env BOOKSTORE_BACKEND_DB_PASS='<SNIP>' --env BOOKSTORE_BACKEND_DB_URL='bookstore-db-dev.cluster-cv4ayms4g8af.us-east-1.rds.amazonaws.com' --env GEMINI_API_KEY='<SNIP>' soobinrho/17647-bookstore-api-service:latest
 ```
 
