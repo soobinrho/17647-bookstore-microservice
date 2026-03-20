@@ -7,7 +7,8 @@ def check_is_valid_price(price) -> bool:
         return False
 
     try:
-        float(price)
+        if float(price) < 0:
+            return False
     except ValueError:
         return False
     else:
