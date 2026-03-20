@@ -2,14 +2,19 @@ import re
 
 
 def check_is_valid_price(price: str) -> bool:
-    if not price.isdigit() or len(price) == 0:
+    if len(price) == 0:
         return False
 
-    # Price can have 0 to 2 decimal places.
-    if "." in price:
-        decimal_points = len(price.split(".")[1])
-        if decimal_points >= 3:
-            return False
+    try:
+        float(price)
+    except ValueError:
+        return False
+    else:
+        # Price can have 0 to 2 decimal places.
+        if "." in price:
+            decimal_points = len(price.split(".")[1])
+            if decimal_points >= 3:
+                return False
 
     return True
 

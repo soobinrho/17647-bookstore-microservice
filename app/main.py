@@ -114,15 +114,36 @@ def get_LLM_book_500_words_summary(title: str, author: str, ISBN: str) -> str:
     return summary
 
 
+def create_book(book: Books) -> None:
+    with Session(engine) as session:
+        session.add(book)
+        session.commit()
+
+
+def create_customer(customer: Customers) -> None:
+    with Session(engine) as session:
+        session.add(customer)
+        session.commit()
+
+
 def check_does_ISBN_exist(ISBN: str) -> bool:
     with Session(engine) as session:
         book = session.get(Books, ISBN)
         return book is not None
 
 
+# NOTE: Customer ID is the numeric, autoincrementing ID, while User ID is the email.
 def check_does_customer_id_exist(id: str) -> bool:
     with Session(engine) as session:
         customer = session.get(Customers, id)
+        return customer is not None
+
+
+def check_does_user_id_exist(userId: str) -> bool:
+    with Session(engine) as session:
+        customer = session.exec(
+            select(Customers).where(Customers.userId == userId)
+        ).first()
         return customer is not None
 
 
@@ -157,36 +178,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"detail": exc.errors()},
     )
 
-    # DEBUG START
-
-    # TODO: Delete test code.
-    with Session(engine) as session:
-        book1 = Books(
-            ISBN="1",
-            title="title",
-            author="author",
-            description="description",
-            genre="genre",
-            price="123.45",
-            quantity="1",
-        )
-        customer1 = Customers(
-            userId="test@test.com",
-            name="name",
-            phone="phone",
-            address="test",
-            city="city",
-            state="SD",
-            zipcode="12345",
-        )
-
-        session.add(book1)
-        session.add(customer1)
-        session.commit()
-
-
-# DEBUG END
-
 
 # =====
 # Books
@@ -202,15 +193,25 @@ async def post_books(ISBN, title, Author, description, genre, price, quantity):
             content={"message": "This ISBN already exists in the system."},
         )
 
-    # TODO: Return the DB object.
+    book = Books(
+        ISBN=ISBN,
+        title=title,
+        author=Author,
+        description=description,
+        genre=genre,
+        price=price,
+        quantity=quantity,
+    )
+    create_book(book)
+    book = get_book_by_ISBN(ISBN)
     return {
-        "ISBN": ISBN,
-        "title": title,
-        "Author": Author,
-        "description": description,
-        "genre": genre,
-        "price": price,
-        "quantity": quantity,
+        "ISBN": book.ISBN,
+        "title": book.title,
+        "Author": book.author,
+        "description": book.description,
+        "genre": book.genre,
+        "price": book.price,
+        "quantity": book.quantity,
     }
 
 
@@ -300,23 +301,34 @@ async def post_customers(
     if not check_is_valid_state_abbr(state):
         return RESPONSE_INVALID_STATE
 
-    if check_does_customer_id_exist(id):
+    if check_does_user_id_exist(userId):
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             content={"message": "This user ID already exists in the system."},
         )
 
-    # TODO: Return the DB object.
+    customer = Customers(
+        userId=userId,
+        name=name,
+        phone=phone,
+        address=address,
+        address2=address2,
+        city=city,
+        state=state,
+        zipcode=zipcode,
+    )
+    create_customer(customer)
+    customer = get_customer_by_userId(userId)
     return {
-        "id": "placeholder",
-        "userId": "placeholder",
-        "name": "placeholder",
-        "phone": "placeholder",
-        "address": "placeholder",
-        "address2": "placeholder",
-        "city": "placeholder",
-        "state": "placeholder",
-        "zipcode": "placeholder",
+        "id": customer.customer_id,
+        "userId": customer.userId,
+        "name": customer.name,
+        "phone": customer.phone,
+        "address": customer.address,
+        "address2": customer.address2,
+        "city": customer.city,
+        "state": customer.state,
+        "zipcode": customer.zipcode,
     }
 
 
