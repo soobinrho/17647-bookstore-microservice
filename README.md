@@ -53,7 +53,8 @@ tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo
 
 # Run a containerized MariaDB. Note that the final assignment deploys AWS Aurora MySQL.
 # So, these MariaDB containers are used just for development purposes.
-sudo docker run --rm --detach --name dev-bookstore-main-db -p 3306:3306 --add-host host.docker.internal:host-gateway --env MARIADB_RANDOM_ROOT_PASSWORD='True' --env MARIADB_USER='bookstore' --env MARIADB_PASSWORD='<SNIP>' --env MARIADB_DATABASE='bookstore' mariadb:latest
+usermoad -aG docker $USER
+docker run --rm --detach --name dev-bookstore-main-db -p 3306:3306 --add-host host.docker.internal:host-gateway --env MARIADB_RANDOM_ROOT_PASSWORD='True' --env MARIADB_USER='bookstore' --env MARIADB_PASSWORD='<SNIP>' --env MARIADB_DATABASE='bookstore' mariadb:latest
 
 # Finally, run a dev server.
 uv run fastapi dev
@@ -61,15 +62,15 @@ uv run fastapi dev
 # ====================
 # How to containerize.
 # ====================
-sudo docker build -t soobinrho/17647-bookstore-api-service:latest -t soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD) .
+docker build -t soobinrho/17647-bookstore-api-service:latest -t soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD) .
 
 # Test. The API service should now be able to call the MariaDB service.
-sudo docker run --rm --detach --name dev-bookstore-main-db -p 3306:3306 --add-host host.docker.internal:host-gateway --env MARIADB_RANDOM_ROOT_PASSWORD='True' --env MARIADB_USER='bookstore' --env MARIADB_PASSWORD='<SNIP>' --env MARIADB_DATABASE='bookstore' mariadb:latest
-sudo docker run --rm --name dev-bookstore-main-api -p 80:80 --add-host host.docker.internal:host-gateway --env BOOKSTORE_BACKEND_DB_USER='bookstore' --env BOOKSTORE_BACKEND_DB_PASS='<SNIP>' --env BOOKSTORE_BACKEND_DB_URL='host.docker.internal' --env GEMINI_API_KEY='<SNIP>' soobinrho/17647-bookstore-api-service:latest
+docker run --rm --detach --name dev-bookstore-main-db -p 3306:3306 --add-host host.docker.internal:host-gateway --env MARIADB_RANDOM_ROOT_PASSWORD='True' --env MARIADB_USER='bookstore' --env MARIADB_PASSWORD='<SNIP>' --env MARIADB_DATABASE='bookstore' mariadb:latest
+docker run --rm --name dev-bookstore-main-api -p 80:80 --add-host host.docker.internal:host-gateway --env BOOKSTORE_BACKEND_DB_USER='bookstore' --env BOOKSTORE_BACKEND_DB_PASS='<SNIP>' --env BOOKSTORE_BACKEND_DB_URL='host.docker.internal' --env GEMINI_API_KEY='<SNIP>' soobinrho/17647-bookstore-api-service:latest
 
 # Publish to Docker Hub.
-sudo docker push soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD)
-sudo docker push soobinrho/17647-bookstore-api-service:latest
+docker push soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD)
+docker push soobinrho/17647-bookstore-api-service:latest
 ```
 
 <br>
@@ -120,7 +121,7 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 
 - **CloudFormation Setup**: When we upload the [CloudFormation template](https://github.com/pmerson/AWS-CF-templates) to AWS, it will ask us to set the credentials for the database and also IP allowlisting for the SSH service at the EC2 instances. By default, `0.0.0.0/0` is allowed for SSH, so make sure to change this to my IP for security.
 
-- **Docker Tag**: `sudo docker build -t soobinrho/17647-bookstore-api-service:latest -t soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD) .` to set the tag name as the current git commit hash.
+- **Docker Tag**: `docker build -t soobinrho/17647-bookstore-api-service:latest -t soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD) .` to set the tag name as the current git commit hash.
 
 - **Talking to localhost from Docker**: If we run a container with `--add-host host.docker.internal:host-gateway` option, the container can talk to `127.0.0.1` by pointing to `host.docker.internal`.
 
