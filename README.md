@@ -122,6 +122,8 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 
 - **Docker Tag**: `sudo docker build -t soobinrho/17647-bookstore-api-service:latest -t soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD) .` to set the tag name as the current git commit hash.
 
+- **Talking to localhost from Docker**: If we run a container with `--add-host host.docker.internal:host-gateway` option, the container can talk to `127.0.0.1` by pointing to `host.docker.internal`.
+
 - **EC2's default username**: `ec2-user`.
 
 - **AWS Academy**: Go to the AWS CloudFormation page and delete all resources after getting a full score on Autograder so that they stop getting billed.
