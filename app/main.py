@@ -356,7 +356,7 @@ async def post_customers(customer_request_body: CustomerRequestBody):
     create_customer(customer)
     customer = get_customer_by_userId(customer_request_body.userId)
     return {
-        "id": customer.customer_id,
+        "id": int(customer.customer_id),
         "userId": str(customer.userId),
         "name": str(customer.name),
         "phone": str(customer.phone),
@@ -378,7 +378,7 @@ async def get_customers(id: int):
         )
 
     return {
-        "id": customer.customer_id,
+        "id": int(customer.customer_id),
         "userId": str(customer.userId),
         "name": str(customer.name),
         "phone": str(customer.phone),
@@ -402,11 +402,11 @@ async def get_customers_by_userId(userId):
     if customer is None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            content={"message": "Retrieval failed. This ID does not exist."},
+            content={"message": "Retrieval failed. This email does not exist."},
         )
 
     return {
-        "id": customer.customer_id,
+        "id": int(customer.customer_id),
         "userId": str(customer.userId),
         "name": str(customer.name),
         "phone": str(customer.phone),
