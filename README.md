@@ -53,7 +53,7 @@ tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo
 
 # Run a containerized MariaDB. Note that the final assignment deploys AWS Aurora MySQL.
 # So, these MariaDB containers are used just for development purposes.
-sudo docker run --rm --detach --name dev-bookstore-main-db -p 3306:3306 --add-host host.docker.internal:host-gateway --env MARIADB_RANDOM_ROOT_PASSWORD='True' --env MARIADB_USER='bookstore' --env MARIADB_PASSWORD='<SNIP>' --env MARIADB_DATABASE=bookstore mariadb:latest
+sudo docker run --rm --detach --name dev-bookstore-main-db -p 3306:3306 --add-host host.docker.internal:host-gateway --env MARIADB_RANDOM_ROOT_PASSWORD='True' --env MARIADB_USER='bookstore' --env MARIADB_PASSWORD='<SNIP>' --env MARIADB_DATABASE='bookstore' mariadb:latest
 
 # Finally, run a dev server.
 uv run fastapi dev
@@ -70,6 +70,37 @@ sudo docker run --rm --name dev-bookstore-main-api -p 80:80 --add-host host.dock
 sudo docker push soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD)
 sudo docker push soobinrho/17647-bookstore-api-service:latest
 ```
+
+<br>
+
+### AWS EC2 & Aurora MySQL Setup
+
+1. SSH into EC2's; pull the API service container; and connect to the database.
+
+```bash
+docker pull soobinrho/17647-bookstore-api-service:latest
+mysql -h bookstore-db-dev.cluster-cv4ayms4g8af.us-east-1.rds.amazonaws.com -P 3306 -u bookstore -p'<SNIP>'
+```
+
+<br>
+
+2. Create `bookstore` database. Note that this Aurora cluster is configured with two MySQL servers: one that does all the writing and another that does all of the readings.
+
+```sql
+CREATE DATABASE IF NOT EXISTS bookstore;
+```
+
+<br>
+
+3. Start the container. Run it in both of the EC2 instances.
+
+```bash
+docker run --detach --name bookstore-main-api -p 80:80 --add-host host.docker.internal:host-gateway --env BOOKSTORE_BACKEND_DB_USER='bookstore' --env BOOKSTORE_BACKEND_DB_PASS='<SNIP>' --env BOOKSTORE_BACKEND_DB_URL='bookstore-db-dev.cluster-cv4ayms4g8af.us-east-1.rds.amazonaws.com' --env GEMINI_API_KEY='<SNIP>' soobinrho/17647-bookstore-api-service:latest
+```
+
+<br>
+
+4. http://bookstore-ALB-1584088743.us-east-1.elb.amazonaws.com:80/docs
 
 <br>
 
