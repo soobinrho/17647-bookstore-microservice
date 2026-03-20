@@ -30,21 +30,21 @@ class Customers(SQLModel, table=True):
 
 # These are for HTTP request bodies.
 class BookRequestBody(BaseModel):
-    ISBN: str
-    title: str
-    author: str
-    description: str
-    genre: str
-    price: str
-    quantity: str
+    ISBN: str | int | float | bool
+    title: str | int | float | bool
+    Author: str | int | float | bool
+    description: str | int | float | bool
+    genre: str | int | float | bool
+    price: str | int | float | bool
+    quantity: str | int | float | bool
 
 
 class CustomerRequestBody(BaseModel):
-    userId: str
-    name: str
-    phone: str
-    address: str
-    address2: str | None = None
-    city: str
-    state: str
-    zipcode: str
+    userId: str | int | float | bool
+    name: str | int | float | bool
+    phone: str | int | float | bool
+    address: str | int | float | bool
+    address2: str | int | float | bool | None = None
+    city: str | int | float | bool
+    state: str | int | float | bool
+    zipcode: str | int | float | bool

@@ -1,8 +1,9 @@
 import re
 
 
-def check_is_valid_price(price: str) -> bool:
-    if len(price) == 0:
+def check_is_valid_price(price) -> bool:
+    price = str(price)
+    if len(str(price)) == 0:
         return False
 
     try:
@@ -19,7 +20,8 @@ def check_is_valid_price(price: str) -> bool:
     return True
 
 
-def check_is_valid_email(userId: str) -> bool:
+def check_is_valid_email(userId) -> bool:
+    userId = str(userId)
     if len(userId) == 0:
         return False
 
