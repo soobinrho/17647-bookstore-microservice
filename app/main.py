@@ -90,7 +90,6 @@ RESPONSE_INVALID_STATE = JSONResponse(
 def get_LLM_book_500_words_summary(title: str, author: str, ISBN: str) -> str:
     # Source: https://github.com/googleapis/python-genai?tab=readme-ov-file#client-context-managers
     try:
-        return "TODO: DELTE THIS WHEN COMPLETE"
         with genai.Client() as client:
             prompt = (
                 "You're Frank Herbert the author of Dune. I am a huge fan of yours. "

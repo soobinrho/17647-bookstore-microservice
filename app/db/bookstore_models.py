@@ -1,4 +1,5 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Column
+from sqlalchemy.dialects.mysql import LONGTEXT
 
 
 # I know str doesn't make sense for some of these columns, but the instruction
@@ -11,7 +12,7 @@ class Books(SQLModel, table=True):
     genre: str
     price: str
     quantity: str
-    summary: str | None = Field(default=None)
+    summary: str | None = Field(default=None, sa_column=Column(LONGTEXT))
 
 
 class Customers(SQLModel, table=True):
