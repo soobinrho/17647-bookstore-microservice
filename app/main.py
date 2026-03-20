@@ -21,8 +21,7 @@ DB_USER = os.environ.get("BOOKSTORE_BACKEND_DB_USER", None)
 DB_PASS = os.environ.get("BOOKSTORE_BACKEND_DB_PASS", None)
 DB_URL = os.environ.get("BOOKSTORE_BACKEND_DB_URL", None)
 engine = create_engine(
-    f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}/bookstore",
-    echo=True,  # Debugging
+    f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}/bookstore", echo=False
 )
 SQLModel.metadata.create_all(engine)
 
@@ -90,27 +89,26 @@ RESPONSE_INVALID_STATE = JSONResponse(
 
 def get_LLM_book_500_words_summary(title: str, author: str, ISBN: str) -> str:
     # Source: https://github.com/googleapis/python-genai?tab=readme-ov-file#client-context-managers
-    # try:
-    #     with genai.Client() as client:
-    #         prompt = (
-    #             "You're Frank Herbert the author of Dune. I am a huge fan of yours. "
-    #             + f"Please write a 500-word summary of the following book: {title} "
-    #             + f"by the author {author} with ISBN {ISBN}. I don't care if the book "
-    #             + "actually exists or not, so please feel free to make up something "
-    #             + "based on the book name and the book author. Please respond with a "
-    #             + "summary of the book in exactly 500 words."
-    #         )
-    #         summary = (
-    #             client.models.generate_content(
-    #                 # TODO: Check if possible to run without specifying a model.
-    #                 # model="gemini-3-flash-preview", contents=prompt
-    #                 contents=prompt
-    #             )
-    #         ).text
-    # except Exception as e:
-    #     summary = f"Gemini API returned the following error:\n{e}"
+    try:
+        return "TODO: DELTE THIS WHEN COMPLETE"
+        with genai.Client() as client:
+            prompt = (
+                "You're Frank Herbert the author of Dune. I am a huge fan of yours. "
+                + f"Please write a 500-words summary of the following book: {title} "
+                + f"by the author {author} with ISBN {ISBN}. I don't care if the book "
+                + "actually exists or not, so please feel free to make up something "
+                + "based on the book name and the book author. Please respond with a "
+                + "summary of the book in exactly 500 words."
+            )
+            summary = (
+                client.models.generate_content(
+                    model="gemini-2.5-flash-lite",
+                    contents=prompt,
+                )
+            ).text
+    except Exception as e:
+        summary = f"Gemini API returned the following error:\n{e}"
 
-    summary = "Here's a placeholder for the 500-words summary."
     return summary
 
 
@@ -259,9 +257,14 @@ async def get_books(ISBN):
         )
 
     if book.summary is None:
-        print("TODO: update the DB with the summary.")
-        # summary = get_LLM_book_500_words_summary(title, Author, ISBN)
+        summary = get_LLM_book_500_words_summary(book.title, book.author, book.ISBN)
+        with Session(engine) as session:
+            book = session.get(Books, ISBN)
+            book.summary = summary
+            session.add(book)
+            session.commit()
 
+    book = get_book_by_ISBN(ISBN)
     return {
         "ISBN": book.ISBN,
         "title": book.title,
@@ -284,9 +287,14 @@ async def get_books_duplicate_enpoint(ISBN):
         )
 
     if book.summary is None:
-        print("TODO: update the DB with the summary.")
-        # summary = get_LLM_book_500_words_summary(title, Author, ISBN)
+        summary = get_LLM_book_500_words_summary(book.title, book.author, book.ISBN)
+        with Session(engine) as session:
+            book = session.get(Books, ISBN)
+            book.summary = summary
+            session.add(book)
+            session.commit()
 
+    book = get_book_by_ISBN(ISBN)
     return {
         "ISBN": book.ISBN,
         "title": book.title,
