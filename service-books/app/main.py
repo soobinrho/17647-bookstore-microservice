@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status, Response, Request
+from fastapi import FastAPI, status, Response, Request, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlmodel import Session, SQLModel, create_engine, select
@@ -92,7 +92,6 @@ RESPONSE_INVALID_STATE = JSONResponse(
     },
 )
 
-
 def get_LLM_book_500_words_summary(title: str, author: str, ISBN: str) -> str:
     # Source: https://github.com/googleapis/python-genai?tab=readme-ov-file#client-context-managers
     try:
@@ -115,6 +114,17 @@ def get_LLM_book_500_words_summary(title: str, author: str, ISBN: str) -> str:
         summary = f"Gemini API returned the following error:\n{e}"
 
     return summary
+
+
+def background_task_generate_summary(title: str, author: str: ISBN: str):
+    book = get_book_by_ISBN(ISBN)
+    if book.summary is None:
+        summary = get_LLM_book_500_words_summary(book.title, book.author, book.ISBN)
+        with Session(engine) as session:
+            book_session = session.get(Books, ISBN)
+            book_session.summary = summary
+            session.add(book_session)
+            session.commit()
 
 
 def create_book(book: Books) -> None:
@@ -186,7 +196,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # Books
 # =====
 @app.post("/books", tags=["books"], status_code=status.HTTP_201_CREATED)
-async def post_books(book_request_body: BookRequestBody):
+async def post_books(book_request_body: BookRequestBody, background_tasks: BackgroundTasks):
     if not check_is_valid_price(book_request_body.price):
         return RESPONSE_INVALID_PRICE
 
@@ -210,6 +220,7 @@ async def post_books(book_request_body: BookRequestBody):
     )
     create_book(book)
     book = get_book_by_ISBN(book_request_body.ISBN)
+    background_tasks.add_task(background_task_generate_summary, book.title, book.author, book.ISBN)
     return {
         "ISBN": str(book.ISBN),
         "title": str(book.title),
@@ -275,14 +286,6 @@ async def get_books(ISBN):
             content={"message": "Retrieval failed. This ISBN does not exist."},
         )
 
-    if book.summary is None:
-        summary = get_LLM_book_500_words_summary(book.title, book.author, book.ISBN)
-        with Session(engine) as session:
-            book = session.get(Books, ISBN)
-            book.summary = summary
-            session.add(book)
-            session.commit()
-
     book = get_book_by_ISBN(ISBN)
     return {
         "ISBN": str(book.ISBN),
@@ -304,14 +307,6 @@ async def get_books_duplicate_enpoint(ISBN):
             status_code=status.HTTP_404_NOT_FOUND,
             content={"message": "Retrieval failed. This ISBN does not exist."},
         )
-
-    if book.summary is None:
-        summary = get_LLM_book_500_words_summary(book.title, book.author, book.ISBN)
-        with Session(engine) as session:
-            book = session.get(Books, ISBN)
-            book.summary = summary
-            session.add(book)
-            session.commit()
 
     book = get_book_by_ISBN(ISBN)
     return {
