@@ -1,5 +1,5 @@
 [project]
-name = "bookstore"
+name = "api-service-books"
 version = "0.1.0"
 description = "https://github.com/soobinrho/17647-bookstore-microservice"
 readme = "README.md"
