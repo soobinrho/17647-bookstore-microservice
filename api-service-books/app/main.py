@@ -116,7 +116,7 @@ def get_LLM_book_500_words_summary(title: str, author: str, ISBN: str) -> str:
     return summary
 
 
-def background_task_generate_summary(title: str, author: str: ISBN: str):
+def background_task_generate_summary(title: str, author: str, ISBN: str):
     book = get_book_by_ISBN(ISBN)
     if book.summary is None:
         summary = get_LLM_book_500_words_summary(book.title, book.author, book.ISBN)
