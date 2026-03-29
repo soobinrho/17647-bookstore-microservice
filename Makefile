@@ -96,16 +96,47 @@ prod-deploy-ec2-bookstore-d: ensure-env-file-exists prod-docker-reset
 prod-docker-reset:
 	docker ps --filter 'name=bookstore-' -aq | xargs docker stop | xargs docker rm
 
-test: ensure-env-file-exists
+test-desktop-books: ensure-env-file-exists
 	docker run --rm --detach --name dev-bookstore-bff-desktop \
 		-p 80:80\
 		--add-host host.docker.internal:host-gateway \
-		--env API_SERVICES_LOAD_BALANCER_URL="${API_SERVICES_LOAD_BALANCER_URL}" \
+		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-desktop:latest
-	docker run --rm --detach --name dev-bookstore-bff-mobile \
-		-p 81:81 \
+	docker run --rm --detach --name dev-bookstore-api-service-books \
+		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
-		--env API_SERVICES_LOAD_BALANCER_URL="${API_SERVICES_LOAD_BALANCER_URL}" \
+		--env DB_USER="${DB_USER}" \
+		--env DB_PASS="${DB_PASS}" \
+		--env DB_URL='host.docker.internal' \
+		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
+		soobinrho/17647-bookstore-api-service-books:latest
+	docker ps
+	echo 'Port 80: dev-bookstore-bff-desktop'
+	echo 'Port 3000: dev-bookstore-api-service-books'
+
+test-desktop-customers: ensure-env-file-exists
+	docker run --rm --detach --name dev-bookstore-bff-desktop \
+		-p 80:80\
+		--add-host host.docker.internal:host-gateway \
+		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
+		soobinrho/17647-bookstore-bff-desktop:latest
+	docker run --rm --detach --name dev-bookstore-api-service-customers \
+		-p 3000:3000 \
+		--add-host host.docker.internal:host-gateway \
+		--env DB_USER="${DB_USER}" \
+		--env DB_PASS="${DB_PASS}" \
+		--env DB_URL='host.docker.internal' \
+		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
+		soobinrho/17647-bookstore-api-service-customers:latest
+	docker ps
+	echo 'Port 80: dev-bookstore-bff-desktop'
+	echo 'Port 3000: dev-bookstore-api-service-customers'
+
+test-mobile-books: ensure-env-file-exists
+	docker run --rm --detach --name dev-bookstore-bff-mobile \
+		-p 80:80 \
+		--add-host host.docker.internal:host-gateway \
+		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-mobile:latest
 	docker run --rm --detach --name dev-bookstore-api-service-books \
 		-p 3000:3000 \
@@ -115,8 +146,18 @@ test: ensure-env-file-exists
 		--env DB_URL='host.docker.internal' \
 		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
 		soobinrho/17647-bookstore-api-service-books:latest
+	docker ps
+	echo 'Port 80: dev-bookstore-bff-mobile'
+	echo 'Port 3000: dev-bookstore-api-service-books'
+
+test-mobile-customers: ensure-env-file-exists
+	docker run --rm --detach --name dev-bookstore-bff-mobile \
+		-p 80:80 \
+		--add-host host.docker.internal:host-gateway \
+		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
+		soobinrho/17647-bookstore-bff-mobile:latest
 	docker run --rm --detach --name dev-bookstore-api-service-customers \
-		-p 3001:3001 \
+		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
 		--env DB_USER="${DB_USER}" \
 		--env DB_PASS="${DB_PASS}" \
@@ -124,10 +165,8 @@ test: ensure-env-file-exists
 		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
 		soobinrho/17647-bookstore-api-service-customers:latest
 	docker ps
-	echo 'Port 80: dev-bookstore-bff-desktop'
-	echo 'Port 81: dev-bookstore-bff-mobile'
-	echo 'Port 3000: dev-bookstore-api-service-books'
-	echo 'Port 3001: dev-bookstore-api-service-customers-'
+	echo 'Port 80: dev-bookstore-bff-mobile'
+	echo 'Port 3000: dev-bookstore-api-service-customers'
 
 test-create-db: ensure-env-file-exists
 	docker run --rm --detach --name dev-bookstore-main-db \
@@ -154,4 +193,4 @@ test-cleanup-including-db:
 ensure-env-file-exists:
 	test -s ./.env || { echo '[ERROR] .env file not found.'; exit 1; }
 
-.SILENT: prod-deploy-ec2-bookstore-a prod-deploy-ec2-bookstore-b prod-deploy-ec2-bookstore-c prod-deploy-ec2-bookstore-d test test-create-db cleanup test-cleanup test-cleanup-including-db ensure-env-file-exists
+.SILENT: prod-deploy-ec2-bookstore-a prod-deploy-ec2-bookstore-b prod-deploy-ec2-bookstore-c prod-deploy-ec2-bookstore-d test-desktop-books test-desktop-customers test-mobile-books test-mobile-customers test-create-db cleanup test-cleanup test-cleanup-including-db ensure-env-file-exists

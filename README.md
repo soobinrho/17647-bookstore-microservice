@@ -59,10 +59,27 @@ cp .env.example .env
 tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo
 
 # Run a containerized MariaDB for testing purposes along with all backend services.
-make build
-make test
+make test-create-db
 
-# Test by going to http://localhost:80 and then close all Docker containers.
+# Since both the BFF for desktop and for mobile are to be deployed on port 80,
+# test one BFF at a time. Likewise, both the books and customers data API services
+# need port 3000, so I tested one combination at a time.
+make build
+
+# Test from http://localhost/docs for all books API endpoints.
+make test-desktop-books
+make test-cleanup
+
+# Test from http://localhost/docs for all customers API endpoints.
+make test-desktop-customers
+make test-cleanup
+
+# Test from http://localhost/docs for all books API endpoints.
+make test-mobile-books
+make test-cleanup
+
+# Test from http://localhost/docs for all customers API endpoints.
+make test-mobile-customers
 make test-cleanup
 
 # ===========================================

@@ -1,8 +1,8 @@
-from contextlib import asynccontextmanager
+import json
+
 from fastapi import FastAPI, status, Response, Request
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from starlette.background import BackgroundTask
 from app.shared_library.models import (
     Books,
     Customers,
@@ -18,6 +18,7 @@ from app.shared_library.input_data_validations import (
 )
 import os
 import httpx
+import json
 
 
 # =========================================
@@ -58,13 +59,6 @@ tags_metadata = [
 ]
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Source: https://stackoverflow.com/a/74556972
-    async with httpx.AsyncClient(base_url=API_SERVICES_LOAD_BALANCER_URL) as client:
-        yield {"client": client}
-
-
 app = FastAPI(
     title="Bookstore BFF (Backend For Frontend) for Desktop",
     description=description,
@@ -73,13 +67,18 @@ app = FastAPI(
         "url": "https://github.com/soobinrho",
         "email": "soobinrho@gmail.com",
     },
-    lifespan=lifespan,
 )
 
 
 # ================
 # Helper Functions
 # ================
+RESPONSE_UNAUTHORIZED = JSONResponse(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    content={"message": "Please provide a valid JWT."},
+)
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     # By default, FastAPI returns 422. This function switches it to 400 because
@@ -97,52 +96,90 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # ==========
 @app.middleware("http")
 async def add_test(req: Request, call_next_api):
-    if "Authorization" not in req.headers:
-        print("Return the error")
+    req_path = req.url.path
+    if not req_path.startswith("/docs") and not req_path.startswith("/openapi.json"):
+        authorization = req.headers.get("Authorization", None)
+        if authorization is None or not check_is_valid_JWT(authorization):
+            # DEBUG
+            print("[INFO] NO VALID JWT DETECTED.")
+            # DEBUG
+            # return RESPONSE_UNAUTHORIZED
 
-    if not check_is_valid_JWT(req.headers["Authorization"]):
-        print("Return the error")
-
+    # DEBUG
+    print(f"[INFO] {API_SERVICES_LOAD_BALANCER_URL}")
     res = await call_next_api(req)
     return res
-
-
-async def _reverse_proxy(request: Request):
-    # Source: https://stackoverflow.com/a/74556972
-    client = request.state.client
-    url = httpx.URL(path=request.url.path, query=request.url.query.encode("utf-8"))
-    headers = [(k, v) for k, v in request.headers.raw if k != b"host"]
-    req = client.build_request(
-        request.method, url, headers=headers, content=request.stream()
-    )
-    r = await client.send(req, stream=True)
-    return StreamingResponse(
-        r.aiter_raw(),
-        status_code=r.status_code,
-        headers=r.headers,
-        background=BackgroundTask(r.aclose),
-    )
 
 
 # =====
 # Books
 # =====
-app.add_route("/books", _reverse_proxy, ["POST"])
-app.add_route("/books/{ISBN}", _reverse_proxy, ["GET", "PUT"])
-app.add_route("/books/isbn/{ISBN}", _reverse_proxy, ["GET"])
+@app.post("/books", tags=["books"], status_code=status.HTTP_201_CREATED)
+async def post_books(book_request_body: BookRequestBody):
+    async with httpx.AsyncClient() as client:
+        res = await client.post(
+            f"{API_SERVICES_LOAD_BALANCER_URL}/books",
+            json=json.loads(book_request_body.model_dump_json()),
+        )
+    return res.json()
+
+
+@app.put("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
+async def put_books(book_request_body: BookRequestBody, ISBN: str | int | float | bool):
+    async with httpx.AsyncClient() as client:
+        res = await client.put(
+            f"{API_SERVICES_LOAD_BALANCER_URL}/books/{ISBN}",
+            json=json.loads(book_request_body.model_dump_json()),
+        )
+    return res.json()
+
+
+@app.get("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
+async def get_books(ISBN):
+    async with httpx.AsyncClient() as client:
+        res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/books/{ISBN}")
+    return res.json()
+
+
+@app.get("/books/isbn/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
+async def get_books_duplicate_enpoint(ISBN):
+    async with httpx.AsyncClient() as client:
+        res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/books/isbn/{ISBN}")
+    return res.json()
+
 
 # =========
 # Customers
 # =========
-app.add_route("/customers", _reverse_proxy, ["GET", "POST"])
-app.add_route("/customers/{id}", _reverse_proxy, ["GET"])
+@app.post("/customers", tags=["customers"], status_code=status.HTTP_201_CREATED)
+async def post_customers(customer_request_body: CustomerRequestBody):
+    async with httpx.AsyncClient() as client:
+        res = await client.post(
+            f"{API_SERVICES_LOAD_BALANCER_URL}/customers",
+            json=json.loads(customer_request_body.model_dump_json()),
+        )
+    return res.json()
+
+
+@app.get("/customers/{id}", tags=["customers"], status_code=status.HTTP_200_OK)
+async def get_customers(id: int):
+    async with httpx.AsyncClient() as client:
+        res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/customers/{id}")
+    return res.json()
+
+
+@app.get("/customers", tags=["customers"], status_code=status.HTTP_200_OK)
+async def get_customers_by_userId(userId):
+    async with httpx.AsyncClient() as client:
+        res = await client.get(
+            f"{API_SERVICES_LOAD_BALANCER_URL}/customers", params={"userId": userId}
+        )
+    return res.json()
+
 
 # =============
 # Uncategorized
 # =============
-app.add_route("/status", _reverse_proxy, ["GET"])
-
-
 @app.get(
     "/status",
     tags=["uncategorized"],
