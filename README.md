@@ -109,19 +109,18 @@ CREATE DATABASE IF NOT EXISTS bookstore;
 
 <br>
 
-3. Start the Docker containers.
+3. Set up each EC2 instance.
 
 ```bash
+sudo dnf install -y make git
+git clone https://github.com/soobinrho/17647-bookstore-microservice
+cd 17647-bookstore-microservice
+
 # Populate the .env variables for credentials. This will be used by Makefile
 # to pass these credentials into the Docker containers.
 wget https://raw.githubusercontent.com/soobinrho/17647-bookstore-microservice/refs/heads/main/.env.example
 cp .env.example .env
 
-# Run in each EC2.
-sudo dnf install -y make git
-git clone https://github.com/soobinrho/17647-bookstore-microservice
-cd 17647-bookstore-microservice
-mv ../.env ./
 make prod-deploy-ec2-bookstore-a
 make prod-deploy-ec2-bookstore-b
 make prod-deploy-ec2-bookstore-c
