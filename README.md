@@ -84,58 +84,65 @@ make test-cleanup
 
 # Final cleanup.
 make test-cleanup-including-db
+```
 
-# ===========================================
-# How to containerize and push to Docker Hub.
-# ===========================================
+<br>
+
+### Prod Workflows
+
+```bash
+
+# =========================
+# How to deploy prod to AWS
+# =========================
+# Populate all required env variables.
+cp .env.example .env
+
+# Build Docker images and push to Docker Hub. In my case,
+# they were pushed to https://hub.docker.com/repositories/soobinrho
 make build
 make push
-```
 
-<br>
+# To create the required database on the AWS Aurora cluster,
+# SSH in to any of the EC2 instances.
+chmod 400 -i ./key.pem ec2-user@<SNIP>
+sudo dnf install -y mariadb105-server
 
-### AWS EC2 & Aurora MySQL Setup
+# Create `bookstore` database. Note that this Aurora cluster is configured with two MySQL servers: one that does all the writing and another that does all of the readings.
+mysql -h bookstore-db.cluster-<SNIP>.us-east-1.rds.amazonaws.com -u bookstore -p'<SNIP>' -e 'CREATE DATABASE IF NOT EXISTS bookstore;'
 
-1. SSH into EC2's and connect to the database cluster.
-
-```bash
-mysql -h bookstore-db-dev.cluster-cv4ayms4g8af.us-east-1.rds.amazonaws.com -P 3306 -u bookstore -p'<SNIP>'
-```
-
-<br>
-
-2. Create `bookstore` database. Note that this Aurora cluster is configured with two MySQL servers: one that does all the writing and another that does all of the readings.
-
-```sql
-CREATE DATABASE IF NOT EXISTS bookstore;
-```
-
-<br>
-
-3. Set up each EC2 instance.
-
-```bash
+# Go to each of the EC2 instances and run the API services and BFF's.
 sudo dnf install -y make git
 git clone https://github.com/soobinrho/17647-bookstore-microservice
 cd 17647-bookstore-microservice
-
-# Populate the .env variables for credentials. This will be used by Makefile
-# to pass these credentials into the Docker containers.
 wget https://raw.githubusercontent.com/soobinrho/17647-bookstore-microservice/refs/heads/main/.env.example
 cp .env.example .env
-
 make prod-deploy-ec2-bookstore-a
 make prod-deploy-ec2-bookstore-b
 make prod-deploy-ec2-bookstore-c
 make prod-deploy-ec2-bookstore-d
 
-# What I found myself using a lot for debugging.
+# ===================
+# Debugging Workflows
+# ===================
 docker logs -f bookstore-bff-mobile
+docker logs -f bookstore-bff-desktop
+docker logs -f bookstore-api-service-books
+docker logs -f bookstore-api-service-customers
+docker exec -it <CONTAINER_NAME> bash
+
+# ============
+# Redeployment
+# ============
+# Whenever a new update has been made to the source code,
+# build and push the container images.
+make build
+make push
+
+# On EC2's, deploy the new images.
+make prod-docker-reset
+make prod-deploy-ec2-bookstore-{a\|b\|c\|d}
 ```
-
-<br>
-
-4. http://bookstore-ALB-1584088743.us-east-1.elb.amazonaws.com:3000/docs
 
 <br>
 
