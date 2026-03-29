@@ -12,8 +12,8 @@ A bookstore backend built in the microservice architecture.
 | --------------- | ----------- |
 | **API Services** | Python FastAPI deployed on multiple AWS EC2 instances for passive redundancy. |
 | **Database** | MySQL deployed on AWS Aurora MySQL instances. |
-| **BFF (Backends For Frontends)** | BFF's for desktop and mobile deployed as FastAPI servers AWS EC2 instances. AWS load balancer routes traffic based on HTTP header `X-Client-Type: {Web\|iOS\|Android}`. |
-| **LLM for Book Summary Generation** | External API calls to Gemini. |
+| **BFF (Backends For Frontends)** | BFF's for desktop and mobile deployed as FastAPI servers on AWS EC2 instances on multiple regions. AWS load balancer routes traffic based on HTTP header `X-Client-Type: {Web\|iOS\|Android}`. |
+| **LLM for Book Summary Generation** | External API calls to Gemini using their generous free tier for `gemini-2.5-flash-lite`. |
 
 <br>
 
@@ -66,21 +66,24 @@ make test-create-db
 # need port 3000, so I tested one combination at a time.
 make build
 
-# Test from http://localhost/docs for all books API endpoints.
+# Test from http://localhost/docs for all books API endpoints /w desktop BFF.
 make test-desktop-books
 make test-cleanup
 
-# Test from http://localhost/docs for all customers API endpoints.
+# Test from http://localhost/docs for all customers API endpoints /w desktop BFF.
 make test-desktop-customers
 make test-cleanup
 
-# Test from http://localhost/docs for all books API endpoints.
+# Test from http://localhost/docs for all books API endpoints /w mobile BFF.
 make test-mobile-books
 make test-cleanup
 
-# Test from http://localhost/docs for all customers API endpoints.
+# Test from http://localhost/docs for all customers API endpoints /w mobile BFF.
 make test-mobile-customers
 make test-cleanup
+
+# Final cleanup.
+make test-cleanup-including-db
 
 # ===========================================
 # How to containerize and push to Docker Hub.
