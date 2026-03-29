@@ -17,6 +17,16 @@ from app.shared_library.input_data_validations import (
 import os
 
 
+# =========================================
+# API Services Load Balancer Configurations
+# =========================================
+API_SERVICES_LOAD_BALANCER_URL = os.environ.get("API_SERVICES_LOAD_BALANCER_URL", None)
+if API_SERVICES_LOAD_BALANCER_URL is None:
+    raise Exception(
+        "[ERROR] Required credentials were not found in the environment variables"
+    )
+
+
 # ============================================
 # FastAPI Automatic API Documentation Metadata
 # ============================================
