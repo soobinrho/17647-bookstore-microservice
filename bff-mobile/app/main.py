@@ -130,14 +130,16 @@ async def put_books(book_request_body: BookRequestBody, ISBN: str | int | float 
 async def get_books(ISBN):
     async with httpx.AsyncClient() as client:
         res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/books/{ISBN}")
-    return res.json()
+    res = str(res.json()).replace("non-fiction", "3")
+    return res
 
 
 @app.get("/books/isbn/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_books_duplicate_enpoint(ISBN):
     async with httpx.AsyncClient() as client:
         res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/books/isbn/{ISBN}")
-    return res.json()
+    res = str(res.json()).replace("non-fiction", "3")
+    return res
 
 
 # =========
@@ -157,7 +159,12 @@ async def post_customers(customer_request_body: CustomerRequestBody):
 async def get_customers(id: int):
     async with httpx.AsyncClient() as client:
         res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/customers/{id}")
-    return res.json()
+    res = res.json()
+    LIST_DELETE_ATTRIBUTES = ["address", "address2", "city", "state", "zipcode"]
+    for del_attribute in LIST_DELETE_ATTRIBUTES:
+        if del_attribute in res:
+            del res[del_attribute]
+    return res
 
 
 @app.get("/customers", tags=["customers"], status_code=status.HTTP_200_OK)
@@ -166,7 +173,12 @@ async def get_customers_by_userId(userId):
         res = await client.get(
             f"{API_SERVICES_LOAD_BALANCER_URL}/customers", params={"userId": userId}
         )
-    return res.json()
+    res = res.json()
+    LIST_DELETE_ATTRIBUTES = ["address", "address2", "city", "state", "zipcode"]
+    for del_attribute in LIST_DELETE_ATTRIBUTES:
+        if del_attribute in res:
+            del res[del_attribute]
+    return res
 
 
 # =============
