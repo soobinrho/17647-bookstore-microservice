@@ -1,20 +1,12 @@
-import json
-
 from fastapi import FastAPI, status, Response, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from app.shared_library.models import (
-    Books,
-    Customers,
     BookRequestBody,
     CustomerRequestBody,
 )
 from app.shared_library.input_data_validations import (
     check_is_valid_JWT,
-    check_is_valid_price,
-    check_is_valid_email,
-    check_is_valid_quantity,
-    check_is_valid_state_abbr,
 )
 import os
 import httpx
@@ -36,7 +28,7 @@ if API_SERVICES_LOAD_BALANCER_URL is None:
 # ============================================
 # Reference: https://fastapi.tiangolo.com/tutorial/metadata/
 description = """
-## Bookstore BFF (Backend For Frontend) for Desktop
+## Bookstore BFF (Backend For Frontend) for Mobile
 
 Reference: https://github.com/soobinrho/17647-bookstore-microservice
 
@@ -46,11 +38,11 @@ Reference: https://github.com/soobinrho/17647-bookstore-microservice
 tags_metadata = [
     {
         "name": "books",
-        "description": "Desktop BFF for the API service for books data.",
+        "description": "Mobile BFF for the API service for books data.",
     },
     {
         "name": "customers",
-        "description": "Desktop BFF for the API service for customers data.",
+        "description": "Mobile BFF for the API service for customers data.",
     },
     {
         "name": "uncategorized",
@@ -60,7 +52,7 @@ tags_metadata = [
 
 
 app = FastAPI(
-    title="Bookstore BFF (Backend For Frontend) for Desktop",
+    title="Bookstore BFF (Backend For Frontend) for Mobile",
     description=description,
     contact={
         "name": "Soobin Rho",

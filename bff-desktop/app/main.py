@@ -1,20 +1,12 @@
-import json
-
 from fastapi import FastAPI, status, Response, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from app.shared_library.models import (
-    Books,
-    Customers,
     BookRequestBody,
     CustomerRequestBody,
 )
 from app.shared_library.input_data_validations import (
     check_is_valid_JWT,
-    check_is_valid_price,
-    check_is_valid_email,
-    check_is_valid_quantity,
-    check_is_valid_state_abbr,
 )
 import os
 import httpx
@@ -100,13 +92,8 @@ async def add_test(req: Request, call_next_api):
     if not req_path.startswith("/docs") and not req_path.startswith("/openapi.json"):
         authorization = req.headers.get("Authorization", None)
         if authorization is None or not check_is_valid_JWT(authorization):
-            # DEBUG
-            print("[INFO] NO VALID JWT DETECTED.")
-            # DEBUG
-            # return RESPONSE_UNAUTHORIZED
+            return RESPONSE_UNAUTHORIZED
 
-    # DEBUG
-    print(f"[INFO] {API_SERVICES_LOAD_BALANCER_URL}")
     res = await call_next_api(req)
     return res
 
