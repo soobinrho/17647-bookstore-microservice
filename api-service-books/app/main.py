@@ -3,7 +3,6 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlmodel import Session, SQLModel, create_engine
 from google import genai
-from dotenv import load_dotenv, find_dotenv
 from app.shared_library.models import (
     Books,
     BookRequestBody,
@@ -18,10 +17,9 @@ import os
 # ======================
 # Database Configuration
 # ======================
-load_dotenv(find_dotenv())
-DB_USER = os.environ.get("BOOKSTORE_BACKEND_DB_USER", None)
-DB_PASS = os.environ.get("BOOKSTORE_BACKEND_DB_PASS", None)
-DB_URL = os.environ.get("BOOKSTORE_BACKEND_DB_URL", None)
+DB_USER = os.environ.get("DB_USER", None)
+DB_PASS = os.environ.get("DB_PASS", None)
+DB_URL = os.environ.get("DB_URL", None)
 if DB_USER is None or DB_PASS is None or DB_URL is None:
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"
