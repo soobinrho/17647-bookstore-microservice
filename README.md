@@ -40,6 +40,9 @@ A bookstore backend built in the microservice architecture.
 git clone https://github.com/soobinrho/17647-bookstore-microservice.git
 git submodule update --init --recursive
 
+# If I make any change to the shared-library repo:
+git pull --recurse-submodules
+
 # I personally use VS Code with Ruff extension:
 #   https://github.com/astral-sh/ruff-vscode
 
