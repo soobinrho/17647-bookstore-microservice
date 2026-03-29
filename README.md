@@ -37,6 +37,9 @@ A bookstore backend built in the microservice architecture.
 # ========================
 # How to run a dev server.
 # ========================
+git clone https://github.com/soobinrho/17647-bookstore-microservice.git
+git submodule update --init --recursive
+
 # I personally use VS Code with Ruff extension:
 #   https://github.com/astral-sh/ruff-vscode
 
