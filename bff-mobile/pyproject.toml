@@ -1,5 +1,5 @@
 [project]
-name = "bff-desktop"
+name = "bff-mobile"
 version = "0.1.0"
 description = "https://github.com/soobinrho/17647-bookstore-microservice"
 readme = "README.md"
