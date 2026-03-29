@@ -102,27 +102,33 @@ async def middleware_main(req: Request, call_next_api):
 # Books
 # =====
 @app.post("/books", tags=["books"], status_code=status.HTTP_201_CREATED)
-async def post_books(book_request_body: BookRequestBody):
+async def post_books(book_request_body: BookRequestBody, response: Response):
     async with httpx.AsyncClient() as client:
         res = await client.post(
             f"{API_SERVICES_LOAD_BALANCER_URL}/books",
             json=json.loads(book_request_body.model_dump_json()),
         )
+    response.status_code = res.status_code
     return res.json()
 
 
 @app.put("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
-async def put_books(book_request_body: BookRequestBody, ISBN: str | int | float | bool):
+async def put_books(
+    book_request_body: BookRequestBody,
+    ISBN: str | int | float | bool,
+    response: Response,
+):
     async with httpx.AsyncClient() as client:
         res = await client.put(
             f"{API_SERVICES_LOAD_BALANCER_URL}/books/{ISBN}",
             json=json.loads(book_request_body.model_dump_json()),
         )
+    response.status_code = res.status_code
     return res.json()
 
 
 @app.get("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
-async def get_books(ISBN):
+async def get_books(ISBN, response: Response):
     async with httpx.AsyncClient() as client:
         res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/books/{ISBN}")
     res = str(res.json()).replace("non-fiction", "3")
@@ -130,9 +136,10 @@ async def get_books(ISBN):
 
 
 @app.get("/books/isbn/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
-async def get_books_duplicate_enpoint(ISBN):
+async def get_books_duplicate_enpoint(ISBN, response: Response):
     async with httpx.AsyncClient() as client:
         res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/books/isbn/{ISBN}")
+    response.status_code = res.status_code
     res = str(res.json()).replace("non-fiction", "3")
     return res
 
@@ -141,19 +148,23 @@ async def get_books_duplicate_enpoint(ISBN):
 # Customers
 # =========
 @app.post("/customers", tags=["customers"], status_code=status.HTTP_201_CREATED)
-async def post_customers(customer_request_body: CustomerRequestBody):
+async def post_customers(
+    customer_request_body: CustomerRequestBody, response: Response
+):
     async with httpx.AsyncClient() as client:
         res = await client.post(
             f"{API_SERVICES_LOAD_BALANCER_URL}/customers",
             json=json.loads(customer_request_body.model_dump_json()),
         )
+    response.status_code = res.status_code
     return res.json()
 
 
 @app.get("/customers/{id}", tags=["customers"], status_code=status.HTTP_200_OK)
-async def get_customers(id: int):
+async def get_customers(id: int, response: Response):
     async with httpx.AsyncClient() as client:
         res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/customers/{id}")
+    response.status_code = res.status_code
     res = res.json()
     LIST_DELETE_ATTRIBUTES = ["address", "address2", "city", "state", "zipcode"]
     for del_attribute in LIST_DELETE_ATTRIBUTES:
@@ -163,11 +174,12 @@ async def get_customers(id: int):
 
 
 @app.get("/customers", tags=["customers"], status_code=status.HTTP_200_OK)
-async def get_customers_by_userId(userId):
+async def get_customers_by_userId(userId, response: Response):
     async with httpx.AsyncClient() as client:
         res = await client.get(
             f"{API_SERVICES_LOAD_BALANCER_URL}/customers", params={"userId": userId}
         )
+    response.status_code = res.status_code
     res = res.json()
     LIST_DELETE_ATTRIBUTES = ["address", "address2", "city", "state", "zipcode"]
     for del_attribute in LIST_DELETE_ATTRIBUTES:
