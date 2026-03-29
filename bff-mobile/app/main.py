@@ -87,18 +87,13 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # Middleware
 # ==========
 @app.middleware("http")
-async def add_test(req: Request, call_next_api):
+async def middleware_main(req: Request, call_next_api):
     req_path = req.url.path
     if not req_path.startswith("/docs") and not req_path.startswith("/openapi.json"):
         authorization = req.headers.get("Authorization", None)
         if authorization is None or not check_is_valid_JWT(authorization):
-            # DEBUG
-            print("[INFO] NO VALID JWT DETECTED.")
-            # DEBUG
-            # return RESPONSE_UNAUTHORIZED
+            return RESPONSE_UNAUTHORIZED
 
-    # DEBUG
-    print(f"[INFO] {API_SERVICES_LOAD_BALANCER_URL}")
     res = await call_next_api(req)
     return res
 
