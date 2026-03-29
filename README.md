@@ -125,6 +125,9 @@ make prod-deploy-ec2-bookstore-a
 make prod-deploy-ec2-bookstore-b
 make prod-deploy-ec2-bookstore-c
 make prod-deploy-ec2-bookstore-d
+
+# What I found myself using a lot for debugging.
+docker logs -f bookstore-bff-mobile
 ```
 
 <br>
