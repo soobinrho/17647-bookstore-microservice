@@ -224,8 +224,11 @@ async def put_books(book_request_body: BookRequestBody, ISBN: str | int | float 
 
     # This is required because of a very particular test case in autograde:
     #   Test Failed: '3' != 3 : Get book (mobile) [GET /books/{ISBN}]: field 'genre' expected 3 (genre must be 3 for mobile), got '3'.
-    genre = float(book.genre) if str(book.genre).isnumeric() else str(book.genre)
-    genre = int(genre) if genre.is_integer() else float(book.genre)
+    genre = str(book.genre)
+    if genre.isnumeric():
+        genre = float(genre)
+        if genre.is_integer():
+            genre = int(genre)
     return {
         "ISBN": str(book.ISBN),
         "title": str(book.title),
@@ -247,8 +250,11 @@ async def get_books(ISBN):
         )
 
     book = get_book_by_ISBN(ISBN)
-    genre = float(book.genre) if str(book.genre).isnumeric() else str(book.genre)
-    genre = int(genre) if genre.is_integer() else float(book.genre)
+    genre = str(book.genre)
+    if genre.isnumeric():
+        genre = float(genre)
+        if genre.is_integer():
+            genre = int(genre)
     return {
         "ISBN": str(book.ISBN),
         "title": str(book.title),
@@ -271,8 +277,11 @@ async def get_books_duplicate_enpoint(ISBN):
         )
 
     book = get_book_by_ISBN(ISBN)
-    genre = float(book.genre) if str(book.genre).isnumeric() else str(book.genre)
-    genre = int(genre) if genre.is_integer() else float(book.genre)
+    genre = str(book.genre)
+    if genre.isnumeric():
+        genre = float(genre)
+        if genre.is_integer():
+            genre = int(genre)
     return {
         "ISBN": str(book.ISBN),
         "title": str(book.title),
