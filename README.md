@@ -97,7 +97,7 @@ CREATE DATABASE IF NOT EXISTS bookstore;
 
 ```bash
 docker pull soobinrho/17647-bookstore-api-service:latest
-docker run --detach --name bookstore-main-api -p 80:80 --add-host host.docker.internal:host-gateway --env BOOKSTORE_BACKEND_DB_USER='bookstore' --env BOOKSTORE_BACKEND_DB_PASS='<SNIP>' --env BOOKSTORE_BACKEND_DB_URL='bookstore-db-dev.cluster-cv4ayms4g8af.us-east-1.rds.amazonaws.com' --env GEMINI_API_KEY='<SNIP>' soobinrho/17647-bookstore-api-service:latest
+docker run --detach --name bookstore-main-api -p 80:80 --env BOOKSTORE_BACKEND_DB_USER='bookstore' --env BOOKSTORE_BACKEND_DB_PASS='<SNIP>' --env BOOKSTORE_BACKEND_DB_URL='bookstore-db-dev.cluster-cv4ayms4g8af.us-east-1.rds.amazonaws.com' --env GEMINI_API_KEY='<SNIP>' soobinrho/17647-bookstore-api-service:latest
 ```
 
 <br>
