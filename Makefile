@@ -1,36 +1,37 @@
 #!make
 include .env
 export
+GIT_HASH := $(shell git rev-parse --short HEAD)
 
 all:	build push
 
 build:
 	cd ./api-service-books/ && \
 		docker build -t soobinrho/17647-bookstore-api-service-books:latest \
-		-t soobinrho/17647-bookstore-api-service-books:$(git rev-parse --short HEAD) .
+		-t soobinrho/17647-bookstore-api-service-books:$(GIT_HASH) .
 	cd ./api-service-customers/ && \
 		docker build -t soobinrho/17647-bookstore-api-service-customers:latest \
-		-t soobinrho/17647-bookstore-api-service-customers:$(git rev-parse --short HEAD) .
+		-t soobinrho/17647-bookstore-api-service-customers:$(GIT_HASH) .
 	cd ./bff-desktop/ && \
 		docker build -t soobinrho/17647-bookstore-bff-desktop:latest \
-		-t soobinrho/17647-bookstore-bff-desktop:$(git rev-parse --short HEAD) .
+		-t soobinrho/17647-bookstore-bff-desktop:$(GIT_HASH) .
 	cd ./bff-mobile/ && \
 		docker build -t soobinrho/17647-bookstore-bff-mobile:latest \
-		-t soobinrho/17647-bookstore-bff-mobile:$(git rev-parse --short HEAD) .
+		-t soobinrho/17647-bookstore-bff-mobile:$(GIT_HASH) .
 
 push:
 	cd ./api-service-books/ && \
 		docker push soobinrho/17647-bookstore-api-service-books:latest && \
-		docker push soobinrho/17647-bookstore-api-service-books:$(git rev-parse --short HEAD)
+		docker push soobinrho/17647-bookstore-api-service-books:$(GIT_HASH)
 	cd ./api-service-customers/ && \
 		docker push soobinrho/17647-bookstore-api-service-customers:latest && \
-		docker push soobinrho/17647-bookstore-api-service-customers:$(git rev-parse --short HEAD)
+		docker push soobinrho/17647-bookstore-api-service-customers:$(GIT_HASH)
 	cd ./bff-desktop && \
 		docker push soobinrho/17647-bookstore-bff-desktop:latest && \
-		docker push soobinrho/17647-bookstore-bff-desktop:$(git rev-parse --short HEAD)
+		docker push soobinrho/17647-bookstore-bff-desktop:$(GIT_HASH)
 	cd ./bff-mobile && \
 		docker push soobinrho/17647-bookstore-bff-mobile:latest && \
- 		docker push soobinrho/17647-bookstore-bff-mobile:$(git rev-parse --short HEAD)
+ 		docker push soobinrho/17647-bookstore-bff-mobile:$(GIT_HASH)
 
 prod-deploy-ec2-bookstore-a: ensure-env-file-exists prod-docker-reset
 	docker pull soobinrho/17647-bookstore-bff-desktop:latest
