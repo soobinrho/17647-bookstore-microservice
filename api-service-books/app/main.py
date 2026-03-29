@@ -21,6 +21,10 @@ load_dotenv(find_dotenv())
 DB_USER = os.environ.get("BOOKSTORE_BACKEND_DB_USER", None)
 DB_PASS = os.environ.get("BOOKSTORE_BACKEND_DB_PASS", None)
 DB_URL = os.environ.get("BOOKSTORE_BACKEND_DB_URL", None)
+if DB_USER is None or DB_PASS is None or DB_URL is None:
+    raise Exception(
+        "[ERROR] Required credentials were not found in the environment variables"
+    )
 engine = create_engine(
     f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}/bookstore", echo=False
 )
@@ -91,6 +95,7 @@ RESPONSE_INVALID_STATE = JSONResponse(
         "message": "Invalid state. It must be a valid 2-letter U.S. state abbreviation."
     },
 )
+
 
 def get_LLM_book_500_words_summary(title: str, author: str, ISBN: str) -> str:
     # Source: https://github.com/googleapis/python-genai?tab=readme-ov-file#client-context-managers
@@ -196,7 +201,9 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # Books
 # =====
 @app.post("/books", tags=["books"], status_code=status.HTTP_201_CREATED)
-async def post_books(book_request_body: BookRequestBody, background_tasks: BackgroundTasks):
+async def post_books(
+    book_request_body: BookRequestBody, background_tasks: BackgroundTasks
+):
     if not check_is_valid_price(book_request_body.price):
         return RESPONSE_INVALID_PRICE
 
@@ -220,7 +227,9 @@ async def post_books(book_request_body: BookRequestBody, background_tasks: Backg
     )
     create_book(book)
     book = get_book_by_ISBN(book_request_body.ISBN)
-    background_tasks.add_task(background_task_generate_summary, book.title, book.author, book.ISBN)
+    background_tasks.add_task(
+        background_task_generate_summary, book.title, book.author, book.ISBN
+    )
     return {
         "ISBN": str(book.ISBN),
         "title": str(book.title),
