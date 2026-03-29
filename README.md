@@ -42,6 +42,7 @@ A bookstore backend built in the microservice architecture.
 # ========================
 git clone https://github.com/soobinrho/17647-bookstore-microservice.git
 git submodule update --init --recursive
+usermoad -aG docker $USER
 
 # If I make any change to the shared-library repo:
 git submodule update --remote
@@ -57,26 +58,18 @@ uv sync
 cp .env.example .env
 tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo
 
-# Run a containerized MariaDB. Note that the final assignment deploys AWS Aurora MySQL.
-# So, these MariaDB containers are used just for development purposes.
-usermoad -aG docker $USER
-docker run --rm --detach --name dev-bookstore-main-db -p 3306:3306 --add-host host.docker.internal:host-gateway --env MARIADB_RANDOM_ROOT_PASSWORD='True' --env MARIADB_USER='bookstore' --env MARIADB_PASSWORD='<SNIP>' --env MARIADB_DATABASE='bookstore' mariadb:latest
+# Run a containerized MariaDB for testing purposes along with all backend services.
+make build
+make test
 
-# Finally, run a dev server.
-uv run fastapi dev
+# Test by going to http://localhost:80 and then close all Docker containers.
+make test-cleanup
 
-# ====================
-# How to containerize.
-# ====================
-docker build -t soobinrho/17647-bookstore-api-service:latest -t soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD) .
-
-# Test. The API service should now be able to call the MariaDB service.
-docker run --rm --detach --name dev-bookstore-main-db -p 3306:3306 --add-host host.docker.internal:host-gateway --env MARIADB_RANDOM_ROOT_PASSWORD='True' --env MARIADB_USER='bookstore' --env MARIADB_PASSWORD='<SNIP>' --env MARIADB_DATABASE='bookstore' mariadb:latest
-docker run --rm --name dev-bookstore-main-api -p 80:80 --add-host host.docker.internal:host-gateway --env BOOKSTORE_BACKEND_DB_USER='bookstore' --env BOOKSTORE_BACKEND_DB_PASS='<SNIP>' --env BOOKSTORE_BACKEND_DB_URL='host.docker.internal' --env GEMINI_API_KEY='<SNIP>' soobinrho/17647-bookstore-api-service:latest
-
-# Publish to Docker Hub.
-docker push soobinrho/17647-bookstore-api-service:$(git rev-parse --short HEAD)
-docker push soobinrho/17647-bookstore-api-service:latest
+# ===========================================
+# How to containerize and push to Docker Hub.
+# ===========================================
+make build
+make push
 ```
 
 <br>
@@ -99,16 +92,27 @@ CREATE DATABASE IF NOT EXISTS bookstore;
 
 <br>
 
-3. Start the container. Run it in both of the EC2 instances.
+3. Start the Docker containers.
 
 ```bash
-docker pull soobinrho/17647-bookstore-api-service:latest
-docker run --detach --name bookstore-main-api -p 80:80 --env BOOKSTORE_BACKEND_DB_USER='bookstore' --env BOOKSTORE_BACKEND_DB_PASS='<SNIP>' --env BOOKSTORE_BACKEND_DB_URL='bookstore-db-dev.cluster-cv4ayms4g8af.us-east-1.rds.amazonaws.com' --env GEMINI_API_KEY='<SNIP>' soobinrho/17647-bookstore-api-service:latest
+# Get the deployment code.
+wget https://raw.githubusercontent.com/soobinrho/17647-bookstore-microservice/refs/heads/main/Makefile
+
+# Populate the .env variables for credentials. This will be used by Makefile
+# to pass these credentials into the Docker containers.
+wget https://raw.githubusercontent.com/soobinrho/17647-bookstore-microservice/refs/heads/main/.env.example
+cp .env.example .env
+
+# Run in each EC2.
+make prod-deploy-ec2-bookstore-a
+make prod-deploy-ec2-bookstore-b
+make prod-deploy-ec2-bookstore-c
+make prod-deploy-ec2-bookstore-d
 ```
 
 <br>
 
-4. http://bookstore-ALB-1584088743.us-east-1.elb.amazonaws.com:80/docs
+4. http://bookstore-ALB-1584088743.us-east-1.elb.amazonaws.com:3000/docs
 
 <br>
 
