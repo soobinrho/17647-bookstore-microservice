@@ -41,7 +41,7 @@ git clone https://github.com/soobinrho/17647-bookstore-microservice.git
 git submodule update --init --recursive
 
 # If I make any change to the shared-library repo:
-git pull --recurse-submodules
+git submodule update --remote
 
 # Install uv: Python package manager.
 # Reference: https://docs.astral.sh/uv/getting-started/installation/
