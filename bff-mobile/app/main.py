@@ -1,6 +1,7 @@
 from fastapi import FastAPI, status, Response, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from sqlalchemy import JSON
 from app.shared_library.models import (
     BookRequestBody,
     CustomerRequestBody,
@@ -135,7 +136,8 @@ async def put_books(
 async def get_books(ISBN, response: Response):
     async with httpx.AsyncClient() as client:
         res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/books/{ISBN}")
-    res = str(res.json()).replace("non-fiction", "3")
+    res = res.json()
+    res = json.loads(json.dumps(res).replace("non-fiction", "3"))
     return res
 
 
@@ -144,7 +146,8 @@ async def get_books_duplicate_enpoint(ISBN, response: Response):
     async with httpx.AsyncClient() as client:
         res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/books/isbn/{ISBN}")
     response.status_code = res.status_code
-    res = str(res.json()).replace("non-fiction", "3")
+    res = res.json()
+    res = json.loads(json.dumps(res).replace("non-fiction", "3"))
     return res
 
 
