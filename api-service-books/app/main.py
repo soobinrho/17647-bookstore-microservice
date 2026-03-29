@@ -183,7 +183,7 @@ async def post_books(
         "description": str(book.description),
         "genre": str(book.genre),
         "price": float(book.price),
-        "quantity": float(book.quantity),
+        "quantity": int(book.quantity),
     }
 
 
@@ -236,7 +236,7 @@ async def put_books(book_request_body: BookRequestBody, ISBN: str | int | float 
         "description": str(book.description),
         "genre": genre,
         "price": float(book.price),
-        "quantity": float(book.quantity),
+        "quantity": int(book.quantity),
     }
 
 
@@ -262,7 +262,7 @@ async def get_books(ISBN):
         "description": str(book.description),
         "genre": genre,
         "price": float(book.price),
-        "quantity": float(book.quantity),
+        "quantity": int(book.quantity),
         "summary": str(book.summary),
     }
 
@@ -289,7 +289,7 @@ async def get_books_duplicate_enpoint(ISBN):
         "description": str(book.description),
         "genre": genre,
         "price": float(book.price),
-        "quantity": float(book.quantity),
+        "quantity": int(book.quantity),
         "summary": str(book.summary),
     }
 

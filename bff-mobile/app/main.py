@@ -130,7 +130,7 @@ async def put_books(
         )
     response.status_code = res.status_code
     res = res.json()
-    res = json.loads(json.dumps(res).replace("non-fiction", "3").replace("'3'", "3"))
+    res = json.loads(json.dumps(res).replace("'3'", "3").replace('"3"', "3"))
     return res
 
 
@@ -157,7 +157,11 @@ async def get_books_duplicate_enpoint(ISBN, response: Response):
         res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/books/isbn/{ISBN}")
     response.status_code = res.status_code
     res = res.json()
-    res = json.loads(json.dumps(res).replace("non-fiction", "3")).replace("'3'", "3")
+    res = (
+        json.loads(json.dumps(res).replace("non-fiction", "3"))
+        .replace("'3'", "3")
+        .replace('"3"', "3")
+    )
     return res
 
 
