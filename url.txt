@@ -1,1 +1,1 @@
-http://bookstore-ALB-1584088743.us-east-1.elb.amazonaws.com:80
+http://vpc-bookstore-ExternalALB-1139099253.us-east-1.elb.amazonaws.com:80
