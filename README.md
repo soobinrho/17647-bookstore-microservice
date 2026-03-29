@@ -95,15 +95,13 @@ CREATE DATABASE IF NOT EXISTS bookstore;
 3. Start the Docker containers.
 
 ```bash
-# Get the deployment code.
-wget https://raw.githubusercontent.com/soobinrho/17647-bookstore-microservice/refs/heads/main/Makefile
-
 # Populate the .env variables for credentials. This will be used by Makefile
 # to pass these credentials into the Docker containers.
 wget https://raw.githubusercontent.com/soobinrho/17647-bookstore-microservice/refs/heads/main/.env.example
 cp .env.example .env
 
 # Run in each EC2.
+wget https://raw.githubusercontent.com/soobinrho/17647-bookstore-microservice/refs/heads/main/Makefile
 make prod-deploy-ec2-bookstore-a
 make prod-deploy-ec2-bookstore-b
 make prod-deploy-ec2-bookstore-c
