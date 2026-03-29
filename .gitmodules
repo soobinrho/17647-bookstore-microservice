@@ -1,0 +1,12 @@
+[submodule "api-service-books/app/shared_library"]
+	path = api-service-books/app/shared_library
+	url = https://github.com/soobinrho/17647-bookstore-shared-library
+[submodule "api-service-customers/app/shared_library"]
+	path = api-service-customers/app/shared_library
+	url = https://github.com/soobinrho/17647-bookstore-shared-library
+[submodule "bff-main/app/shared_library"]
+	path = bff-main/app/shared_library
+	url = https://github.com/soobinrho/17647-bookstore-shared-library
+[submodule "bff-mobile/app/shared_library"]
+	path = bff-mobile/app/shared_library
+	url = https://github.com/soobinrho/17647-bookstore-shared-library
