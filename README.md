@@ -2,6 +2,8 @@
 
 `17647-D4 | 2026 | Professor Paulo Merson | Soobin Rho`
 
+> GitHub: https://github.com/soobinrho/17647-bookstore-microservice
+
 <br>
 
 A bookstore backend built in the microservice architecture.
