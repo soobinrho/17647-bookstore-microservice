@@ -1,20 +1,16 @@
 from fastapi import FastAPI, status, Response, Request, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel import Session, SQLModel, create_engine
 from google import genai
 from dotenv import load_dotenv, find_dotenv
 from app.shared_library.models import (
     Books,
-    Customers,
     BookRequestBody,
-    CustomerRequestBody,
 )
 from app.shared_library.input_data_validations import (
     check_is_valid_price,
-    check_is_valid_email,
     check_is_valid_quantity,
-    check_is_valid_state_abbr,
 )
 import os
 
@@ -40,7 +36,7 @@ SQLModel.metadata.create_all(engine)
 # ============================================
 # Reference: https://fastapi.tiangolo.com/tutorial/metadata/
 description = """
-## Bookstore API Backend for Books and Customers
+## Bookstore API Service for Books Data
 
 Reference: https://github.com/soobinrho/17647-bookstore-microservice
 
@@ -50,11 +46,7 @@ Reference: https://github.com/soobinrho/17647-bookstore-microservice
 tags_metadata = [
     {
         "name": "books",
-        "description": "RESTful API's for books.",
-    },
-    {
-        "name": "customers",
-        "description": "RESTful API's for customers.",
+        "description": "RESTful API's for books data.",
     },
     {
         "name": "uncategorized",
@@ -63,7 +55,7 @@ tags_metadata = [
 ]
 
 app = FastAPI(
-    title="Bookstore API Backend",
+    title="Bookstore API Service for Books Data",
     description=description,
     contact={
         "name": "Soobin Rho",
@@ -85,20 +77,6 @@ RESPONSE_INVALID_PRICE = JSONResponse(
 RESPONSE_INVALID_QUANTITY = JSONResponse(
     status_code=status.HTTP_400_BAD_REQUEST,
     content={"message": "Invalid quantity. It must be a valid number."},
-)
-
-RESPONSE_INVALID_EMAIL = JSONResponse(
-    status_code=status.HTTP_400_BAD_REQUEST,
-    content={
-        "message": 'Invalid email. It must match the regular expression "[^@]+@[^@]+\\.[^@]+".'
-    },
-)
-
-RESPONSE_INVALID_STATE = JSONResponse(
-    status_code=status.HTTP_400_BAD_REQUEST,
-    content={
-        "message": "Invalid state. It must be a valid 2-letter U.S. state abbreviation."
-    },
 )
 
 
@@ -143,51 +121,16 @@ def create_book(book: Books) -> None:
         session.commit()
 
 
-def create_customer(customer: Customers) -> None:
-    with Session(engine) as session:
-        session.add(customer)
-        session.commit()
-
-
 def check_does_ISBN_exist(ISBN: str) -> bool:
     with Session(engine) as session:
         book = session.get(Books, ISBN)
         return book is not None
 
 
-# NOTE: Customer ID is the numeric, autoincrementing ID, while User ID is the email.
-def check_does_customer_id_exist(id: str) -> bool:
-    with Session(engine) as session:
-        customer = session.get(Customers, id)
-        return customer is not None
-
-
-def check_does_user_id_exist(userId: str) -> bool:
-    with Session(engine) as session:
-        customer = session.exec(
-            select(Customers).where(Customers.userId == userId)
-        ).first()
-        return customer is not None
-
-
 def get_book_by_ISBN(ISBN: str) -> Books:
     with Session(engine) as session:
         book = session.get(Books, ISBN)
         return book
-
-
-def get_customer_by_id(id: str) -> Customers:
-    with Session(engine) as session:
-        customer = session.get(Customers, id)
-        return customer
-
-
-def get_customer_by_userId(userId: str) -> Customers:
-    with Session(engine) as session:
-        customer = session.exec(
-            select(Customers).where(Customers.userId == userId)
-        ).first()
-        return customer
 
 
 @app.exception_handler(RequestValidationError)
@@ -332,98 +275,6 @@ async def get_books_duplicate_enpoint(ISBN):
         "price": float(book.price),
         "quantity": float(book.quantity),
         "summary": str(book.summary),
-    }
-
-
-# =========
-# Customers
-# =========
-@app.post("/customers", tags=["customers"], status_code=status.HTTP_201_CREATED)
-async def post_customers(customer_request_body: CustomerRequestBody):
-    if not check_is_valid_email(customer_request_body.userId):
-        return RESPONSE_INVALID_EMAIL
-
-    if not check_is_valid_state_abbr(customer_request_body.state):
-        return RESPONSE_INVALID_STATE
-
-    if check_does_user_id_exist(customer_request_body.userId):
-        return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            content={"message": "This user ID already exists in the system."},
-        )
-
-    customer = Customers(
-        userId=customer_request_body.userId,
-        name=customer_request_body.name,
-        phone=customer_request_body.phone,
-        address=customer_request_body.address,
-        address2=customer_request_body.address2,
-        city=customer_request_body.city,
-        state=customer_request_body.state,
-        zipcode=customer_request_body.zipcode,
-    )
-    create_customer(customer)
-    customer = get_customer_by_userId(customer_request_body.userId)
-    return {
-        "id": int(customer.customer_id),
-        "userId": str(customer.userId),
-        "name": str(customer.name),
-        "phone": str(customer.phone),
-        "address": str(customer.address),
-        "address2": str(customer.address2),
-        "city": str(customer.city),
-        "state": str(customer.state),
-        "zipcode": str(customer.zipcode),
-    }
-
-
-@app.get("/customers/{id}", tags=["customers"], status_code=status.HTTP_200_OK)
-async def get_customers(id: int):
-    customer = get_customer_by_id(id)
-    if customer is None:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"message": "Retrieval failed. This ID does not exist."},
-        )
-
-    return {
-        "id": int(customer.customer_id),
-        "userId": str(customer.userId),
-        "name": str(customer.name),
-        "phone": str(customer.phone),
-        "address": str(customer.address),
-        "address2": str(customer.address2),
-        "city": str(customer.city),
-        "state": str(customer.state),
-        "zipcode": str(customer.zipcode),
-    }
-
-
-@app.get("/customers", tags=["customers"], status_code=status.HTTP_200_OK)
-async def get_customers_by_userId(userId):
-    if not check_is_valid_email(userId):
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Retrieval failed. Invalid email."},
-        )
-
-    customer = get_customer_by_userId(userId)
-    if customer is None:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"message": "Retrieval failed. This email does not exist."},
-        )
-
-    return {
-        "id": int(customer.customer_id),
-        "userId": str(customer.userId),
-        "name": str(customer.name),
-        "phone": str(customer.phone),
-        "address": str(customer.address),
-        "address2": str(customer.address2),
-        "city": str(customer.city),
-        "state": str(customer.state),
-        "zipcode": str(customer.zipcode),
     }
 
 
