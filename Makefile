@@ -33,7 +33,7 @@ push:
 		docker push soobinrho/17647-bookstore-bff-mobile:latest && \
  		docker push soobinrho/17647-bookstore-bff-mobile:$(GIT_HASH)
 
-prod-deploy-ec2-bookstore-a: ensure-env-file-exists prod-docker-reset
+prod-deploy-ec2-bookstore-a: ensure-env-file-exists
 	docker pull soobinrho/17647-bookstore-bff-desktop:latest
 	docker run --detach --name bookstore-bff-desktop \
 		-p 80:80 \
@@ -48,7 +48,7 @@ prod-deploy-ec2-bookstore-a: ensure-env-file-exists prod-docker-reset
 		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
 		soobinrho/17647-bookstore-api-service-customers:latest
 
-prod-deploy-ec2-bookstore-b: ensure-env-file-exists prod-docker-reset
+prod-deploy-ec2-bookstore-b: ensure-env-file-exists
 	docker pull soobinrho/17647-bookstore-bff-desktop:latest
 	docker run --detach --name bookstore-bff-desktop \
 		-p 80:80 \
@@ -63,7 +63,7 @@ prod-deploy-ec2-bookstore-b: ensure-env-file-exists prod-docker-reset
 		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
 		soobinrho/17647-bookstore-api-service-books:latest
 
-prod-deploy-ec2-bookstore-c: ensure-env-file-exists prod-docker-reset
+prod-deploy-ec2-bookstore-c: ensure-env-file-exists
 	docker pull soobinrho/17647-bookstore-bff-mobile:latest
 	docker run --detach --name bookstore-bff-mobile \
 		-p 80:80 \
@@ -78,7 +78,7 @@ prod-deploy-ec2-bookstore-c: ensure-env-file-exists prod-docker-reset
 		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
 		soobinrho/17647-bookstore-api-service-books:latest
 
-prod-deploy-ec2-bookstore-d: ensure-env-file-exists prod-docker-reset
+prod-deploy-ec2-bookstore-d: ensure-env-file-exists
 	docker pull soobinrho/17647-bookstore-bff-mobile:latest
 	docker run --detach --name bookstore-bff-mobile \
 		-p 80:80 \

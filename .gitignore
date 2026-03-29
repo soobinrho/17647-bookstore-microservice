@@ -208,3 +208,4 @@ __marimo__/
 
 # Professor Merson's CloudFormation files.
 *cmu.yml
+*.pem

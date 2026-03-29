@@ -118,6 +118,7 @@ wget https://raw.githubusercontent.com/soobinrho/17647-bookstore-microservice/re
 cp .env.example .env
 
 # Run in each EC2.
+sudo dnf install -y make
 wget https://raw.githubusercontent.com/soobinrho/17647-bookstore-microservice/refs/heads/main/Makefile
 make prod-deploy-ec2-bookstore-a
 make prod-deploy-ec2-bookstore-b
