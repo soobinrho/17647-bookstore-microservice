@@ -96,7 +96,14 @@ prod-docker-reset:
 	docker ps --filter 'name=bookstore-' -aq | xargs docker stop | xargs docker rm
 
 test: ensure-env-file-exists
-	docker run --rm --detach --name dev-bookstore-main-db -p 3306:3306 --add-host host.docker.internal:host-gateway --env MARIADB_RANDOM_ROOT_PASSWORD='True' --env MARIADB_USER='bookstore' --env MARIADB_PASSWORD='RwIIWUoToKe6L1LZAlUlFy9r4iRl4' --env MARIADB_DATABASE='bookstore' mariadb:latest
+	docker run --rm --detach --name dev-bookstore-main-db \
+		-p 3306:3306 \
+		--add-host host.docker.internal:host-gateway \
+		--env MARIADB_RANDOM_ROOT_PASSWORD='True' \
+		--env MARIADB_USER="${DB_USER}" \
+		--env MARIADB_PASSWORD="${DB_PASS}" \
+		--env MARIADB_DATABASE='bookstore' \
+		mariadb:latest
 	docker run --rm --name dev-bookstore-bff-desktop \
 		-p 80:80\
 		--add-host host.docker.internal:host-gateway \
