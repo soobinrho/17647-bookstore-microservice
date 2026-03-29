@@ -89,7 +89,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.middleware("http")
 async def middleware_main(req: Request, call_next_api):
     req_path = req.url.path
-    if not req_path.startswith("/docs") and not req_path.startswith("/openapi.json"):
+    if (
+        not req_path.startswith("/docs")
+        and not req_path.startswith("/openapi.json")
+        and not req_path.startswith("/status")
+    ):
         authorization = req.headers.get("Authorization", None)
         if authorization is None or not check_is_valid_JWT(authorization):
             return RESPONSE_UNAUTHORIZED
