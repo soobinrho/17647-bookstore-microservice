@@ -1,5 +1,5 @@
 <br>
 
-> BFF (Backend For Frontend) for Desktop
+> Bookstore BFF (Backend For Frontend) for Desktop
 
 <br>
