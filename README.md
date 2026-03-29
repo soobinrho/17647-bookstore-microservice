@@ -10,7 +10,7 @@ A bookstore backend built in the microservice architecture.
 
 | Service | Where & How |
 | --------------- | ----------- |
-| **API Services** | Python FastAPI deployed on AWS EC2 instances. |
+| **API Services** | Python FastAPI deployed on multiple AWS EC2 instances for passive redundancy. |
 | **Database** | MySQL deployed on AWS Aurora MySQL instances. |
 | **BFF (Backends For Frontends)** | BFF's for desktop and mobile deployed as FastAPI servers AWS EC2 instances. AWS load balancer routes traffic based on HTTP header `X-Client-Type: {Web\|iOS\|Android}`. |
 | **LLM for Book Summary Generation** | External API calls to Gemini. |
