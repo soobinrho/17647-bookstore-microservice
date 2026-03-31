@@ -45,7 +45,6 @@ prod-deploy-ec2-bookstore-a: ensure-env-file-exists
 		--env DB_USER="${DB_USER}" \
 		--env DB_PASS="${DB_PASS}" \
 		--env DB_URL="${DB_URL}" \
-		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
 		soobinrho/17647-bookstore-api-service-customers:latest
 
 prod-deploy-ec2-bookstore-b: ensure-env-file-exists
@@ -90,7 +89,6 @@ prod-deploy-ec2-bookstore-d: ensure-env-file-exists
 		--env DB_USER="${DB_USER}" \
 		--env DB_PASS="${DB_PASS}" \
 		--env DB_URL="${DB_URL}" \
-		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
 		soobinrho/17647-bookstore-api-service-customers:latest
 
 prod-docker-reset:
@@ -126,7 +124,6 @@ test-desktop-customers: ensure-env-file-exists
 		--env DB_USER="${DB_USER}" \
 		--env DB_PASS="${DB_PASS}" \
 		--env DB_URL='host.docker.internal' \
-		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
 		soobinrho/17647-bookstore-api-service-customers:latest
 	docker ps
 	echo 'Port 80: dev-bookstore-bff-desktop'
@@ -162,7 +159,6 @@ test-mobile-customers: ensure-env-file-exists
 		--env DB_USER="${DB_USER}" \
 		--env DB_PASS="${DB_PASS}" \
 		--env DB_URL='host.docker.internal' \
-		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
 		soobinrho/17647-bookstore-api-service-customers:latest
 	docker ps
 	echo 'Port 80: dev-bookstore-bff-mobile'
