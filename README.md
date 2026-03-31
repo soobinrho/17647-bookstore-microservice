@@ -183,6 +183,6 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 
 - **AWS Academy**: Go to the AWS CloudFormation page and delete all resources after getting a full score on Autograder so that they stop getting billed.
 
-- After containerizing the API service, don't forget to SSH into both of the EC2 instances and then `docker run ...` to start the service.
+- **Makefile**: is immensely helpful: https://github.com/soobinrho/17647-bookstore-microservice/blob/main/Makefile
 
 <br>
