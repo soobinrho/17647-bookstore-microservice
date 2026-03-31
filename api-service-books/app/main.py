@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlmodel import Session, SQLModel, create_engine
 from google import genai
+from .metadata import description, tags_metadata, contact
 from app.shared_library.models import (
     Books,
     BookRequestBody,
@@ -11,12 +12,13 @@ from app.shared_library.input_data_validations import (
     check_is_valid_price,
     check_is_valid_quantity,
 )
+from app.shared_library.responses import (
+    RESPONSE_INVALID_PRICE,
+    RESPONSE_INVALID_QUANTITY,
+)
 import os
 
 
-# ======================
-# Database Configuration
-# ======================
 DB_USER = os.environ.get("DB_USER", None)
 DB_PASS = os.environ.get("DB_PASS", None)
 DB_URL = os.environ.get("DB_URL", None)
@@ -30,53 +32,24 @@ engine = create_engine(
 )
 SQLModel.metadata.create_all(engine)
 
-# ============================================
-# FastAPI Automatic API Documentation Metadata
-# ============================================
-# Reference: https://fastapi.tiangolo.com/tutorial/metadata/
-description = """
-## Bookstore API Service for Books Data
-
-Reference: https://github.com/soobinrho/17647-bookstore-microservice
-
-<br>
-"""
-
-tags_metadata = [
-    {
-        "name": "books",
-        "description": "RESTful API's for books data.",
-    },
-    {
-        "name": "uncategorized",
-        "description": "Other API endpoints.",
-    },
-]
-
 app = FastAPI(
     title="Bookstore API Service for Books Data",
     description=description,
-    contact={
-        "name": "Soobin Rho",
-        "url": "https://github.com/soobinrho",
-        "email": "soobinrho@gmail.com",
-    },
+    tags_metadata=tags_metadata,
+    contact=contact,
 )
 
-# ================
-# Helper Functions
-# ================
-RESPONSE_INVALID_PRICE = JSONResponse(
-    status_code=status.HTTP_400_BAD_REQUEST,
-    content={
-        "message": "Invalid price. It must be a valid number, and it must have between 0 to 2 decimal places."
-    },
-)
 
-RESPONSE_INVALID_QUANTITY = JSONResponse(
-    status_code=status.HTTP_400_BAD_REQUEST,
-    content={"message": "Invalid quantity. It must be a valid number."},
-)
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # By default, FastAPI returns 422. This function switches it to 400 because
+    # the assignment requires 400 instead of 422. By the way, I observed that there's a bug
+    # in the automatic API documentation page in which it still shows up as 422.
+    # Source: https://stackoverflow.com/a/75958273
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": exc.errors()},
+    )
 
 
 def get_LLM_book_500_words_summary(title: str, author: str, ISBN: str) -> str:
@@ -130,18 +103,6 @@ def get_book_by_ISBN(ISBN: str) -> Books:
     with Session(engine) as session:
         book = session.get(Books, ISBN)
         return book
-
-
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    # By default, FastAPI returns 422. This function switches it to 400 because
-    # the assignment requires 400 instead of 422. By the way, I observed that there's a bug
-    # in the automatic API documentation page in which it still shows up as 422.
-    # Source: https://stackoverflow.com/a/75958273
-    return JSONResponse(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        content={"detail": exc.errors()},
-    )
 
 
 # =====

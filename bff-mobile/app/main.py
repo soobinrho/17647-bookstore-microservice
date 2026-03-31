@@ -1,7 +1,7 @@
 from fastapi import FastAPI, status, Response, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from sqlalchemy import JSON
+from .metadata import description, tags_metadata, contact
 from app.shared_library.models import (
     BookRequestBody,
     CustomerRequestBody,
@@ -9,66 +9,23 @@ from app.shared_library.models import (
 from app.shared_library.input_data_validations import (
     check_is_valid_JWT,
 )
+from app.shared_library.responses import RESPONSE_UNAUTHORIZED
 import os
 import httpx
 import json
 
 
-# =========================================
-# API Services Load Balancer Configurations
-# =========================================
 API_SERVICES_LOAD_BALANCER_URL = os.environ.get("API_SERVICES_LOAD_BALANCER_URL", None)
 if API_SERVICES_LOAD_BALANCER_URL is None:
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"
     )
 
-
-# ============================================
-# FastAPI Automatic API Documentation Metadata
-# ============================================
-# Reference: https://fastapi.tiangolo.com/tutorial/metadata/
-description = """
-## Bookstore BFF (Backend For Frontend) for Mobile
-
-Reference: https://github.com/soobinrho/17647-bookstore-microservice
-
-<br>
-"""
-
-tags_metadata = [
-    {
-        "name": "books",
-        "description": "Mobile BFF for the API service for books data.",
-    },
-    {
-        "name": "customers",
-        "description": "Mobile BFF for the API service for customers data.",
-    },
-    {
-        "name": "uncategorized",
-        "description": "Other API endpoints.",
-    },
-]
-
-
 app = FastAPI(
     title="Bookstore BFF (Backend For Frontend) for Mobile",
     description=description,
-    contact={
-        "name": "Soobin Rho",
-        "url": "https://github.com/soobinrho",
-        "email": "soobinrho@gmail.com",
-    },
-)
-
-
-# ================
-# Helper Functions
-# ================
-RESPONSE_UNAUTHORIZED = JSONResponse(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    content={"message": "Please provide a valid JWT."},
+    tags_metadata=tags_metadata,
+    contact=contact,
 )
 
 
@@ -84,9 +41,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
-# ==========
-# Middleware
-# ==========
 @app.middleware("http")
 async def middleware_main(req: Request, call_next_api):
     req_path = req.url.path
