@@ -20,7 +20,8 @@ import os
 DB_USER = os.environ.get("DB_USER", None)
 DB_PASS = os.environ.get("DB_PASS", None)
 DB_URL = os.environ.get("DB_URL", None)
-if DB_USER is None or DB_PASS is None or DB_URL is None:
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", None)
+if DB_USER is None or DB_PASS is None or DB_URL is None or GEMINI_API_KEY is None:
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"
     )
