@@ -111,12 +111,20 @@ sudo dnf install -y mariadb105-server
 # Create `bookstore` database. Note that this Aurora cluster is configured with two MySQL servers: one that does all the writing and another that does all of the readings.
 mysql -h bookstore-db.cluster-<SNIP>.us-east-1.rds.amazonaws.com -u bookstore -p'<SNIP>' -e 'CREATE DATABASE IF NOT EXISTS bookstore;'
 
-# Go to each of the EC2 instances and run the API services and BFF's.
-sudo dnf install -y make git
+# In each EC2, download this repository so that the Makefile can be
+# used for deployment and pulled whenever there's an update in the repo.
+sudo dnf install -y git
 git clone https://github.com/soobinrho/17647-bookstore-microservice
 cd 17647-bookstore-microservice
-wget https://raw.githubusercontent.com/soobinrho/17647-bookstore-microservice/refs/heads/main/.env.example
-cp .env.example .env
+
+# In each EC2, find its public IP address.
+ec2-metadata --public-ipv4
+
+# Transfer the .env file over to each of the EC2 instances.
+scp -i labsuser.pem ./.env ec2-user@<SNIP>:~/17647-bookstore-microservice/
+
+# Go to each of the EC2 instances and run the API services and BFF's.
+sudo dnf install -y make
 make prod-deploy-ec2-bookstore-a
 make prod-deploy-ec2-bookstore-b
 make prod-deploy-ec2-bookstore-c
