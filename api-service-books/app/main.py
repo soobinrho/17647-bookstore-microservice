@@ -1,23 +1,25 @@
-from fastapi import FastAPI, status, Response, Request, BackgroundTasks
-from fastapi.responses import JSONResponse
+import os
+
+from fastapi import BackgroundTasks, FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
-from sqlmodel import Session, SQLModel, create_engine
+from fastapi.responses import JSONResponse
 from google import genai
-from .metadata import description, tags_metadata, contact
-from app.shared_library.models import (
-    Books,
-    BookRequestBody,
-)
+from sqlmodel import Session, SQLModel, create_engine
+
 from app.shared_library.input_data_validations import (
     check_is_valid_price,
     check_is_valid_quantity,
+)
+from app.shared_library.models import (
+    BookRequestBody,
+    Books,
 )
 from app.shared_library.responses import (
     RESPONSE_INVALID_PRICE,
     RESPONSE_INVALID_QUANTITY,
 )
-import os
 
+from .metadata import contact, description, tags_metadata
 
 DB_USER = os.environ.get("DB_USER", None)
 DB_PASS = os.environ.get("DB_PASS", None)

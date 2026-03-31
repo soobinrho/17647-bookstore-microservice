@@ -1,19 +1,21 @@
-from fastapi import FastAPI, status, Response, Request
-from fastapi.responses import JSONResponse
+import os
+
+from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from sqlmodel import Session, SQLModel, create_engine, select
-from .metadata import description, tags_metadata, contact
-from app.shared_library.models import (
-    Customers,
-    CustomerRequestBody,
-)
+
 from app.shared_library.input_data_validations import (
     check_is_valid_email,
     check_is_valid_state_abbr,
 )
+from app.shared_library.models import (
+    CustomerRequestBody,
+    Customers,
+)
 from app.shared_library.responses import RESPONSE_INVALID_EMAIL, RESPONSE_INVALID_STATE
-import os
 
+from .metadata import contact, description, tags_metadata
 
 DB_USER = os.environ.get("DB_USER", None)
 DB_PASS = os.environ.get("DB_PASS", None)

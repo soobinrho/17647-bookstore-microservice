@@ -1,19 +1,21 @@
-from fastapi import FastAPI, status, Response, Request
-from fastapi.responses import JSONResponse
+import json
+import os
+
+import httpx
+from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
-from .metadata import description, tags_metadata, contact
+from fastapi.responses import JSONResponse
+
+from app.shared_library.input_data_validations import (
+    check_is_valid_JWT,
+)
 from app.shared_library.models import (
     BookRequestBody,
     CustomerRequestBody,
 )
-from app.shared_library.input_data_validations import (
-    check_is_valid_JWT,
-)
 from app.shared_library.responses import RESPONSE_UNAUTHORIZED
-import os
-import httpx
-import json
 
+from .metadata import contact, description, tags_metadata
 
 API_SERVICES_LOAD_BALANCER_URL = os.environ.get("API_SERVICES_LOAD_BALANCER_URL", None)
 if API_SERVICES_LOAD_BALANCER_URL is None:
@@ -97,7 +99,8 @@ async def get_books(ISBN, response: Response):
     # This is required because of a very particular test case in autograde:
     #   Test Failed: '3' != 3 : Get book (mobile) [GET /books/{ISBN}]: field 'genre' expected 3 (genre must be 3 for mobile), got '3'.
     res = json.loads(
-        json.dumps(res)
+        json
+        .dumps(res)
         .replace("non-fiction", "3")
         .replace("'3'", "3")
         .replace('"3"', "3")
@@ -112,7 +115,8 @@ async def get_books_duplicate_enpoint(ISBN, response: Response):
     response.status_code = res.status_code
     res = res.json()
     res = json.loads(
-        json.dumps(res)
+        json
+        .dumps(res)
         .replace("non-fiction", "3")
         .replace("'3'", "3")
         .replace('"3"', "3")
