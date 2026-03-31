@@ -137,7 +137,10 @@ docker logs -f bookstore-bff-mobile
 docker logs -f bookstore-bff-desktop
 docker logs -f bookstore-api-service-books
 docker logs -f bookstore-api-service-customers
-docker exec -it <CONTAINER_NAME> bash
+docker exec -it bookstore-bff-mobile bash
+docker exec -it bookstore-bff-desktop bash
+docker exec -it bookstore-api-service-books bash
+docker exec -it bookstore-api-service-customers bash
 
 # ============
 # Redeployment
@@ -149,7 +152,10 @@ make push
 
 # On EC2's, deploy the new images.
 make prod-docker-reset
-make prod-deploy-ec2-bookstore-{a\|b\|c\|d}
+make prod-deploy-ec2-bookstore-a
+make prod-deploy-ec2-bookstore-b
+make prod-deploy-ec2-bookstore-c
+make prod-deploy-ec2-bookstore-d
 ```
 
 <br>
