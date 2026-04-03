@@ -187,3 +187,17 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 - **Makefile**: is immensely helpful: https://github.com/soobinrho/17647-bookstore-microservice/blob/main/Makefile
 
 <br>
+
+#### Networking in Kubernetes
+
+Reference: https://kubernetes.io/docs/tutorials/services/connect-applications-service/
+
+Do not communicate directly to a pod's IP address. 
+"In theory, you could talk to these pods directly, but what happens when a node dies?
+The pods die with it, and the ReplicaSet inside the Deployment will create new ones, with different IPs.
+This is the problem a Service solves ...
+
+When created, each Service is assigned a unique IP address (also called clusterIP).
+This address is tied to the lifespan of the Service, and will not change while the Service is alive."
+
+<br>
