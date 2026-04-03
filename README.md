@@ -200,4 +200,12 @@ This is the problem a Service solves ...
 When created, each Service is assigned a unique IP address (also called clusterIP).
 This address is tied to the lifespan of the Service, and will not change while the Service is alive."
 
+Then, the service IP addresses and ports get injected to each pod as env variables.
+For example:
+
+```
+MY_NGINX_SERVICE_HOST=10.0.162.149
+MY_NGINX_SERVICE_PORT=80
+```
+
 <br>
