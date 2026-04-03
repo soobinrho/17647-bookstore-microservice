@@ -3,6 +3,7 @@
 `17647-D4 | 2026 | Professor Paulo Merson | Soobin Rho`
 
 > GitHub: https://github.com/soobinrho/17647-bookstore-microservice
+> The main branch tracks assignment-2 instead of assignment-3 because I forsee myself using assignment-2's approach more than assignment-3's for my own future use cases.
 
 <br>
 
