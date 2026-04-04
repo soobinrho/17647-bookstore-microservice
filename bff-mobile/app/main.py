@@ -6,14 +6,12 @@ from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.shared_library.input_data_validations import (
-    check_is_valid_JWT,
-)
+from app.shared_library.input_data_validations import check_is_authenticated_request
 from app.shared_library.models import (
     BookRequestBody,
     CustomerRequestBody,
 )
-from app.shared_library.responses import RESPONSE_UNAUTHORIZED
+from app.shared_library.responses import RESPONSE_UNAUTHENTICATED
 
 from .metadata import contact, description, tags_metadata
 
@@ -45,15 +43,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.middleware("http")
 async def middleware_main(req: Request, call_next_api):
-    req_path = req.url.path
-    if (
-        not req_path.startswith("/docs")
-        and not req_path.startswith("/openapi.json")
-        and not req_path.startswith("/status")
+    if not check_is_authenticated_request(
+        req.url.path, req.headers.get("Authorization", None)
     ):
-        authorization = req.headers.get("Authorization", None)
-        if authorization is None or not check_is_valid_JWT(authorization):
-            return RESPONSE_UNAUTHORIZED
+        return RESPONSE_UNAUTHENTICATED
 
     res = await call_next_api(req)
     return res

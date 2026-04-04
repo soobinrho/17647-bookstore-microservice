@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from app.shared_library.input_data_validations import (
+    check_is_authenticated_request,
     check_is_valid_email,
     check_is_valid_state_abbr,
 )
@@ -13,7 +14,11 @@ from app.shared_library.models import (
     CustomerRequestBody,
     Customers,
 )
-from app.shared_library.responses import RESPONSE_INVALID_EMAIL, RESPONSE_INVALID_STATE
+from app.shared_library.responses import (
+    RESPONSE_INVALID_EMAIL,
+    RESPONSE_INVALID_STATE,
+    RESPONSE_UNAUTHENTICATED,
+)
 
 from .metadata import contact, description, tags_metadata
 
@@ -47,6 +52,17 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"detail": exc.errors()},
     )
+
+
+@app.middleware("http")
+async def middleware_main(req: Request, call_next_api):
+    if not check_is_authenticated_request(
+        req.url.path, req.headers.get("Authorization", None)
+    ):
+        return RESPONSE_UNAUTHENTICATED
+
+    res = await call_next_api(req)
+    return res
 
 
 def create_customer(customer: Customers) -> None:
