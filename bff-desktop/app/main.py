@@ -15,6 +15,10 @@ from app.shared_library.responses import RESPONSE_UNAUTHENTICATED
 
 from .metadata import contact, description, tags_metadata
 
+IS_PROD = os.environ.get("IS_BOOKSTORE_PROD", None)
+IS_PROD = True if IS_PROD is not None else False
+print(f"[INFO]: IS_PROD = {IS_PROD}")
+
 API_SERVICES_LOAD_BALANCER_URL = os.environ.get("API_SERVICES_LOAD_BALANCER_URL", None)
 if API_SERVICES_LOAD_BALANCER_URL is None:
     raise Exception(

@@ -22,6 +22,10 @@ from app.shared_library.responses import (
 
 from .metadata import contact, description, tags_metadata
 
+IS_PROD = os.environ.get("IS_BOOKSTORE_PROD", None)
+IS_PROD = True if IS_PROD is not None else False
+print(f"[INFO]: IS_PROD = {IS_PROD}")
+
 DB_USER = os.environ.get("DB_USER", None)
 DB_PASS = os.environ.get("DB_PASS", None)
 DB_URL = os.environ.get("DB_URL", None)

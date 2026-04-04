@@ -1,4 +1,5 @@
 .env*
 __pycache__
 README.md
-url.txt
+.venv
+.ruff_cache

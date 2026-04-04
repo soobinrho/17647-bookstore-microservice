@@ -5,8 +5,6 @@ GIT_HASH := $(shell git rev-parse --short HEAD)
 
 all:	build push
 
-.SILENT: prod-deploy-ec2-bookstore-a prod-deploy-ec2-bookstore-b prod-deploy-ec2-bookstore-c prod-deploy-ec2-bookstore-d test-desktop-books test-desktop-customers test-mobile-books test-mobile-customers test-create-db cleanup cleanup-including-db ensure-env-file-exists
-
 ensure-env-file-exists:
 	test -s ./.env || { echo '[ERROR] .env file not found.'; exit 1; }
 
@@ -43,13 +41,14 @@ push:
 # =====
 test-desktop-books: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-bff-desktop \
-		-p 80:80\
+		-p 80:80 \
 		--add-host host.docker.internal:host-gateway \
 		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-desktop:latest
 	docker run --detach --name dev-bookstore-api-service-books \
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
 		--env DB_URL='host.docker.internal:3306' \
 		--env DB_USER="${DB_BOOKS_USER}" \
 		--env DB_PASS="${DB_BOOKS_PASS}" \
@@ -57,12 +56,12 @@ test-desktop-books: ensure-env-file-exists
 		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
 		soobinrho/17647-bookstore-api-service-books:latest
 	docker ps
-	echo 'Port 80: dev-bookstore-bff-desktop'
-	echo 'Port 3000: dev-bookstore-api-service-books'
+	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
+	echo '[INFO] Port 3000: dev-bookstore-api-service-books'
 
 test-desktop-customers: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-bff-desktop \
-		-p 80:80\
+		-p 80:80 \
 		--add-host host.docker.internal:host-gateway \
 		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-desktop:latest
@@ -75,8 +74,8 @@ test-desktop-customers: ensure-env-file-exists
 		--env DB_DATABASE="${DB_CUSTOMERS_DATABASE}" \
 		soobinrho/17647-bookstore-api-service-customers:latest
 	docker ps
-	echo 'Port 80: dev-bookstore-bff-desktop'
-	echo 'Port 3000: dev-bookstore-api-service-customers'
+	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
+	echo '[INFO] Port 3000: dev-bookstore-api-service-customers'
 
 test-mobile-books: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-bff-mobile \
@@ -87,6 +86,7 @@ test-mobile-books: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-api-service-books \
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
 		--env DB_URL='host.docker.internal:3306' \
 		--env DB_USER="${DB_BOOKS_USER}" \
 		--env DB_PASS="${DB_BOOKS_PASS}" \
@@ -94,8 +94,8 @@ test-mobile-books: ensure-env-file-exists
 		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
 		soobinrho/17647-bookstore-api-service-books:latest
 	docker ps
-	echo 'Port 80: dev-bookstore-bff-mobile'
-	echo 'Port 3000: dev-bookstore-api-service-books'
+	echo '[INFO] Port 80: dev-bookstore-bff-mobile'
+	echo '[INFO] Port 3000: dev-bookstore-api-service-books'
 
 test-mobile-customers: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-bff-mobile \
@@ -112,8 +112,8 @@ test-mobile-customers: ensure-env-file-exists
 		--env DB_DATABASE="${DB_CUSTOMERS_DATABASE}" \
 		soobinrho/17647-bookstore-api-service-customers:latest
 	docker ps
-	echo 'Port 80: dev-bookstore-bff-mobile'
-	echo 'Port 3000: dev-bookstore-api-service-customers'
+	echo '[INFO] Port 80: dev-bookstore-bff-mobile'
+	echo '[INFO] Port 3000: dev-bookstore-api-service-customers'
 
 test-create-db: ensure-env-file-exists
 	docker run --detach --name dev-db-books \
@@ -134,12 +134,75 @@ test-create-db: ensure-env-file-exists
 		mariadb:latest
 
 cleanup:
-	bash -c '{ docker ps -aq --filter "name=dev-bookstore-api-service" && docker ps -aq --filter "name=dev-bookstore-bff"; }' \
+	# `-` is there to suppress any error in case there's no container running.
+	-bash -c '{ docker ps -aq --filter "name=dev-bookstore-"; }' \
 		| sort | uniq -u \
 		| xargs docker stop | xargs docker rm
 
 cleanup-including-db:
-	bash -c '{ docker ps -aq --filter "name=dev-bookstore-api-service" && docker ps -aq --filter "name=dev-bookstore-bff" && docker ps -aq --filter "name=dev-db-"; }' \
+	-bash -c '{ docker ps -aq --filter "name=dev-bookstore-" && docker ps -aq --filter "name=dev-db-"; }' \
+		| sort | uniq -u \
+		| xargs docker stop | xargs docker rm
+
+# =======================
+# Tests for related books
+# =======================
+test-related-books-no-delay: ensure-env-file-exists cleanup cleanup-only-related-books
+	docker run --detach --name dev-bookstore-related-books-no-delay \
+		-p 8080:8080 \
+		--add-host host.docker.internal:host-gateway \
+		pmerson/book-recommendations-ms \
+		--delay=0
+	echo '[INFO] Port 8080: dev-bookstore-related-books-no-delay'
+	docker run --detach --name dev-bookstore-bff-desktop \
+		-p 80:80 \
+		--add-host host.docker.internal:host-gateway \
+		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
+		soobinrho/17647-bookstore-bff-desktop:latest
+	docker run --detach --name dev-bookstore-api-service-books \
+		-p 3000:3000 \
+		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
+		--env DB_URL='host.docker.internal:3306' \
+		--env DB_USER="${DB_BOOKS_USER}" \
+		--env DB_PASS="${DB_BOOKS_PASS}" \
+		--env DB_DATABASE="${DB_BOOKS_DATABASE}" \
+		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
+		--env API_RELATED_BOOKS_URL="${API_RELATED_BOOKS_URL_DEV}" \
+		soobinrho/17647-bookstore-api-service-books:latest
+	docker ps
+	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
+	echo '[INFO] Port 3000: dev-bookstore-api-service-books'
+
+test-related-books-delayed: ensure-env-file-exists cleanup cleanup-only-related-books
+	docker run --detach --name dev-bookstore-related-books-delayed \
+		-p 8080:8080 \
+		--add-host host.docker.internal:host-gateway \
+		pmerson/book-recommendations-ms \
+		--delay=5000
+	echo '[INFO] Port 8080: dev-bookstore-related-books-delayed'
+	docker run --detach --name dev-bookstore-bff-desktop \
+		-p 80:80 \
+		--add-host host.docker.internal:host-gateway \
+		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
+		soobinrho/17647-bookstore-bff-desktop:latest
+	docker run --detach --name dev-bookstore-api-service-books \
+		-p 3000:3000 \
+		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
+		--env DB_URL='host.docker.internal:3306' \
+		--env DB_USER="${DB_BOOKS_USER}" \
+		--env DB_PASS="${DB_BOOKS_PASS}" \
+		--env DB_DATABASE="${DB_BOOKS_DATABASE}" \
+		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
+		--env API_RELATED_BOOKS_URL="${API_RELATED_BOOKS_URL_DEV}" \
+		soobinrho/17647-bookstore-api-service-books:latest
+	docker ps
+	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
+	echo '[INFO] Port 3000: dev-bookstore-api-service-books'
+
+cleanup-only-related-books:
+	-bash -c '{ docker ps -aq --filter "name=dev-bookstore-related-books"; }' \
 		| sort | uniq -u \
 		| xargs docker stop | xargs docker rm
 
@@ -222,3 +285,22 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 	# "${DB_CUSTOMERS_USER}"
 	# "${DB_CUSTOMERS_PASS}"
 	# "${DB_CUSTOMERS_DATABASE}"
+
+# ====
+# Misc
+# ====
+.SILENT: ensure-env-file-exists \
+  prod-deploy-ec2-bookstore-a \
+	prod-deploy-ec2-bookstore-b \
+	prod-deploy-ec2-bookstore-c \
+	prod-deploy-ec2-bookstore-d \
+	test-desktop-books \
+	test-desktop-customers \
+	test-mobile-books \
+	test-mobile-customers \
+	test-create-db \
+	cleanup \
+	cleanup-including-db \
+	test-related-books-no-delay \
+	test-related-books-delayed \
+	cleanup-only-related-books

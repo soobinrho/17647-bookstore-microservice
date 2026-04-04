@@ -1,5 +1,6 @@
 import os
 
+import httpx
 from fastapi import BackgroundTasks, FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -23,17 +24,23 @@ from app.shared_library.responses import (
 
 from .metadata import contact, description, tags_metadata
 
+IS_DEV = os.environ.get("IS_DEV", None)
+IS_DEV = True if IS_DEV is not None else False
+print(f"[INFO] IS_DEV = {IS_DEV}")
+
 DB_USER = os.environ.get("DB_USER", None)
 DB_PASS = os.environ.get("DB_PASS", None)
 DB_URL = os.environ.get("DB_URL", None)
 DB_DATABASE = os.environ.get("DB_DATABASE", None)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", None)
+API_RELATED_BOOKS_URL = os.environ.get("API_RELATED_BOOKS_URL", None)
 if (
     DB_USER is None
     or DB_PASS is None
     or DB_URL is None
     or DB_DATABASE is None
     or GEMINI_API_KEY is None
+    or API_RELATED_BOOKS_URL is None
 ):
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"
@@ -65,7 +72,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.middleware("http")
 async def middleware_main(req: Request, call_next_api):
-    if not check_is_authenticated_request(
+    if not IS_DEV and not check_is_authenticated_request(
         req.url.path, req.headers.get("Authorization", None)
     ):
         return RESPONSE_UNAUTHENTICATED
@@ -276,6 +283,36 @@ async def get_books_duplicate_enpoint(ISBN):
         "quantity": int(book.quantity),
         "summary": str(book.summary),
     }
+
+
+@app.get("/books/{ISBN}/related-books", tags=["books"], status_code=status.HTTP_200_OK)
+async def get_related_books(ISBN, response: Response):
+    async with httpx.AsyncClient() as client:
+        try:
+            res = await client.get(f"{API_RELATED_BOOKS_URL}/{ISBN}", timeout=3.0)
+        except httpx.TimeoutException as e:
+            # [DEBUG]
+            print()
+            print()
+            print()
+            print(e)
+            print()
+            print()
+            print()
+            # [DEBUG]
+            # Circuit breaker.
+
+        # Status code 200 = happy case.
+        # Status code 204 = successful execution of the API but no book found.
+        if str(res.status_code) == "200":
+            return res.json()
+        elif str(res.status_code) == "204":
+            return JSONResponse(
+                status_code=status.HTTP_204_NO_CONTENT,
+                content=None,
+            )
+
+        # Circuit breaker.
 
 
 # =============

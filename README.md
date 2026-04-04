@@ -90,6 +90,11 @@ make cleanup
 make test-mobile-customers
 make cleanup
 
+# How to test the `/books/{ISBN}/related-books` endpoint:
+make test-related-books-no-delay  # See if it works as expected.
+make test-related-books-delayed  # See if it works as expected.
+make cleanup
+
 # Final cleanup.
 make cleanup-including-db
 ```
