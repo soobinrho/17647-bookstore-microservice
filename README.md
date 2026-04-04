@@ -15,6 +15,8 @@ A bookstore backend built in the microservice architecture.
 | **BFF (Backends For Frontends)** | BFF's for desktop and mobile deployed as FastAPI servers on AWS EC2 instances on multiple regions. AWS load balancer routes traffic based on HTTP header `X-Client-Type: {Web\|iOS\|Android}`. |
 | **LLM for Book Summary Generation** | External API calls to Gemini using their generous free tier for `gemini-2.5-flash-lite`. |
 
+\* Note: This deliverable also includes a Kubernetes architecture, but I excluded it from this table because I don't forsee myself using Kubernetes for my projects for now (I'll use a simpler architecture until I absolutely need to use K8s).
+
 <br>
 
 ### API Endpoints
@@ -54,6 +56,12 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # Download all Python packages as listed on `uv.lock`.
 uv sync
 
+# How to run the ruff formatter. I don't usually have to run this
+# because I configured my VS Code to run this everytime I hit save.
+# However, when I'm editing via vim without VS Code, this comes handy.
+uv run ruff format  # Run the formatter.
+uv run ruff check  # This ensures there's no obvious error.
+
 # Generate a random MariaDB password. Add this to the `.env` file.
 cp .env.example .env
 tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo
@@ -68,33 +76,30 @@ make build
 
 # Test from http://localhost/docs for all books API endpoints /w desktop BFF.
 make test-desktop-books
-make test-cleanup
+make cleanup
 
 # Test from http://localhost/docs for all customers API endpoints /w desktop BFF.
 make test-desktop-customers
-make test-cleanup
+make cleanup
 
 # Test from http://localhost/docs for all books API endpoints /w mobile BFF.
 make test-mobile-books
-make test-cleanup
+make cleanup
 
 # Test from http://localhost/docs for all customers API endpoints /w mobile BFF.
 make test-mobile-customers
-make test-cleanup
+make cleanup
 
 # Final cleanup.
-make test-cleanup-including-db
+make cleanup-including-db
 ```
 
 <br>
 
-### Prod Workflows
+### How to deploy to AWS without Kubernetes
 
 ```bash
 
-# =========================
-# How to deploy prod to AWS
-# =========================
 # Populate all required env variables.
 cp .env.example .env
 
@@ -108,8 +113,16 @@ make push
 chmod 400 -i ./key.pem ec2-user@<SNIP>
 sudo dnf install -y mariadb105-server
 
-# Create `bookstore` database. Note that this Aurora cluster is configured with two MySQL servers: one that does all the writing and another that does all of the readings.
-mysql -h bookstore-db.cluster-<SNIP>.us-east-1.rds.amazonaws.com -u bookstore -p'<SNIP>' -e 'CREATE DATABASE IF NOT EXISTS bookstore;'
+# Ensure that the books API cannot access the customers DB and vice versa.
+mysql -h bookstore-db.cluster-<SNIP>.us-east-1.rds.amazonaws.com -u admin-soobin -p'<SNIP>' \
+  -e 'CREATE DATABASE IF NOT EXISTS bookstore-books;' \
+  -e 'CREATE USER api-service-books;' \
+  -e 'GRANT ALL PRIVILEGES ON bookstore-books.* TO api-service-books IDENTIFIED BY <SAME_DB_BOOKS_PASS_DEFINED_IN_ENV_FILE>;'
+
+mysql -h bookstore-db.cluster-<SNIP>.us-east-1.rds.amazonaws.com -u admin-soobin -p'<SNIP>' \
+  -e 'CREATE DATABASE IF NOT EXISTS bookstore-customers;' \
+  -e 'CREATE USER api-service-customers;' \
+  -e 'GRANT ALL PRIVILEGES ON bookstore-customers.* TO api-service-customers IDENTIFIED BY <SAME_DB_CUSTOMERS_PASS_DEFINED_IN_ENV_FILE>;'
 
 # In each EC2, download this repository so that the Makefile can be
 # used for deployment and pulled whenever there's an update in the repo.
@@ -151,11 +164,38 @@ make build
 make push
 
 # On EC2's, deploy the new images.
-make prod-docker-reset
+make prod-cleanup
 make prod-deploy-ec2-bookstore-a
 make prod-deploy-ec2-bookstore-b
 make prod-deploy-ec2-bookstore-c
 make prod-deploy-ec2-bookstore-d
+```
+
+<br>
+
+### How to deploy to AWS with Kubernetes
+
+```bash
+# Ensure that the books API cannot access the customers DB and vice versa.
+mysql -h bookstore-db.cluster-<SNIP>.us-east-1.rds.amazonaws.com -u admin-soobin -p'<SAME_DB_PASS_DEFINED_IN_ENV_FILE>' \
+  -e 'CREATE DATABASE IF NOT EXISTS bookstore-books;' \
+  -e 'CREATE USER api-service-books;' \
+  -e 'GRANT ALL PRIVILEGES ON bookstore-books.* TO api-service-books IDENTIFIED BY <SAME_DB_BOOKS_PASS_DEFINED_IN_ENV_FILE>;'
+
+mysql -h bookstore-db.cluster-<SNIP>.us-east-1.rds.amazonaws.com -u admin-soobin -p'<SAME_DB_PASS_DEFINED_IN_ENV_FILE>' \
+  -e 'CREATE DATABASE IF NOT EXISTS bookstore-customers;' \
+  -e 'CREATE USER api-service-customers;' \
+  -e 'GRANT ALL PRIVILEGES ON bookstore-customers.* TO api-service-customers IDENTIFIED BY <SAME_DB_CUSTOMERS_PASS_DEFINED_IN_ENV_FILE>;'
+
+# ===================
+# Debugging Workflows
+# ===================
+echo "PLACEHOLDER"
+
+# ============
+# Redeployment
+# ============
+echo "PLACEHOLDER"
 ```
 
 <br>
@@ -185,6 +225,8 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 
 - **Makefile**: is immensely helpful: https://github.com/soobinrho/17647-bookstore-microservice/blob/main/Makefile
 
+- **Design Decision on REST vs Kakfa**: If I'm making a simple system talking to only one another and don't need failsafes, use REST. If my system needs to publish an event to more than one service, use Apache Kafka because it's specialized for handling the process of publishing an event to multiple consumers.
+
 <br>
 
 #### Networking in Kubernetes
@@ -213,5 +255,7 @@ MY_NGINX_SERVICE_PORT=80
 
 One of the most well-known asynchronous messaging system that uses event-driven architecture.
 
+Reference: https://kafka.apache.org/intro/<br>
+Reference: https://developer.confluent.io/get-started/python/
 
 <br>

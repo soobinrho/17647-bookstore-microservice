@@ -1,1 +1,4 @@
 http://vpc-bookstore-ExternalALB-445478804.us-east-1.elb.amazonaws.com:80
+
+# TODO: Two urls. One for the desktop bff and one for the mobile bff.
+# TODO: After assignment 3 has been graded, remove the url.txt file.
