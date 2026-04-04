@@ -2,6 +2,10 @@ version = 1
 revision = 3
 requires-python = ">=3.14"
 
+[options]
+exclude-newer = "2026-03-28T18:57:54.281309676Z"
+exclude-newer-span = "P7D"
+
 [[package]]
 name = "annotated-doc"
 version = "0.0.4"
@@ -42,7 +46,6 @@ dependencies = [
     { name = "google-genai" },
     { name = "pyjwt" },
     { name = "pymysql" },
-    { name = "ruff" },
     { name = "sqlalchemy" },
     { name = "sqlmodel" },
 ]
@@ -59,7 +62,6 @@ requires-dist = [
     { name = "google-genai", specifier = ">=1.68.0" },
     { name = "pyjwt", specifier = ">=2.12.1" },
     { name = "pymysql", specifier = ">=1.1.2" },
-    { name = "ruff", specifier = ">=0.15.7" },
     { name = "sqlalchemy", specifier = ">=2.0.48" },
     { name = "sqlmodel", specifier = ">=0.0.37" },
 ]

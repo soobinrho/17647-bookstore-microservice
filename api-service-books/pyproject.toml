@@ -10,7 +10,6 @@ dependencies = [
     "google-genai>=1.68.0",
     "pyjwt>=2.12.1",
     "pymysql>=1.1.2",
-    "ruff>=0.15.7",
     "sqlalchemy>=2.0.48",
     "sqlmodel>=0.0.37",
 ]
