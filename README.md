@@ -44,7 +44,7 @@ A bookstore backend built in the microservice architecture.
 # ========================
 git clone https://github.com/soobinrho/17647-bookstore-microservice.git
 git submodule update --init --recursive
-usermoad -aG docker $USER
+usermod -aG docker $USER
 
 # If I make any change to the shared-library repo:
 git submodule update --remote
