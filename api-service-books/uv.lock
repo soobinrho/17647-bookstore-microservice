@@ -3,7 +3,7 @@ revision = 3
 requires-python = ">=3.14"
 
 [options]
-exclude-newer = "2026-03-28T18:57:54.281309676Z"
+exclude-newer = "2026-03-29T03:23:36.982964942Z"
 exclude-newer-span = "P7D"
 
 [[package]]
@@ -44,6 +44,7 @@ dependencies = [
     { name = "dotenv" },
     { name = "fastapi", extra = ["standard"] },
     { name = "google-genai" },
+    { name = "httpx" },
     { name = "pyjwt" },
     { name = "pymysql" },
     { name = "sqlalchemy" },
@@ -60,6 +61,7 @@ requires-dist = [
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.135.1" },
     { name = "google-genai", specifier = ">=1.68.0" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "pyjwt", specifier = ">=2.12.1" },
     { name = "pymysql", specifier = ">=1.1.2" },
     { name = "sqlalchemy", specifier = ">=2.0.48" },

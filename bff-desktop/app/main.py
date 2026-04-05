@@ -15,9 +15,9 @@ from app.shared_library.responses import RESPONSE_UNAUTHENTICATED
 
 from .metadata import contact, description, tags_metadata
 
-IS_PROD = os.environ.get("IS_BOOKSTORE_PROD", None)
-IS_PROD = True if IS_PROD is not None else False
-print(f"[INFO]: IS_PROD = {IS_PROD}")
+IS_DEV = os.environ.get("IS_DEV", None)
+IS_DEV = True if IS_DEV is not None else False
+print(f"[INFO] IS_DEV = {IS_DEV}")
 
 API_SERVICES_LOAD_BALANCER_URL = os.environ.get("API_SERVICES_LOAD_BALANCER_URL", None)
 if API_SERVICES_LOAD_BALANCER_URL is None:
@@ -47,7 +47,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.middleware("http")
 async def middleware_main(req: Request, call_next_api):
-    if not check_is_authenticated_request(
+    if not IS_DEV and not check_is_authenticated_request(
         req.url.path, req.headers.get("Authorization", None)
     ):
         return RESPONSE_UNAUTHENTICATED
@@ -97,6 +97,16 @@ async def get_books(ISBN, response: Response):
 async def get_books_duplicate_enpoint(ISBN, response: Response):
     async with httpx.AsyncClient() as client:
         res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/books/isbn/{ISBN}")
+    response.status_code = res.status_code
+    return res.json()
+
+
+@app.get("/books/{ISBN}/related-books", tags=["books"], status_code=status.HTTP_200_OK)
+async def get_related_books(ISBN, response: Response):
+    async with httpx.AsyncClient() as client:
+        res = await client.get(
+            f"{API_SERVICES_LOAD_BALANCER_URL}/books/{ISBN}/related-books"
+        )
     response.status_code = res.status_code
     return res.json()
 

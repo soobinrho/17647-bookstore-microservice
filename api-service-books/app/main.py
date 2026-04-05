@@ -1,4 +1,6 @@
+import datetime
 import os
+import time
 
 import httpx
 from fastapi import BackgroundTasks, FastAPI, Request, Response, status
@@ -12,13 +14,13 @@ from app.shared_library.input_data_validations import (
     check_is_valid_price,
     check_is_valid_quantity,
 )
-from app.shared_library.models import (
-    BookRequestBody,
-    Books,
-)
+from app.shared_library.models import BookRequestBody, Books, Misc
 from app.shared_library.responses import (
+    RESOPNSE_500_SERVER_ERROR,
+    RESPONSE_503_CIRCUIT_BREAKER_OPEN,
     RESPONSE_INVALID_PRICE,
     RESPONSE_INVALID_QUANTITY,
+    RESPONSE_NO_CONTENT,
     RESPONSE_UNAUTHENTICATED,
 )
 
@@ -286,33 +288,113 @@ async def get_books_duplicate_enpoint(ISBN):
 
 
 @app.get("/books/{ISBN}/related-books", tags=["books"], status_code=status.HTTP_200_OK)
-async def get_related_books(ISBN, response: Response):
-    async with httpx.AsyncClient() as client:
+async def get_related_books(ISBN):
+    if check_circuit_breaker_open():
+        if not check_should_circuit_breaker_close():
+            return RESPONSE_503_CIRCUIT_BREAKER_OPEN
+        else:
+            # This is the circuit breaker's half-open state in which a re-attempt should
+            # be made. If the re-attempt fails, the clock resets. If the re-attempt
+            # suceeds, the circuit breaker closes and resumes normal operation.
+            async with httpx.AsyncClient(timeout=CIRCUIT_BREAKER_TIMEOUT) as client:
+                try:
+                    res = await client.get(f"{API_RELATED_BOOKS_URL}/{ISBN}")
+                except httpx.TimeoutException:
+                    print("[INFO] reset_circuit_breaker_time()")
+                    reset_circuit_breaker_time()
+                    return RESPONSE_503_CIRCUIT_BREAKER_OPEN
+                else:
+                    print("[INFO] close_circuit_breaker()")
+                    close_circuit_breaker()
+                    if str(res.status_code) == "200":
+                        return res.json()
+                    elif str(res.status_code) == "204":
+                        return RESPONSE_NO_CONTENT
+                    else:
+                        return RESOPNSE_500_SERVER_ERROR
+
+    async with httpx.AsyncClient(timeout=CIRCUIT_BREAKER_TIMEOUT) as client:
         try:
-            res = await client.get(f"{API_RELATED_BOOKS_URL}/{ISBN}", timeout=3.0)
-        except httpx.TimeoutException as e:
-            # [DEBUG]
-            print()
-            print()
-            print()
-            print(e)
-            print()
-            print()
-            print()
-            # [DEBUG]
-            # Circuit breaker.
-
-        # Status code 200 = happy case.
-        # Status code 204 = successful execution of the API but no book found.
-        if str(res.status_code) == "200":
-            return res.json()
-        elif str(res.status_code) == "204":
+            res = await client.get(f"{API_RELATED_BOOKS_URL}/{ISBN}")
+        except httpx.TimeoutException:
+            print("[INFO] check_circuit_breaker_open() = False")
+            print("[INFO] httpx.TimeoutException")
+            print("[INFO] open_circuit_breaker()")
+            open_circuit_breaker()
             return JSONResponse(
-                status_code=status.HTTP_204_NO_CONTENT,
-                content=None,
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                content={"message": "Please try again later."},
             )
+        else:
+            if str(res.status_code) == "200":
+                return res.json()
+            elif str(res.status_code) == "204":
+                return RESPONSE_NO_CONTENT
+            else:
+                return RESOPNSE_500_SERVER_ERROR
 
-        # Circuit breaker.
+
+# ===============
+# Circuit Breaker
+# ===============
+CIRCUIT_BREAKER_TIMEOUT = 3  # Seconds.
+CIRCUIT_BREAKER_WAIT_HOW_LONG = 60  # Seconds.
+MISC_KEY_WHEN_OPEN = "when_circuit_breaker_open"
+
+
+def check_circuit_breaker_open() -> bool:
+    with Session(engine) as session:
+        # Circuit breaker closed = Service functioning as expected.
+        # Circuit breaker open = Service malfunctioning.
+        when_circuit_breaker_open = session.get(Misc, MISC_KEY_WHEN_OPEN)
+        if when_circuit_breaker_open is None:
+            return False
+        else:
+            return True
+
+
+def check_should_circuit_breaker_close() -> bool:
+    with Session(engine) as session:
+        when_circuit_breaker_open = session.get(Misc, MISC_KEY_WHEN_OPEN)
+        when_open = int(when_circuit_breaker_open.misc_value)
+        when_open = datetime.datetime.fromtimestamp(when_open)
+        when_recheck = when_open + datetime.timedelta(
+            seconds=CIRCUIT_BREAKER_WAIT_HOW_LONG
+        )
+        datetime_now = datetime.datetime.now()
+        if when_recheck < datetime_now:
+            return True
+        else:
+            return False
+
+
+def get_unix_epoch_now() -> int:
+    return int(time.time())
+
+
+def reset_circuit_breaker_time() -> None:
+    with Session(engine) as session:
+        when_circuit_breaker_open = session.get(Misc, MISC_KEY_WHEN_OPEN)
+        when_circuit_breaker_open.misc_value = f"{get_unix_epoch_now()}"
+        session.add(when_circuit_breaker_open)
+        session.commit()
+
+
+def close_circuit_breaker() -> None:
+    with Session(engine) as session:
+        when_circuit_breaker_open = session.get(Misc, MISC_KEY_WHEN_OPEN)
+        session.delete(when_circuit_breaker_open)
+        session.commit()
+
+
+def open_circuit_breaker() -> None:
+    with Session(engine) as session:
+        when_circuit_breaker_open = Misc(
+            misc_key=MISC_KEY_WHEN_OPEN,
+            misc_value=f"{get_unix_epoch_now()}",
+        )
+        session.add(when_circuit_breaker_open)
+        session.commit()
 
 
 # =============

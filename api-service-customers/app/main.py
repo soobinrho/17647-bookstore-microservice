@@ -22,9 +22,9 @@ from app.shared_library.responses import (
 
 from .metadata import contact, description, tags_metadata
 
-IS_PROD = os.environ.get("IS_BOOKSTORE_PROD", None)
-IS_PROD = True if IS_PROD is not None else False
-print(f"[INFO]: IS_PROD = {IS_PROD}")
+IS_DEV = os.environ.get("IS_DEV", None)
+IS_DEV = True if IS_DEV is not None else False
+print(f"[INFO] IS_DEV = {IS_DEV}")
 
 DB_USER = os.environ.get("DB_USER", None)
 DB_PASS = os.environ.get("DB_PASS", None)
@@ -61,7 +61,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.middleware("http")
 async def middleware_main(req: Request, call_next_api):
-    if not check_is_authenticated_request(
+    if not IS_DEV and not check_is_authenticated_request(
         req.url.path, req.headers.get("Authorization", None)
     ):
         return RESPONSE_UNAUTHENTICATED
