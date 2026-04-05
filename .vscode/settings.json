@@ -1,13 +1,20 @@
 {
-"python.analysis.autoImportCompletions": true,
-"cSpell.words": [
-    "Autograder",
-    "dotenv",
-    "fastapi",
-    "genai",
-    "Merson",
-    "Soobin",
-    "soobinrho",
-    "urandom"
-]
+    "python.analysis.autoImportCompletions": true,
+    "cSpell.words": [
+        "Autograder",
+        "dotenv",
+        "fastapi",
+        "genai",
+        "Merson",
+        "Soobin",
+        "soobinrho",
+        "urandom"
+    ],
+    "python-envs.pythonProjects": [
+        {
+            "path": ".",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        }
+    ]
 }
