@@ -67,7 +67,7 @@ async def post_books(book_request_body: BookRequestBody, response: Response):
             json=json.loads(book_request_body.model_dump_json()),
         )
     response.status_code = res.status_code
-    return res.json()
+    response.body = res.content
 
 
 @app.put("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
@@ -118,7 +118,6 @@ async def get_books_duplicate_enpoint(ISBN, response: Response):
         .replace("'3'", "3")
         .replace('"3"', "3")
     )
-    return res
 
 
 @app.get("/books/{ISBN}/related-books", tags=["books"], status_code=status.HTTP_200_OK)
@@ -128,7 +127,7 @@ async def get_related_books(ISBN, response: Response):
             f"{API_SERVICES_LOAD_BALANCER_URL}/books/{ISBN}/related-books"
         )
     response.status_code = res.status_code
-    return res.json()
+    response.body = res.content
 
 
 # =========
@@ -144,7 +143,7 @@ async def post_customers(
             json=json.loads(customer_request_body.model_dump_json()),
         )
     response.status_code = res.status_code
-    return res.json()
+    response.body = res.content
 
 
 @app.get("/customers/{id}", tags=["customers"], status_code=status.HTTP_200_OK)
