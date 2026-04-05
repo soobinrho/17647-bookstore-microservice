@@ -62,9 +62,14 @@ uv sync
 uv run ruff format  # Run the formatter.
 uv run ruff check  # This ensures there's no obvious error.
 
-# Generate a random MariaDB password. Add this to the `.env` file.
+# Create an .env file.
 cp .env.example .env
-tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo
+sed --in-place \
+  "s/DB_BOOKS_PASS=\"\"/DB_BOOKS_PASS=\"$(tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo)\"/g" \
+  .env
+sed --in-place \
+  "s/DB_CUSTOMERS_PASS=\"\"/DB_CUSTOMERS_PASS=\"$(tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo)\"/g" \
+  .env
 
 # Run a containerized MariaDB for testing purposes along with all backend services.
 make test-create-db
