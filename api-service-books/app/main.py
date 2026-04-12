@@ -318,6 +318,12 @@ CIRCUIT_BREAKER_WAIT_HOW_LONG = 60  # Seconds.
 MISC_KEY_WHEN_OPEN = "when_circuit_breaker_open"
 
 
+# Professor Merson's instruction hinted that we could use K8s Volume
+# functionality. I opted to use the already-available AWS Aurora cluster
+# for the circuit breaker's data storage requirement. Tradeoffs is that
+# relying on a database increases outbound coupling. However, what I gain
+# by doing so is that I can use an existing data storage and I therefore
+# don't have to implement a new mechanism just for the circuit breaker.
 def check_circuit_breaker_open() -> bool:
     with Session(engine) as session:
         # Circuit breaker closed = Service functioning as expected.
