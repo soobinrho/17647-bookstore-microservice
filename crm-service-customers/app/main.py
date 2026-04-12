@@ -18,41 +18,26 @@ if (
         "[ERROR] Required credentials were not found in the environment variables"
     )
 
-# =============
-# Kafka Configs
-# =============
-c = Consumer({
-    "bootstrap.servers": [KAFKA_BROKER_0_URL, KAFKA_BROKER_1_URL, KAFKA_BROKER_2_URL],
-})
-
-
-def main():
-    c.subscribe([KAFKA_TOPIC])
-    listen_for_kafka_messages()
-    c.close()
-
 
 def listen_for_kafka_messages():
     while True:
-        msg = c.poll(1.0)
+        msg = consumer.poll(1.0)
 
         if msg is None:
-            print("hi")
             continue
         if msg.error():
             print(f"[ERROR] {msg.error()}")
             continue
 
         message = msg.value().decode("utf-8")
-        print("[INFO] Received message: {message}")
+        print(f"[INFO] Received message: {message}")
         message_parsed = json.loads(message)
-        print("[INFO] Parsed message: {message_parsed}")
         customer_email = message_parsed["userId"]
-        print("[INFO] Customer Email: {customer_email}")
+        print(f"[INFO] Customer Email: {customer_email}")
         customer_name = message_parsed["name"]
-        print("[INFO] Customer Email: {customer_name}")
-
+        print(f"[INFO] Customer Name: {customer_name}")
         email_body = f"Dear {customer_name},\nWelcome to the Book store created by soobinr.\nExceptionally this time we won’t ask you to click a link to activate your account.\n"
+        print(f"[INFO] Email Body: {email_body}")
         send_email(
             email_body=email_body,
             email_to=customer_email,
@@ -60,5 +45,15 @@ def listen_for_kafka_messages():
         )
 
 
-if __name__ == "__main__":
-    main()
+print(f"[INFO] Starting to listen for the Kafka topic {KAFKA_TOPIC}")
+consumer = Consumer({
+    "bootstrap.servers": ",".join([
+        KAFKA_BROKER_0_URL,
+        KAFKA_BROKER_1_URL,
+        KAFKA_BROKER_2_URL,
+    ]),
+    "group.id": "customers",
+})
+consumer.subscribe([KAFKA_TOPIC])
+listen_for_kafka_messages()
+consumer.close()

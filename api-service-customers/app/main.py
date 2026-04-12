@@ -141,9 +141,9 @@ async def post_customers(
     )
     create_customer(customer)
     customer = get_customer_by_userId(customer_request_body.userId)
-    background_tasks.add_task(
-        background_task_produce_kafka_message, customer.model_dump_json()
-    )
+    kafka_message = customer.model_dump_json()
+    print(f"[INFO] Producing a kafka message: {kafka_message}")
+    background_tasks.add_task(background_task_produce_kafka_message, kafka_message)
     return {
         "id": int(customer.customer_id),
         "userId": str(customer.userId),

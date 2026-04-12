@@ -1,5 +1,6 @@
 import os
 import smtplib
+import ssl
 from email.mime.text import MIMEText
 
 SMTP_SERVER_URL = os.environ.get("SMTP_SERVER_URL", None)
@@ -27,7 +28,11 @@ def send_email(
     email["Subject"] = email_subject
     email["From"] = SMTP_SERVER_ID
     try:
-        with smtplib.SMTP_SSL(SMTP_SERVER_URL, SMTP_SERVER_PORT) as smtp_server:
+        with smtplib.SMTP(SMTP_SERVER_URL, SMTP_SERVER_PORT) as smtp_server:
+            # Source: https://stackoverflow.com/a/60301124
+            smtp_server.ehlo()
+            smtp_server.starttls(context=ssl.create_default_context())
+            smtp_server.ehlo()
             smtp_server.login(SMTP_SERVER_ID, SMTP_SERVER_PASS)
             smtp_server.sendmail(
                 from_addr=SMTP_SERVER_ID, to_addrs=email_to, msg=email.as_string()

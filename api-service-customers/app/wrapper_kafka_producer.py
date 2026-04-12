@@ -21,7 +21,12 @@ def callback_kafka(err, msg):
     if err:
         print(f"[ERROR] {err}")
     else:
-        print(f"[INFO] Kafka message successfully produced and consumed: {msg}")
+        try:
+            print(
+                f"[INFO] Kafka message successfully produced and consumed: {msg.value().decode('UTF-8')}"
+            )
+        except Exception as e:
+            print(f"[ERROR] {e}")
 
 
 def produce_kafka_message(json_message: str):
@@ -35,5 +40,4 @@ def produce_kafka_message(json_message: str):
     }
     producer = Producer(config)
     producer.produce(KAFKA_TOPIC, json_message, callback=callback_kafka)
-    producer.poll(0)
     producer.flush()

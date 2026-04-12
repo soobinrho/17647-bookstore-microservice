@@ -74,6 +74,7 @@ test-desktop-customers: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-api-service-customers \
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
 		--env DB_URL='host.docker.internal:3307' \
 		--env DB_USER=${DB_CUSTOMERS_USER} \
 		--env DB_PASS=${DB_CUSTOMERS_PASS} \
@@ -84,6 +85,10 @@ test-desktop-customers: ensure-env-file-exists
 		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
 		soobinrho/17647-bookstore-api-service-customers:latest
 	docker run --detach --name dev-bookstore-crm-service-customers \
+		--env KAFKA_TOPIC=${KAFKA_TOPIC} \
+		--env KAFKA_BROKER_0_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
 		--env SMTP_SERVER_URL=${SMTP_SERVER_URL} \
 		--env SMTP_SERVER_PORT=${SMTP_SERVER_PORT} \
 		--env SMTP_SERVER_ID=${SMTP_SERVER_ID} \
@@ -123,6 +128,7 @@ test-mobile-customers: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-api-service-customers \
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
 		--env DB_URL='host.docker.internal:3307' \
 		--env DB_USER=${DB_CUSTOMERS_USER} \
 		--env DB_PASS=${DB_CUSTOMERS_PASS} \
@@ -133,6 +139,10 @@ test-mobile-customers: ensure-env-file-exists
 		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
 		soobinrho/17647-bookstore-api-service-customers:latest
 	docker run --detach --name dev-bookstore-crm-service-customers \
+		--env KAFKA_TOPIC=${KAFKA_TOPIC} \
+		--env KAFKA_BROKER_0_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
 		--env SMTP_SERVER_URL=${SMTP_SERVER_URL} \
 		--env SMTP_SERVER_PORT=${SMTP_SERVER_PORT} \
 		--env SMTP_SERVER_ID=${SMTP_SERVER_ID} \

@@ -12,4 +12,8 @@ WORKDIR /app
 RUN uv sync --frozen --no-cache
 
 # Run the application.
-CMD ["/app/.venv/bin/python", "./app/main.py"]
+# -u is required to force the stdout and stderr to be unbuffered.
+# Source:
+#   https://stackoverflow.com/a/29745541
+STOPSIGNAL SIGKILL
+ENTRYPOINT [".venv/bin/python", "-u", "app/main.py"]
