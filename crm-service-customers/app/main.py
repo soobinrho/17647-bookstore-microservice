@@ -1,3 +1,4 @@
+import json
 import os
 
 from confluent_kafka import Consumer
@@ -25,22 +26,33 @@ c = Consumer({
     "bootstrap.servers": [KAFKA_BROKER_0_URL, KAFKA_BROKER_1_URL, KAFKA_BROKER_2_URL],
 })
 
-c.subscribe([KAFKA_TOPIC])
 
-while True:
-    msg = c.poll(1.0)
+def main():
+    c.subscribe([KAFKA_TOPIC])
+    listen_for_kafka_messages()
+    c.close()
 
-    if msg is None:
-        continue
-    if msg.error():
-        print("Consumer error: {}".format(msg.error()))
-        continue
 
-    print("Received message: {}".format(msg.value().decode("utf-8")))
+def listen_for_kafka_messages():
+    while True:
+        msg = c.poll(1.0)
 
-    if False:
-        customer_email = "soobinrho@gmail.com"
-        customer_name = "Soobin Rho"
+        if msg is None:
+            print("hi")
+            continue
+        if msg.error():
+            print(f"[ERROR] {msg.error()}")
+            continue
+
+        message = msg.value().decode("utf-8")
+        print("[INFO] Received message: {message}")
+        message_parsed = json.loads(message)
+        print("[INFO] Parsed message: {message_parsed}")
+        customer_email = message_parsed["userId"]
+        print("[INFO] Customer Email: {customer_email}")
+        customer_name = message_parsed["name"]
+        print("[INFO] Customer Email: {customer_name}")
+
         email_body = f"Dear {customer_name},\nWelcome to the Book store created by soobinr.\nExceptionally this time we won’t ask you to click a link to activate your account.\n"
         send_email(
             email_body=email_body,
@@ -48,4 +60,6 @@ while True:
             email_subject="Activate your book store account",
         )
 
-c.close()
+
+if __name__ == "__main__":
+    main()
