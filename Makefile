@@ -287,6 +287,7 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 	# "${DB_CUSTOMERS_USER}"
 	# "${DB_CUSTOMERS_PASS}"
 	# "${DB_CUSTOMERS_DATABASE}"
+	# "${API_RELATED_BOOKS_URL_PROD}"
 
 # ====
 # Misc

@@ -1,12 +1,8 @@
 import os
 
 from confluent_kafka import Consumer
-from fastapi import FastAPI, Response, status
-from fastapi.responses import JSONResponse
 
-# from app.shared_library.emails import (
-# )
-from .metadata import contact, description, tags_metadata
+from .wrapper_email import send_email
 
 KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC", None)
 KAFKA_BROKER_0_URL = os.environ.get("KAFKA_BROKER_0_URL", None)
@@ -22,16 +18,9 @@ if (
         "[ERROR] Required credentials were not found in the environment variables"
     )
 
-app = FastAPI(
-    title="Bookstore API Service for Customers Data",
-    description=description,
-    tags_metadata=tags_metadata,
-    contact=contact,
-)
-
-# =========
-# Customers
-# =========
+# =============
+# Kafka Configs
+# =============
 c = Consumer({
     "bootstrap.servers": [KAFKA_BROKER_0_URL, KAFKA_BROKER_1_URL, KAFKA_BROKER_2_URL],
 })
@@ -49,16 +38,14 @@ while True:
 
     print("Received message: {}".format(msg.value().decode("utf-8")))
 
+    if False:
+        customer_email = "soobinrho@gmail.com"
+        customer_name = "Soobin Rho"
+        email_body = f"Dear {customer_name},\nWelcome to the Book store created by soobinr.\nExceptionally this time we won’t ask you to click a link to activate your account.\n"
+        send_email(
+            email_body=email_body,
+            email_to=customer_email,
+            email_subject="Activate your book store account",
+        )
+
 c.close()
-
-
-# =============
-# Uncategorized
-# =============
-@app.get(
-    "/status",
-    tags=["uncategorized"],
-    status_code=status.HTTP_200_OK,
-)
-async def get_status(response: Response):
-    return JSONResponse(content="OK", headers={"Content-Type": "text/plain"})
