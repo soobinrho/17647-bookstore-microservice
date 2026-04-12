@@ -124,15 +124,15 @@ chmod 400 -i ./key.pem ec2-user@<SNIP>
 sudo dnf install -y mariadb105-server
 
 # Ensure that the books API cannot access the customers DB and vice versa.
-mysql -h bookstore-db.cluster-<SNIP>.us-east-1.rds.amazonaws.com -u admin-soobin -p'<SNIP>' \
-  -e 'CREATE DATABASE IF NOT EXISTS bookstore-books;' \
-  -e 'CREATE USER api-service-books;' \
-  -e 'GRANT ALL PRIVILEGES ON bookstore-books.* TO api-service-books IDENTIFIED BY <SAME_DB_BOOKS_PASS_DEFINED_IN_ENV_FILE>;'
+mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
+  -e 'CREATE DATABASE IF NOT EXISTS bookstore_books;' \
+  -e 'CREATE USER <SNIP> IDENTIFIED BY "<SNIP>";' \
+  -e 'GRANT ALL PRIVILEGES ON <SNIP>.* TO <SNIP>;'
 
-mysql -h bookstore-db.cluster-<SNIP>.us-east-1.rds.amazonaws.com -u admin-soobin -p'<SNIP>' \
-  -e 'CREATE DATABASE IF NOT EXISTS bookstore-customers;' \
-  -e 'CREATE USER api-service-customers;' \
-  -e 'GRANT ALL PRIVILEGES ON bookstore-customers.* TO api-service-customers IDENTIFIED BY <SAME_DB_CUSTOMERS_PASS_DEFINED_IN_ENV_FILE>;'
+mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
+  -e 'CREATE DATABASE IF NOT EXISTS bookstore_customers;' \
+  -e 'CREATE USER <SNIP> IDENTIFIED BY "<SNIP>";' \
+  -e 'GRANT ALL PRIVILEGES ON <SNIP>.* TO <SNIP>;'
 
 # In each EC2, download this repository so that the Makefile can be
 # used for deployment and pulled whenever there's an update in the repo.
@@ -187,15 +187,15 @@ make prod-deploy-ec2-bookstore-d
 
 ```bash
 # Ensure that the books API cannot access the customers DB and vice versa.
-mysql -h bookstore-db.cluster-<SNIP>.us-east-1.rds.amazonaws.com -u admin-soobin -p'<SAME_DB_PASS_DEFINED_IN_ENV_FILE>' \
-  -e 'CREATE DATABASE IF NOT EXISTS bookstore-books;' \
-  -e 'CREATE USER api-service-books;' \
-  -e 'GRANT ALL PRIVILEGES ON bookstore-books.* TO api-service-books IDENTIFIED BY <SAME_DB_BOOKS_PASS_DEFINED_IN_ENV_FILE>;'
+mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
+  -e 'CREATE DATABASE IF NOT EXISTS bookstore_books;' \
+  -e 'CREATE USER <SNIP> IDENTIFIED BY "<SNIP>";' \
+  -e 'GRANT ALL PRIVILEGES ON <SNIP>.* TO <SNIP>;'
 
-mysql -h bookstore-db.cluster-<SNIP>.us-east-1.rds.amazonaws.com -u admin-soobin -p'<SAME_DB_PASS_DEFINED_IN_ENV_FILE>' \
-  -e 'CREATE DATABASE IF NOT EXISTS bookstore-customers;' \
-  -e 'CREATE USER api-service-customers;' \
-  -e 'GRANT ALL PRIVILEGES ON bookstore-customers.* TO api-service-customers IDENTIFIED BY <SAME_DB_CUSTOMERS_PASS_DEFINED_IN_ENV_FILE>;'
+mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
+  -e 'CREATE DATABASE IF NOT EXISTS bookstore_customers;' \
+  -e 'CREATE USER <SNIP> IDENTIFIED BY "<SNIP>";' \
+  -e 'GRANT ALL PRIVILEGES ON <SNIP>.* TO <SNIP>;'
 
 # ===================
 # Debugging Workflows
