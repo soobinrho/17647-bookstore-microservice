@@ -12,4 +12,4 @@ WORKDIR /app
 RUN uv sync --frozen --no-cache
 
 # Run the application.
-CMD ["/app/.venv/bin/python", "app/main.py"]
+CMD ["/app/.venv/bin/python", "./app/main.py"]

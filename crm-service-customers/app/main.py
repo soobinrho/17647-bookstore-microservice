@@ -2,8 +2,7 @@ import json
 import os
 
 from confluent_kafka import Consumer
-
-from .wrapper_email import send_email
+from wrapper_email import send_email
 
 KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC", None)
 KAFKA_BROKER_0_URL = os.environ.get("KAFKA_BROKER_0_URL", None)

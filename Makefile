@@ -42,7 +42,6 @@ push:
 		docker push soobinrho/17647-bookstore-crm-service-customers:latest && \
  		docker push soobinrho/17647-bookstore-crm-service-customers:$(GIT_HASH)
 
-
 # =====
 # Tests
 # =====
@@ -57,10 +56,10 @@ test-desktop-books: ensure-env-file-exists
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
 		--env DB_URL='host.docker.internal:3306' \
-		--env DB_USER="${DB_BOOKS_USER}" \
-		--env DB_PASS="${DB_BOOKS_PASS}" \
-		--env DB_DATABASE="${DB_BOOKS_DATABASE}" \
-		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
+		--env DB_USER=${DB_BOOKS_USER} \
+		--env DB_PASS=${DB_BOOKS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
+		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
 		soobinrho/17647-bookstore-api-service-books:latest
 	docker ps
 	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
@@ -76,19 +75,19 @@ test-desktop-customers: ensure-env-file-exists
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
 		--env DB_URL='host.docker.internal:3307' \
-		--env DB_USER="${DB_CUSTOMERS_USER}" \
-		--env DB_PASS="${DB_CUSTOMERS_PASS}" \
-		--env DB_DATABASE="${DB_CUSTOMERS_DATABASE}" \
-		--env KAFKA_TOPIC="${KAFKA_TOPIC}" \
-		--env KAFKA_BROKER_0_URL="${KAFKA_BROKER_0_URL}" \
-		--env KAFKA_BROKER_1_URL="${KAFKA_BROKER_0_URL}" \
-		--env KAFKA_BROKER_2_URL="${KAFKA_BROKER_0_URL}" \
+		--env DB_USER=${DB_CUSTOMERS_USER} \
+		--env DB_PASS=${DB_CUSTOMERS_PASS} \
+		--env DB_DATABASE=${DB_CUSTOMERS_DATABASE} \
+		--env KAFKA_TOPIC=${KAFKA_TOPIC} \
+		--env KAFKA_BROKER_0_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
 		soobinrho/17647-bookstore-api-service-customers:latest
 	docker run --detach --name dev-bookstore-crm-service-customers \
-		--env SMTP_SERVER_URL="${SMTP_SERVER_URL}" \
-		--env SMTP_SERVER_PORT="${SMTP_SERVER_PORT}" \
-		--env SMTP_SERVER_ID="${SMTP_SERVER_ID}" \
-		--env SMTP_SERVER_PASS="${SMTP_SERVER_PASS}" \
+		--env SMTP_SERVER_URL=${SMTP_SERVER_URL} \
+		--env SMTP_SERVER_PORT=${SMTP_SERVER_PORT} \
+		--env SMTP_SERVER_ID=${SMTP_SERVER_ID} \
+		--env SMTP_SERVER_PASS=${SMTP_SERVER_PASS} \
 		soobinrho/17647-bookstore-crm-service-customers:latest
 	docker ps
 	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
@@ -106,10 +105,10 @@ test-mobile-books: ensure-env-file-exists
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
 		--env DB_URL='host.docker.internal:3306' \
-		--env DB_USER="${DB_BOOKS_USER}" \
-		--env DB_PASS="${DB_BOOKS_PASS}" \
-		--env DB_DATABASE="${DB_BOOKS_DATABASE}" \
-		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
+		--env DB_USER=${DB_BOOKS_USER} \
+		--env DB_PASS=${DB_BOOKS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
+		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
 		soobinrho/17647-bookstore-api-service-books:latest
 	docker ps
 	echo '[INFO] Port 80: dev-bookstore-bff-mobile'
@@ -125,19 +124,19 @@ test-mobile-customers: ensure-env-file-exists
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
 		--env DB_URL='host.docker.internal:3307' \
-		--env DB_USER="${DB_CUSTOMERS_USER}" \
-		--env DB_PASS="${DB_CUSTOMERS_PASS}" \
-		--env DB_DATABASE="${DB_CUSTOMERS_DATABASE}" \
-		--env KAFKA_TOPIC="${KAFKA_TOPIC}" \
-		--env KAFKA_BROKER_0_URL="${KAFKA_BROKER_0_URL}" \
-		--env KAFKA_BROKER_1_URL="${KAFKA_BROKER_0_URL}" \
-		--env KAFKA_BROKER_2_URL="${KAFKA_BROKER_0_URL}" \
+		--env DB_USER=${DB_CUSTOMERS_USER} \
+		--env DB_PASS=${DB_CUSTOMERS_PASS} \
+		--env DB_DATABASE=${DB_CUSTOMERS_DATABASE} \
+		--env KAFKA_TOPIC=${KAFKA_TOPIC} \
+		--env KAFKA_BROKER_0_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
 		soobinrho/17647-bookstore-api-service-customers:latest
 	docker run --detach --name dev-bookstore-crm-service-customers \
-		--env SMTP_SERVER_URL="${SMTP_SERVER_URL}" \
-		--env SMTP_SERVER_PORT="${SMTP_SERVER_PORT}" \
-		--env SMTP_SERVER_ID="${SMTP_SERVER_ID}" \
-		--env SMTP_SERVER_PASS="${SMTP_SERVER_PASS}" \
+		--env SMTP_SERVER_URL=${SMTP_SERVER_URL} \
+		--env SMTP_SERVER_PORT=${SMTP_SERVER_PORT} \
+		--env SMTP_SERVER_ID=${SMTP_SERVER_ID} \
+		--env SMTP_SERVER_PASS=${SMTP_SERVER_PASS} \
 		soobinrho/17647-bookstore-crm-service-customers:latest
 	docker ps
 	echo '[INFO] Port 80: dev-bookstore-bff-mobile'
@@ -149,17 +148,17 @@ test-create-db: ensure-env-file-exists
 		-p 3306:3306 \
 		--add-host host.docker.internal:host-gateway \
 		--env MARIADB_RANDOM_ROOT_PASSWORD='True' \
-		--env MARIADB_USER="${DB_BOOKS_USER}" \
-		--env MARIADB_PASSWORD="${DB_BOOKS_PASS}" \
-		--env MARIADB_DATABASE="${DB_BOOKS_DATABASE}" \
+		--env MARIADB_USER=${DB_BOOKS_USER} \
+		--env MARIADB_PASSWORD=${DB_BOOKS_PASS} \
+		--env MARIADB_DATABASE=${DB_BOOKS_DATABASE} \
 		mariadb:latest
 	docker run --detach --name dev-db-customers \
 		-p 3307:3306 \
 		--add-host host.docker.internal:host-gateway \
 		--env MARIADB_RANDOM_ROOT_PASSWORD='True' \
-		--env MARIADB_USER="${DB_CUSTOMERS_USER}" \
-		--env MARIADB_PASSWORD="${DB_CUSTOMERS_PASS}" \
-		--env MARIADB_DATABASE="${DB_CUSTOMERS_DATABASE}" \
+		--env MARIADB_USER=${DB_CUSTOMERS_USER} \
+		--env MARIADB_PASSWORD=${DB_CUSTOMERS_PASS} \
+		--env MARIADB_DATABASE=${DB_CUSTOMERS_DATABASE} \
 		mariadb:latest
 
 cleanup:
@@ -194,11 +193,11 @@ test-related-books-no-delay: ensure-env-file-exists cleanup cleanup-only-related
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
 		--env DB_URL='host.docker.internal:3306' \
-		--env DB_USER="${DB_BOOKS_USER}" \
-		--env DB_PASS="${DB_BOOKS_PASS}" \
-		--env DB_DATABASE="${DB_BOOKS_DATABASE}" \
-		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
-		--env API_RELATED_BOOKS_URL="${API_RELATED_BOOKS_URL_DEV}" \
+		--env DB_USER=${DB_BOOKS_USER} \
+		--env DB_PASS=${DB_BOOKS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
+		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
+		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
 		soobinrho/17647-bookstore-api-service-books:latest
 	docker ps
 	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
@@ -222,11 +221,11 @@ test-related-books-delayed: ensure-env-file-exists cleanup cleanup-only-related-
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
 		--env DB_URL='host.docker.internal:3306' \
-		--env DB_USER="${DB_BOOKS_USER}" \
-		--env DB_PASS="${DB_BOOKS_PASS}" \
-		--env DB_DATABASE="${DB_BOOKS_DATABASE}" \
-		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
-		--env API_RELATED_BOOKS_URL="${API_RELATED_BOOKS_URL_DEV}" \
+		--env DB_USER=${DB_BOOKS_USER} \
+		--env DB_PASS=${DB_BOOKS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
+		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
+		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
 		soobinrho/17647-bookstore-api-service-books:latest
 	docker ps
 	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
@@ -244,70 +243,70 @@ prod-deploy-ec2-bookstore-a: ensure-env-file-exists
 	docker pull soobinrho/17647-bookstore-bff-desktop:latest
 	docker run --detach --name bookstore-bff-desktop \
 		-p 80:80 \
-		--env API_SERVICES_LOAD_BALANCER_URL="${API_SERVICES_LOAD_BALANCER_URL}" \
+		--env API_SERVICES_LOAD_BALANCER_URL=${API_SERVICES_LOAD_BALANCER_URL} \
 		soobinrho/17647-bookstore-bff-desktop:latest
 	docker pull soobinrho/17647-bookstore-api-service-customers:latest
 	docker run --detach --name bookstore-api-service-customers \
 		-p 3000:3000 \
-		--env DB_URL="${DB_URL}" \
-		--env DB_USER="${DB_CUSTOMERS_USER}" \
-		--env DB_PASS="${DB_CUSTOMERS_PASS}" \
-		--env DB_DATABASE="${DB_CUSTOMERS_DATABASE}" \
-		--env KAFKA_TOPIC="${KAFKA_TOPIC}" \
-		--env KAFKA_BROKER_0_URL="${KAFKA_BROKER_0_URL}" \
-		--env KAFKA_BROKER_1_URL="${KAFKA_BROKER_0_URL}" \
-		--env KAFKA_BROKER_2_URL="${KAFKA_BROKER_0_URL}" \
+		--env DB_URL=${DB_URL} \
+		--env DB_USER=${DB_CUSTOMERS_USER} \
+		--env DB_PASS=${DB_CUSTOMERS_PASS} \
+		--env DB_DATABASE=${DB_CUSTOMERS_DATABASE} \
+		--env KAFKA_TOPIC=${KAFKA_TOPIC} \
+		--env KAFKA_BROKER_0_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
 		soobinrho/17647-bookstore-api-service-customers:latest
 
 prod-deploy-ec2-bookstore-b: ensure-env-file-exists
 	docker pull soobinrho/17647-bookstore-bff-desktop:latest
 	docker run --detach --name bookstore-bff-desktop \
 		-p 80:80 \
-		--env API_SERVICES_LOAD_BALANCER_URL="${API_SERVICES_LOAD_BALANCER_URL}" \
+		--env API_SERVICES_LOAD_BALANCER_URL=${API_SERVICES_LOAD_BALANCER_URL} \
 		soobinrho/17647-bookstore-bff-desktop:latest
 	docker pull soobinrho/17647-bookstore-api-service-books:latest
 	docker run --detach --name bookstore-api-service-books \
 		-p 3000:3000 \
-		--env DB_URL="${DB_URL}" \
-		--env DB_USER="${DB_BOOKS_USER}" \
-		--env DB_PASS="${DB_BOOKS_PASS}" \
-		--env DB_DATABASE="${DB_BOOKS_DATABASE}" \
-		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
+		--env DB_URL=${DB_URL} \
+		--env DB_USER=${DB_BOOKS_USER} \
+		--env DB_PASS=${DB_BOOKS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
+		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
 		soobinrho/17647-bookstore-api-service-books:latest
 
 prod-deploy-ec2-bookstore-c: ensure-env-file-exists
 	docker pull soobinrho/17647-bookstore-bff-mobile:latest
 	docker run --detach --name bookstore-bff-mobile \
 		-p 80:80 \
-		--env API_SERVICES_LOAD_BALANCER_URL="${API_SERVICES_LOAD_BALANCER_URL}" \
+		--env API_SERVICES_LOAD_BALANCER_URL=${API_SERVICES_LOAD_BALANCER_URL} \
 		soobinrho/17647-bookstore-bff-mobile:latest
 	docker pull soobinrho/17647-bookstore-api-service-books:latest
 	docker run --detach --name bookstore-api-service-books \
 		-p 3000:3000 \
-		--env DB_URL="${DB_URL}" \
-		--env DB_USER="${DB_BOOKS_USER}" \
-		--env DB_PASS="${DB_BOOKS_PASS}" \
-		--env DB_DATABASE="${DB_BOOKS_DATABASE}" \
-		--env GEMINI_API_KEY="${GEMINI_API_KEY}" \
+		--env DB_URL=${DB_URL} \
+		--env DB_USER=${DB_BOOKS_USER} \
+		--env DB_PASS=${DB_BOOKS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
+		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
 		soobinrho/17647-bookstore-api-service-books:latest
 
 prod-deploy-ec2-bookstore-d: ensure-env-file-exists
 	docker pull soobinrho/17647-bookstore-bff-mobile:latest
 	docker run --detach --name bookstore-bff-mobile \
 		-p 80:80 \
-		--env API_SERVICES_LOAD_BALANCER_URL="${API_SERVICES_LOAD_BALANCER_URL}" \
+		--env API_SERVICES_LOAD_BALANCER_URL=${API_SERVICES_LOAD_BALANCER_URL} \
 		soobinrho/17647-bookstore-bff-mobile:latest
 	docker pull soobinrho/17647-bookstore-api-service-customers:latest
 	docker run --detach --name bookstore-api-service-customers \
 		-p 3000:3000 \
-		--env DB_URL="${DB_URL}" \
-		--env DB_USER="${DB_CUSTOMERS_USER}" \
-		--env DB_PASS="${DB_CUSTOMERS_PASS}" \
-		--env DB_DATABASE="${DB_CUSTOMERS_DATABASE}" \
-		--env KAFKA_TOPIC="${KAFKA_TOPIC}" \
-		--env KAFKA_BROKER_0_URL="${KAFKA_BROKER_0_URL}" \
-		--env KAFKA_BROKER_1_URL="${KAFKA_BROKER_0_URL}" \
-		--env KAFKA_BROKER_2_URL="${KAFKA_BROKER_0_URL}" \
+		--env DB_URL=${DB_URL} \
+		--env DB_USER=${DB_CUSTOMERS_USER} \
+		--env DB_PASS=${DB_CUSTOMERS_PASS} \
+		--env DB_DATABASE=${DB_CUSTOMERS_DATABASE} \
+		--env KAFKA_TOPIC=${KAFKA_TOPIC} \
+		--env KAFKA_BROKER_0_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
 		soobinrho/17647-bookstore-api-service-customers:latest
 
 prod-cleanup:
@@ -318,13 +317,13 @@ prod-cleanup:
 # ==========================
 prod-deploy-k8s-bookstore: ensure-env-file-exists
 	echo "This is a placeholder for now."
-	# "${DB_BOOKS_USER}"
-	# "${DB_BOOKS_PASS}"
-	# "${DB_BOOKS_DATABASE}"
-	# "${DB_CUSTOMERS_USER}"
-	# "${DB_CUSTOMERS_PASS}"
-	# "${DB_CUSTOMERS_DATABASE}"
-	# "${API_RELATED_BOOKS_URL_PROD}"
+	# ${DB_BOOKS_USER}
+	# ${DB_BOOKS_PASS}
+	# ${DB_BOOKS_DATABASE}
+	# ${DB_CUSTOMERS_USER}
+	# ${DB_CUSTOMERS_PASS}
+	# ${DB_CUSTOMERS_DATABASE}
+	# ${API_RELATED_BOOKS_URL_PROD}
 
 # ====
 # Misc
