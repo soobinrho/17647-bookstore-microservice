@@ -1,6 +1,6 @@
 import os
 
-from fastapi import FastAPI, Request, Response, status
+from fastapi import BackgroundTasks, FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlmodel import Session, SQLModel, create_engine, select
@@ -19,6 +19,7 @@ from app.shared_library.responses import (
     RESPONSE_INVALID_STATE,
     RESPONSE_UNAUTHENTICATED,
 )
+from app.wrapper_kafka_producer import produce_kafka_message
 
 from .metadata import contact, description, tags_metadata
 
@@ -105,11 +106,17 @@ def get_customer_by_userId(userId: str) -> Customers:
         return customer
 
 
+def background_task_produce_kafka_message(json_message: str):
+    produce_kafka_message(json_message)
+
+
 # =========
 # Customers
 # =========
 @app.post("/customers", tags=["customers"], status_code=status.HTTP_201_CREATED)
-async def post_customers(customer_request_body: CustomerRequestBody):
+async def post_customers(
+    customer_request_body: CustomerRequestBody, background_tasks: BackgroundTasks
+):
     if not check_is_valid_email(customer_request_body.userId):
         return RESPONSE_INVALID_EMAIL
 
@@ -134,6 +141,9 @@ async def post_customers(customer_request_body: CustomerRequestBody):
     )
     create_customer(customer)
     customer = get_customer_by_userId(customer_request_body.userId)
+    background_tasks.add_task(
+        background_task_produce_kafka_message, customer.model_dump_json()
+    )
     return {
         "id": int(customer.customer_id),
         "userId": str(customer.userId),

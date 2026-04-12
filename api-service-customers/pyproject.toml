@@ -5,6 +5,7 @@ description = "https://github.com/soobinrho/17647-bookstore-microservice"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "confluent-kafka>=2.14.0",
     "dotenv>=0.9.9",
     "fastapi[standard]>=0.135.1",
     "httpx>=0.28.1",
