@@ -21,6 +21,9 @@ build:
 	cd ./bff-mobile/ && \
 		docker build -t soobinrho/17647-bookstore-bff-mobile:latest \
 		-t soobinrho/17647-bookstore-bff-mobile:$(GIT_HASH) .
+	cd ./crm-service-customers/ && \
+		docker build -t soobinrho/17647-bookstore-crm-service-customers:latest \
+		-t soobinrho/17647-bookstore-crm-service-customers:$(GIT_HASH) .
 
 push:
 	cd ./api-service-books/ && \
@@ -35,6 +38,10 @@ push:
 	cd ./bff-mobile && \
 		docker push soobinrho/17647-bookstore-bff-mobile:latest && \
  		docker push soobinrho/17647-bookstore-bff-mobile:$(GIT_HASH)
+	cd ./crm-service-customers/ && \
+		docker push soobinrho/17647-bookstore-crm-service-customers:latest && \
+ 		docker push soobinrho/17647-bookstore-crm-service-customers:$(GIT_HASH)
+
 
 # =====
 # Tests
@@ -72,10 +79,21 @@ test-desktop-customers: ensure-env-file-exists
 		--env DB_USER="${DB_CUSTOMERS_USER}" \
 		--env DB_PASS="${DB_CUSTOMERS_PASS}" \
 		--env DB_DATABASE="${DB_CUSTOMERS_DATABASE}" \
+		--env KAFKA_TOPIC="${KAFKA_TOPIC}" \
+		--env KAFKA_BROKER_0_URL="${KAFKA_BROKER_0_URL}" \
+		--env KAFKA_BROKER_1_URL="${KAFKA_BROKER_0_URL}" \
+		--env KAFKA_BROKER_2_URL="${KAFKA_BROKER_0_URL}" \
 		soobinrho/17647-bookstore-api-service-customers:latest
+	docker run --detach --name dev-bookstore-crm-service-customers \
+		--env SMTP_SERVER_URL="${SMTP_SERVER_URL}" \
+		--env SMTP_SERVER_PORT="${SMTP_SERVER_PORT}" \
+		--env SMTP_SERVER_ID="${SMTP_SERVER_ID}" \
+		--env SMTP_SERVER_PASS="${SMTP_SERVER_PASS}" \
+		soobinrho/17647-bookstore-crm-service-customers:latest
 	docker ps
 	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
 	echo '[INFO] Port 3000: dev-bookstore-api-service-customers'
+	echo '[INFO] Port N/A: dev-bookstore-crm-service-customers'
 
 test-mobile-books: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-bff-mobile \
@@ -110,10 +128,21 @@ test-mobile-customers: ensure-env-file-exists
 		--env DB_USER="${DB_CUSTOMERS_USER}" \
 		--env DB_PASS="${DB_CUSTOMERS_PASS}" \
 		--env DB_DATABASE="${DB_CUSTOMERS_DATABASE}" \
+		--env KAFKA_TOPIC="${KAFKA_TOPIC}" \
+		--env KAFKA_BROKER_0_URL="${KAFKA_BROKER_0_URL}" \
+		--env KAFKA_BROKER_1_URL="${KAFKA_BROKER_0_URL}" \
+		--env KAFKA_BROKER_2_URL="${KAFKA_BROKER_0_URL}" \
 		soobinrho/17647-bookstore-api-service-customers:latest
+	docker run --detach --name dev-bookstore-crm-service-customers \
+		--env SMTP_SERVER_URL="${SMTP_SERVER_URL}" \
+		--env SMTP_SERVER_PORT="${SMTP_SERVER_PORT}" \
+		--env SMTP_SERVER_ID="${SMTP_SERVER_ID}" \
+		--env SMTP_SERVER_PASS="${SMTP_SERVER_PASS}" \
+		soobinrho/17647-bookstore-crm-service-customers:latest
 	docker ps
 	echo '[INFO] Port 80: dev-bookstore-bff-mobile'
 	echo '[INFO] Port 3000: dev-bookstore-api-service-customers'
+	echo '[INFO] Port N/A: dev-bookstore-crm-service-customers'
 
 test-create-db: ensure-env-file-exists
 	docker run --detach --name dev-db-books \
@@ -224,6 +253,10 @@ prod-deploy-ec2-bookstore-a: ensure-env-file-exists
 		--env DB_USER="${DB_CUSTOMERS_USER}" \
 		--env DB_PASS="${DB_CUSTOMERS_PASS}" \
 		--env DB_DATABASE="${DB_CUSTOMERS_DATABASE}" \
+		--env KAFKA_TOPIC="${KAFKA_TOPIC}" \
+		--env KAFKA_BROKER_0_URL="${KAFKA_BROKER_0_URL}" \
+		--env KAFKA_BROKER_1_URL="${KAFKA_BROKER_0_URL}" \
+		--env KAFKA_BROKER_2_URL="${KAFKA_BROKER_0_URL}" \
 		soobinrho/17647-bookstore-api-service-customers:latest
 
 prod-deploy-ec2-bookstore-b: ensure-env-file-exists
@@ -271,6 +304,10 @@ prod-deploy-ec2-bookstore-d: ensure-env-file-exists
 		--env DB_USER="${DB_CUSTOMERS_USER}" \
 		--env DB_PASS="${DB_CUSTOMERS_PASS}" \
 		--env DB_DATABASE="${DB_CUSTOMERS_DATABASE}" \
+		--env KAFKA_TOPIC="${KAFKA_TOPIC}" \
+		--env KAFKA_BROKER_0_URL="${KAFKA_BROKER_0_URL}" \
+		--env KAFKA_BROKER_1_URL="${KAFKA_BROKER_0_URL}" \
+		--env KAFKA_BROKER_2_URL="${KAFKA_BROKER_0_URL}" \
 		soobinrho/17647-bookstore-api-service-customers:latest
 
 prod-cleanup:

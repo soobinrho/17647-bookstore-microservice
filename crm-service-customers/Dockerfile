@@ -1,6 +1,5 @@
 # Reference: https://docs.astral.sh/uv/guides/integration/fastapi/#deployment
 FROM python:3.12-slim
-EXPOSE 3000/tcp
 
 # Install uv.
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -13,4 +12,4 @@ WORKDIR /app
 RUN uv sync --frozen --no-cache
 
 # Run the application.
-CMD ["/app/.venv/bin/fastapi", "run", "app/main.py", "--port", "3000", "--host", "0.0.0.0", "--forwarded-allow-ips", "'*'"]
+CMD ["/app/.venv/bin/python", "app/main.py"]
