@@ -6,7 +6,6 @@ import httpx
 from fastapi import BackgroundTasks, FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from google import genai
 from sqlmodel import Session, SQLModel, create_engine
 
 from app.shared_library.input_data_validations import (
@@ -25,6 +24,7 @@ from app.shared_library.responses import (
 )
 
 from .metadata import contact, description, tags_metadata
+from .wrapper_book_summary import get_book_500_words_summary
 
 IS_DEV = os.environ.get("IS_DEV", None)
 IS_DEV = True if IS_DEV is not None else False
@@ -83,41 +83,6 @@ async def middleware_main(req: Request, call_next_api):
     return res
 
 
-def get_LLM_book_500_words_summary(title: str, author: str, ISBN: str) -> str:
-    # Source: https://github.com/googleapis/python-genai?tab=readme-ov-file#client-context-managers
-    try:
-        with genai.Client() as client:
-            prompt = (
-                "You're Frank Herbert the author of Dune. I am a huge fan of yours. "
-                + f"Please write a 500-words summary of the following book: {title} "
-                + f"by the author {author} with ISBN {ISBN}. I don't care if the book "
-                + "actually exists or not, so please feel free to make up something "
-                + "based on the book name and the book author. Please respond with a "
-                + "summary of the book in exactly 500 words."
-            )
-            summary = (
-                client.models.generate_content(
-                    model="gemini-2.5-flash-lite",
-                    contents=prompt,
-                )
-            ).text
-    except Exception as e:
-        summary = f"Gemini API returned the following error:\n{e}"
-
-    return summary
-
-
-def background_task_generate_summary(title: str, author: str, ISBN: str):
-    book = get_book_by_ISBN(ISBN)
-    if book.summary is None:
-        summary = get_LLM_book_500_words_summary(book.title, book.author, book.ISBN)
-        with Session(engine) as session:
-            book_session = session.get(Books, ISBN)
-            book_session.summary = summary
-            session.add(book_session)
-            session.commit()
-
-
 def create_book(book: Books) -> None:
     with Session(engine) as session:
         session.add(book)
@@ -134,6 +99,17 @@ def get_book_by_ISBN(ISBN: str) -> Books:
     with Session(engine) as session:
         book = session.get(Books, ISBN)
         return book
+
+
+def background_task_generate_summary(title: str, author: str, ISBN: str):
+    book = get_book_by_ISBN(ISBN)
+    if book.summary is None:
+        summary = get_book_500_words_summary(book.title, book.author, book.ISBN)
+        with Session(engine) as session:
+            book_session = session.get(Books, ISBN)
+            book_session.summary = summary
+            session.add(book_session)
+            session.commit()
 
 
 # =====
