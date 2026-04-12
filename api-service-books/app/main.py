@@ -1,6 +1,4 @@
-import datetime
 import os
-import time
 
 import httpx
 from fastapi import BackgroundTasks, FastAPI, Request, Response, status
@@ -13,7 +11,7 @@ from app.shared_library.input_data_validations import (
     check_is_valid_price,
     check_is_valid_quantity,
 )
-from app.shared_library.models import BookRequestBody, Books, Misc
+from app.shared_library.models import BookRequestBody, Books
 from app.shared_library.responses import (
     RESOPNSE_500_SERVER_ERROR,
     RESPONSE_503_CIRCUIT_BREAKER_OPEN,
@@ -25,6 +23,13 @@ from app.shared_library.responses import (
 
 from .metadata import contact, description, tags_metadata
 from .wrapper_book_summary import get_book_500_words_summary
+from .wrapper_circuit_breaker import (
+    check_circuit_breaker_open,
+    check_should_circuit_breaker_close,
+    close_circuit_breaker,
+    open_circuit_breaker,
+    reset_circuit_breaker_time,
+)
 
 IS_DEV = os.environ.get("IS_DEV", None)
 IS_DEV = True if IS_DEV is not None else False
@@ -265,6 +270,7 @@ async def get_books_duplicate_enpoint(ISBN):
 
 @app.get("/books/{ISBN}/related-books", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_related_books(ISBN):
+    CIRCUIT_BREAKER_TIMEOUT = 3  # Seconds.
     if check_circuit_breaker_open():
         if not check_should_circuit_breaker_close():
             return RESPONSE_503_CIRCUIT_BREAKER_OPEN
@@ -308,75 +314,6 @@ async def get_related_books(ISBN):
                 return RESPONSE_NO_CONTENT
             else:
                 return RESOPNSE_500_SERVER_ERROR
-
-
-# ===============
-# Circuit Breaker
-# ===============
-CIRCUIT_BREAKER_TIMEOUT = 3  # Seconds.
-CIRCUIT_BREAKER_WAIT_HOW_LONG = 60  # Seconds.
-MISC_KEY_WHEN_OPEN = "when_circuit_breaker_open"
-
-
-# Professor Merson's instruction hinted that we could use K8s Volume
-# functionality. I opted to use the already-available AWS Aurora cluster
-# for the circuit breaker's data storage requirement. Tradeoffs is that
-# relying on a database increases outbound coupling. However, what I gain
-# by doing so is that I can use an existing data storage and I therefore
-# don't have to implement a new mechanism just for the circuit breaker.
-def check_circuit_breaker_open() -> bool:
-    with Session(engine) as session:
-        # Circuit breaker closed = Service functioning as expected.
-        # Circuit breaker open = Service malfunctioning.
-        when_circuit_breaker_open = session.get(Misc, MISC_KEY_WHEN_OPEN)
-        if when_circuit_breaker_open is None:
-            return False
-        else:
-            return True
-
-
-def check_should_circuit_breaker_close() -> bool:
-    with Session(engine) as session:
-        when_circuit_breaker_open = session.get(Misc, MISC_KEY_WHEN_OPEN)
-        when_open = int(when_circuit_breaker_open.misc_value)
-        when_open = datetime.datetime.fromtimestamp(when_open)
-        when_recheck = when_open + datetime.timedelta(
-            seconds=CIRCUIT_BREAKER_WAIT_HOW_LONG
-        )
-        datetime_now = datetime.datetime.now()
-        if when_recheck < datetime_now:
-            return True
-        else:
-            return False
-
-
-def get_unix_epoch_now() -> int:
-    return int(time.time())
-
-
-def reset_circuit_breaker_time() -> None:
-    with Session(engine) as session:
-        when_circuit_breaker_open = session.get(Misc, MISC_KEY_WHEN_OPEN)
-        when_circuit_breaker_open.misc_value = f"{get_unix_epoch_now()}"
-        session.add(when_circuit_breaker_open)
-        session.commit()
-
-
-def close_circuit_breaker() -> None:
-    with Session(engine) as session:
-        when_circuit_breaker_open = session.get(Misc, MISC_KEY_WHEN_OPEN)
-        session.delete(when_circuit_breaker_open)
-        session.commit()
-
-
-def open_circuit_breaker() -> None:
-    with Session(engine) as session:
-        when_circuit_breaker_open = Misc(
-            misc_key=MISC_KEY_WHEN_OPEN,
-            misc_value=f"{get_unix_epoch_now()}",
-        )
-        session.add(when_circuit_breaker_open)
-        session.commit()
 
 
 # =============
