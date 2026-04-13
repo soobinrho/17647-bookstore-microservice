@@ -120,8 +120,9 @@ make push
 
 # To create the required database on the AWS Aurora cluster,
 # SSH in to any of the EC2 instances.
-chmod 400 -i ./key.pem ec2-user@<SNIP>
-sudo dnf install -y mariadb105-server
+chmod 400 ./key.pem
+ssh -i ./key.pem ec2-user@<SNIP>
+sudo dnf install -y mariadb105-server git make
 
 # Ensure that the books API cannot access the customers DB and vice versa.
 mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
@@ -136,7 +137,6 @@ mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
 
 # In each EC2, download this repository so that the Makefile can be
 # used for deployment and pulled whenever there's an update in the repo.
-sudo dnf install -y git
 git clone https://github.com/soobinrho/17647-bookstore-microservice
 cd 17647-bookstore-microservice
 
@@ -186,10 +186,21 @@ make prod-deploy-ec2-bookstore-d
 ### How to deploy to AWS with Kubernetes
 
 ```bash
+# Create the infrastructure using the CloudFormation template.
+# Then, create an EC2 instance called EC2BookstoreAdmin.
+# When creating it, also create a new secruity group called
+# EC2BookstoreAdmin-SG.
+
+# Then, allow this security group for EKS access:
 # EC2 - Security Groups - vpc-bookstore-EksSecurityGroup
 # Edit inbound rules - Add rule - HTTPS EC2BookstoreAdmin-SG
 
+# Likewise, allow this security group for the Aurora DB access.
+
 # SSH into the Admin EC2 instance.
+chmod 400 ./key.pem
+ssh -i ./key.pem ec2-user@<SNIP>
+sudo dnf install -y mariadb105-server git make
 
 # Setup the databases.
 mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
