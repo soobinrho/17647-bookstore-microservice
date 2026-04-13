@@ -60,6 +60,7 @@ test-desktop-books: ensure-env-file-exists
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
+		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
 		soobinrho/17647-bookstore-api-service-books:latest
 	docker ps
 	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
@@ -114,6 +115,7 @@ test-mobile-books: ensure-env-file-exists
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
+		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
 		soobinrho/17647-bookstore-api-service-books:latest
 	docker ps
 	echo '[INFO] Port 80: dev-bookstore-bff-mobile'
