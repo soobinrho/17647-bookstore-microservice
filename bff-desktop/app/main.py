@@ -35,6 +35,9 @@ else:
     API_SERVICE_CUSTOMERS_URL = API_SERVICES_LOAD_BALANCER_URL
 
 if API_SERVICE_BOOKS_URL is None or API_SERVICE_CUSTOMERS_URL is None:
+    print(
+        "[ERROR] All of API_SERVICES_LOAD_BALANCER_URL, API_SERVICE_BOOKS_URL, API_SERVICE_CUSTOMERS_URL are None"
+    )
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"
     )
