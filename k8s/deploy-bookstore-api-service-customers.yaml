@@ -27,7 +27,7 @@ spec:
             periodSeconds: 10
       affinity:
         podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuuringExecution:
+          requiredDuringSchedulingIgnoredDuringExecution:
             - topologyKey: "kubernetes.io/hostname"
               labelSelector:
                 matchExpressions:
