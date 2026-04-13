@@ -218,6 +218,7 @@ aws eks update-kubeconfig --name vpc-bookstore-BookstoreEKSCluster --region us-e
 # Confirm the creds.
 kubectl config get-contexts
 kubectl get namespaces
+kubectl config set-context --current --namespace=bookstore-ns
 
 # Deploy the services.
 make prod-deploy-k8s-bookstore

@@ -5,5 +5,8 @@ metadata:
   labels:
     run: bookstore-crm-service-customers
 spec:
+  ports:
+  - port: 587
+    protocol: TCP
   selector:
     run: bookstore-crm-service-customers
