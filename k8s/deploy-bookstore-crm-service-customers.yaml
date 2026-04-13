@@ -18,13 +18,3 @@ spec:
           imagePullPolicy: Always
           ports:
           - containerPort: 587
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - topologyKey: "kubernetes.io/hostname"
-              labelSelector:
-                matchExpressions:
-                  - key: "app"
-                    operator: In
-                    values:
-                      - bookstore-crm-service-customers
