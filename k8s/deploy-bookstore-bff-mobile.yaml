@@ -2,28 +2,36 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bookstore-bff-mobile
+  namespace: bookstore-ns
 spec:
   selector:
     matchLabels:
-      run: bookstore-bff-mobile
+      app: bookstore-bff-mobile
   replicas: 2
   template:
     metadata:
       labels:
-        run: bookstore-bff-mobile
+        app: bookstore-bff-mobile
     spec:
       containers:
-      - name: bookstore-bff-mobile
-        image: soobinrho/17647-bookstore-bff-mobile:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 80
-        envFrom:
-          - secretRef:
-              name: prod-secrets
-        livenessProbe:
-          httpGet:
-            path: /status
-            port: 80
-          initialDelaySeconds: 30
-          periodSeconds: 10
+        - name: bookstore-bff-mobile
+          image: soobinrho/17647-bookstore-bff-mobile:latest
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                      - bookstore-crm-service-customers

@@ -5,17 +5,24 @@ metadata:
 spec:
   selector:
     matchLabels:
-      run: bookstore-crm-service-customers
+      app: bookstore-crm-service-customers
   replicas: 2
   template:
     metadata:
       labels:
-        run: bookstore-crm-service-customers
+        app: bookstore-crm-service-customers
     spec:
       containers:
-      - name: bookstore-crm-service-customers
-        image: soobinrho/17647-bookstore-crm-service-customers:latest
-        imagePullPolicy: Always
-        envFrom:
-          - secretRef:
-              name: prod-secrets
+        - name: bookstore-crm-service-customers
+          image: soobinrho/17647-bookstore-crm-service-customers:latest
+          imagePullPolicy: Always
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                      - bookstore-crm-service-customers

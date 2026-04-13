@@ -2,28 +2,36 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bookstore-api-service-books
+  namespace: bookstore-ns
 spec:
   selector:
     matchLabels:
-      run: bookstore-api-service-books
+      app: bookstore-api-service-books
   replicas: 1
   template:
     metadata:
       labels:
-        run: bookstore-api-service-books
+        app: bookstore-api-service-books
     spec:
       containers:
-      - name: bookstore-api-service-books
-        image: soobinrho/17647-bookstore-api-service-books:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 3000
-        envFrom:
-          - secretRef:
-              name: prod-secrets
-        livenessProbe:
-          httpGet:
-            path: /status
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 10
+        - name: bookstore-api-service-books
+          image: soobinrho/17647-bookstore-api-service-books:latest
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 3000
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                      - bookstore-crm-service-customers
