@@ -285,6 +285,8 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 
 - **Design Decision on REST vs Kakfa**: If I'm making a simple system talking to only one another and don't need failsafes, use REST. If my system needs to publish an event to more than one service, use Apache Kafka because it's specialized for handling the process of publishing an event to multiple consumers.
 
+- **list vs set in Python**: If a lot of search operations are performed - e.g. `if "value" in list_or_set_values:` - then sets provide almost O(1) while lists are O(n). Use sets in these cases.
+
 <br>
 
 #### Networking in Kubernetes
