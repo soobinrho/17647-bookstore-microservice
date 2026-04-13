@@ -16,6 +16,8 @@ spec:
         - name: bookstore-crm-service-customers
           image: soobinrho/17647-bookstore-crm-service-customers:latest
           imagePullPolicy: Always
+          ports:
+          - containerPort: 587
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
