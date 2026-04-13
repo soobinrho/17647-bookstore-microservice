@@ -1,4 +1,4 @@
-{base_url_web_app_bff}
-{base_url_mobile_app_bff}
+ab446d0f326eb49f6b9ef8f79bab481e-1391952137.us-east-1.elb.amazonaws.com
+a9c1c3ea0b94c4cda92cbf7508cfc64c-359555667.us-east-1.elb.amazonaws.com
 soobinr
 soobinrho2@gmail.com

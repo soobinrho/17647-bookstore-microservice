@@ -226,8 +226,8 @@ make prod-deploy-k8s-bookstore
 # ===================
 # Debugging Workflows
 # ===================
-kubectl get services -n bookstore-ns
-kubectl get pods -n bookstore-ns
+kubectl get services
+kubectl get pods
 
 # ============
 # Redeployment

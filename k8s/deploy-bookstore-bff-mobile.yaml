@@ -21,3 +21,9 @@ spec:
         envFrom:
           - secretRef:
               name: prod-secrets
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
