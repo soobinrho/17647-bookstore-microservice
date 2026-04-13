@@ -8,7 +8,5 @@ metadata:
 spec:
   ports:
   - port: 587
-    targetport: 587
-    protocol: TCP
   selector:
     app: bookstore-crm-service-customers
