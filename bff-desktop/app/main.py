@@ -19,8 +19,22 @@ IS_DEV = os.environ.get("IS_DEV", None)
 IS_DEV = True if IS_DEV is not None else False
 print(f"[INFO] IS_DEV = {IS_DEV}")
 
+API_SERVICE_BOOKS_URL = ""
+API_SERVICE_CUSTOMERS_URL = ""
 API_SERVICES_LOAD_BALANCER_URL = os.environ.get("API_SERVICES_LOAD_BALANCER_URL", None)
 if API_SERVICES_LOAD_BALANCER_URL is None:
+    # These values are automatically populated by K8s for all services.
+    API_SERVICE_BOOKS_URL = os.environ.get(
+        "BOOKSTORE_API_SERVICE_BOOKS_SERVICE_HOST", None
+    )
+    API_SERVICE_CUSTOMERS_URL = os.environ.get(
+        "BOOKSTORE_API_SERVICE_CUSTOMERS_SERVICE_HOST", None
+    )
+else:
+    API_SERVICE_BOOKS_URL = API_SERVICES_LOAD_BALANCER_URL
+    API_SERVICE_CUSTOMERS_URL = API_SERVICES_LOAD_BALANCER_URL
+
+if API_SERVICE_BOOKS_URL is None or API_SERVICE_CUSTOMERS_URL is None:
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"
     )
@@ -63,7 +77,7 @@ async def middleware_main(req: Request, call_next_api):
 async def post_books(book_request_body: BookRequestBody, response: Response):
     async with httpx.AsyncClient() as client:
         res = await client.post(
-            f"{API_SERVICES_LOAD_BALANCER_URL}/books",
+            f"{API_SERVICE_BOOKS_URL}/books",
             json=json.loads(book_request_body.model_dump_json()),
         )
     response.status_code = res.status_code
@@ -78,7 +92,7 @@ async def put_books(
 ):
     async with httpx.AsyncClient() as client:
         res = await client.put(
-            f"{API_SERVICES_LOAD_BALANCER_URL}/books/{ISBN}",
+            f"{API_SERVICE_BOOKS_URL}/books/{ISBN}",
             json=json.loads(book_request_body.model_dump_json()),
         )
     response.status_code = res.status_code
@@ -88,7 +102,7 @@ async def put_books(
 @app.get("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_books(ISBN, response: Response):
     async with httpx.AsyncClient() as client:
-        res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/books/{ISBN}")
+        res = await client.get(f"{API_SERVICE_BOOKS_URL}/books/{ISBN}")
     response.status_code = res.status_code
     response.body = res.content
 
@@ -96,7 +110,7 @@ async def get_books(ISBN, response: Response):
 @app.get("/books/isbn/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_books_duplicate_enpoint(ISBN, response: Response):
     async with httpx.AsyncClient() as client:
-        res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/books/isbn/{ISBN}")
+        res = await client.get(f"{API_SERVICE_BOOKS_URL}/books/isbn/{ISBN}")
     response.status_code = res.status_code
     response.body = res.content
 
@@ -104,9 +118,7 @@ async def get_books_duplicate_enpoint(ISBN, response: Response):
 @app.get("/books/{ISBN}/related-books", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_related_books(ISBN, response: Response):
     async with httpx.AsyncClient() as client:
-        res = await client.get(
-            f"{API_SERVICES_LOAD_BALANCER_URL}/books/{ISBN}/related-books"
-        )
+        res = await client.get(f"{API_SERVICE_BOOKS_URL}/books/{ISBN}/related-books")
     response.status_code = res.status_code
     response.body = res.content
 
@@ -120,7 +132,7 @@ async def post_customers(
 ):
     async with httpx.AsyncClient() as client:
         res = await client.post(
-            f"{API_SERVICES_LOAD_BALANCER_URL}/customers",
+            f"{API_SERVICE_CUSTOMERS_URL}/customers",
             json=json.loads(customer_request_body.model_dump_json()),
         )
     response.status_code = res.status_code
@@ -130,7 +142,7 @@ async def post_customers(
 @app.get("/customers/{id}", tags=["customers"], status_code=status.HTTP_200_OK)
 async def get_customers(id: int, response: Response):
     async with httpx.AsyncClient() as client:
-        res = await client.get(f"{API_SERVICES_LOAD_BALANCER_URL}/customers/{id}")
+        res = await client.get(f"{API_SERVICE_CUSTOMERS_URL}/customers/{id}")
     response.status_code = res.status_code
     response.body = res.content
 
@@ -139,7 +151,7 @@ async def get_customers(id: int, response: Response):
 async def get_customers_by_userId(userId, response: Response):
     async with httpx.AsyncClient() as client:
         res = await client.get(
-            f"{API_SERVICES_LOAD_BALANCER_URL}/customers", params={"userId": userId}
+            f"{API_SERVICE_CUSTOMERS_URL}/customers", params={"userId": userId}
         )
     response.status_code = res.status_code
     response.body = res.content

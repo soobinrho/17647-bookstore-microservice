@@ -186,7 +186,12 @@ make prod-deploy-ec2-bookstore-d
 ### How to deploy to AWS with Kubernetes
 
 ```bash
-# Ensure that the books API cannot access the customers DB and vice versa.
+# EC2 - Security Groups - vpc-bookstore-EksSecurityGroup
+# Edit inbound rules - Add rule - HTTPS EC2BookstoreAdmin-SG
+
+# SSH into the Admin EC2 instance.
+
+# Setup the databases.
 mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
   -e 'CREATE DATABASE IF NOT EXISTS bookstore_books;' \
   -e 'CREATE USER <SNIP> IDENTIFIED BY "<SNIP>";' \
@@ -197,15 +202,46 @@ mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
   -e 'CREATE USER <SNIP> IDENTIFIED BY "<SNIP>";' \
   -e 'GRANT ALL PRIVILEGES ON <SNIP>.* TO <SNIP>;'
 
+# Get Kubectl.
+sudo curl 'https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl' -o /usr/local/bin/kubectl
+sudo chmod +x /usr/local/bin/kubectl
+
+# Get the required K8s cluster creds.
+mkdir ~/.aws
+echo '[default]
+aws_access_key_id=<SNIP>
+aws_secret_access=<SNIP>
+aws_session_token=<SNIP>' > ~/.aws/credentials
+aws eks list-clusters
+aws eks update-kubeconfig --name vpc-bookstore-BookstoreEKSCluster --region us-east-1
+
+# Confirm the creds.
+kubectl config get-contexts
+kubectl get namespaces
+
+# Deploy the services.
+make prod-deploy-k8s-bookstore
+
 # ===================
 # Debugging Workflows
 # ===================
-echo "PLACEHOLDER"
+kubectl get services -n bookstore-ns
+kubectl get pods -n bookstore-ns
 
 # ============
 # Redeployment
 # ============
-echo "PLACEHOLDER"
+make build
+make push
+make prod-deploy-k8s-bookstore
+
+# [TODO] After assignment is complete
+# Go to EC2 Security Groups and remove the two inbound rules I added.
+# Then, delete all manually-created resources. Then, go to
+# CloudFormation and then delete the stack.
+
+# [TODO] After graded, remove the url.txt file.
+
 ```
 
 <br>

@@ -326,14 +326,24 @@ prod-cleanup:
 # Deployment with Kubernetes
 # ==========================
 prod-deploy-k8s-bookstore: ensure-env-file-exists
-	echo "This is a placeholder for now."
-	# ${DB_BOOKS_USER}
-	# ${DB_BOOKS_PASS}
-	# ${DB_BOOKS_DATABASE}
-	# ${DB_CUSTOMERS_USER}
-	# ${DB_CUSTOMERS_PASS}
-	# ${DB_CUSTOMERS_DATABASE}
-	# ${API_RELATED_BOOKS_URL_PROD}
+	cd ./k8s/ && \
+	  kubectl create secret generic prod-secrets --from-env-file=../.env
+	cd ./k8s/ && \
+		kubectl apply -f bookstore-ns.yaml
+	cd ./k8s/ && \
+		kubectl apply -f service-bookstore-api-service-books.yaml && \
+		kubectl apply -f service-bookstore-api-service-customers.yaml && \
+		kubectl apply -f service-bookstore-crm-service-customers.yaml
+	cd ./k8s/ && \
+		kubectl apply -f lb-bookstore-bff-desktop.yaml && \
+		kubectl apply -f lb-bookstore-bff-mobile.yaml
+	cd ./k8s/ && \
+		kubectl apply -f deploy-bookstore-api-service-books.yaml && \
+		kubectl apply -f deploy-bookstore-api-service-customers.yaml && \
+		kubectl apply -f deploy-bookstore-bff-desktop.yaml && \
+		kubectl apply -f deploy-bookstore-bff-mobile.yaml && \
+		kubectl apply -f deploy-bookstore-crm-service-customers.yaml
+
 
 # ====
 # Misc
@@ -352,4 +362,5 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 	cleanup-including-db \
 	test-related-books-no-delay \
 	test-related-books-delayed \
-	cleanup-only-related-books
+	cleanup-only-related-books \
+	prod-deploy-k8s-bookstore

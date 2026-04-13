@@ -1,6 +1,4 @@
 {base_url_web_app_bff}
 {base_url_mobile_app_bff}
 soobinr
-soobinrho@gmail.com
-
-# TODO: After assignment 3 has been graded, remove the url.txt file.
+soobinrho2@gmail.com

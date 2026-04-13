@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-bff-desktop
+spec:
+  selector:
+    matchLabels:
+      run: bookstore-bff-desktop
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        run: bookstore-bff-desktop
+    spec:
+      containers:
+      - name: bookstore-bff-desktop
+        image: soobinrho/17647-bookstore-bff-desktop:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        envFrom:
+          - secretRef:
+              name: prod-secrets

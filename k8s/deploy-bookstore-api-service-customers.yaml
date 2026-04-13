@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-api-service-customers
+spec:
+  selector:
+    matchLabels:
+      run: bookstore-api-service-customers
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        run: bookstore-api-service-customers
+    spec:
+      containers:
+      - name: bookstore-api-service-customers
+        image: soobinrho/17647-bookstore-api-service-customers:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        envFrom:
+          - secretRef:
+              name: prod-secrets

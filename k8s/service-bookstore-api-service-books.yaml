@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-api-service-books
+  labels:
+    run: bookstore-api-service-books
+spec:
+  ports:
+  - port: 3000
+    protocol: TCP
+  selector:
+    run: bookstore-api-service-books

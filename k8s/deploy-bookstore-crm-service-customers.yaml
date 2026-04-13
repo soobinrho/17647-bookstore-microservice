@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-crm-service-customers
+spec:
+  selector:
+    matchLabels:
+      run: bookstore-crm-service-customers
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        run: bookstore-crm-service-customers
+    spec:
+      containers:
+      - name: bookstore-crm-service-customers
+        image: soobinrho/17647-bookstore-crm-service-customers:latest
+        imagePullPolicy: Always
+        envFrom:
+          - secretRef:
+              name: prod-secrets
