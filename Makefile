@@ -332,11 +332,12 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 		kubectl delete secrets --all && \
 		kubectl delete services --all && \
 		kubectl delete deployments --all && \
-		kubectl delete pod --all
-	cd ./k8s/ && \
-	  kubectl create secret generic prod-secrets --from-env-file=../.env
+		kubectl delete pod --all && \
+		kubectl delete namespace bookstore-ns
 	cd ./k8s/ && \
 		kubectl apply -f bookstore-ns.yaml
+	cd ./k8s/ && \
+	  kubectl create secret generic prod-secrets --from-env-file=../.env
 	cd ./k8s/ && \
 		kubectl apply -f service-bookstore-api-service-books.yaml && \
 		kubectl apply -f service-bookstore-api-service-customers.yaml && \
