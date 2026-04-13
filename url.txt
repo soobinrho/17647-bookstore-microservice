@@ -1,4 +1,4 @@
-ab446d0f326eb49f6b9ef8f79bab481e-1391952137.us-east-1.elb.amazonaws.com
-a9c1c3ea0b94c4cda92cbf7508cfc64c-359555667.us-east-1.elb.amazonaws.com
+http://afad2c17c2d9c4f20a05606badb0ab51-2137486647.us-east-1.elb.amazonaws.com:80
+http://a30dfabb798174c17846730c292b9f39-187025434.us-east-1.elb.amazonaws.com:80
 soobinr
 soobinrho2@gmail.com
