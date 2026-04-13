@@ -327,6 +327,11 @@ prod-cleanup:
 # ==========================
 prod-deploy-k8s-bookstore: ensure-env-file-exists
 	cd ./k8s/ && \
+		kubectl delete secrets --all
+		kubectl delete services --all && \
+		kubectl delete deployments --all && \
+		kubectl delete pod --all && \
+	cd ./k8s/ && \
 	  kubectl create secret generic prod-secrets --from-env-file=../.env
 	cd ./k8s/ && \
 		kubectl apply -f bookstore-ns.yaml
