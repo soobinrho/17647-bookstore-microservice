@@ -45,6 +45,28 @@ push:
 # =====
 # Tests
 # =====
+test-desktop-books-aurora-db: ensure-env-file-exists
+	docker run --detach --name dev-bookstore-bff-desktop \
+		-p 80:80 \
+		--add-host host.docker.internal:host-gateway \
+		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
+		soobinrho/17647-bookstore-bff-desktop:latest
+	docker run --detach --name dev-bookstore-api-service-books \
+		-p 3000:3000 \
+		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
+		--env DB_URL=${DB_URL} \
+		--env DB_USER=${DB_BOOKS_USER} \
+		--env DB_PASS=${DB_BOOKS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
+		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
+		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
+		soobinrho/17647-bookstore-api-service-books:latest
+	docker ps
+	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
+	echo '[INFO] Port 3000: dev-bookstore-api-service-books'
+
+
 test-desktop-books: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-bff-desktop \
 		-p 80:80 \
