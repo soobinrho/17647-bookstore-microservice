@@ -185,24 +185,42 @@ make prod-deploy-ec2-bookstore-d
 
 ### How to deploy to AWS with Kubernetes
 
+1. Create the infrastructure using the CloudFormation template.
+
+<br>
+
+2. Create an EC2 instance and name it `EC2BookstoreAdmin`. This is where `kubectl` will be called for all management purposes. The four nodes where the services will be run will not be accessed directly; instead, that will be Kubernetes' job.
+
+<br>
+
+3. When creating `EC2BookstoreAdmin`, Select `bookstore-vpc` or whichever vpc was chosen with the CloudFormation template.
+
+<br>
+
+4. Select `bookstore-dev-PublicSubnet1` when creating `EC2BookstoreAdmin`.
+
+<br>
+
+5. `EC2BookstoreAdmin` doesn't have the privileges required for EKS access by default. So, when creating this EC2, create a security group called `EC2BookstoreAdmin-SG`.
+
+<br>
+
+6. Add `EC2BookstoreAdmin-SG` to the following two access rules:
+
+> EC2 - Security Groups - vpc-bookstore-EksSecurityGroup - Edit inbound rules - Add rule - `HTTPS` `EC2BookstoreAdmin-SG`
+
+> EC2 - Security Groups - bookstore-dev-DBSecurityGroup - Edit inbound rules - Add rule - `MYSQL/Aurora` `EC2BookstoreAdmin-SG`
+
+<br>
+
+7. SSH into `EC2BookstoreAdmin` with `ssh -i ./key.pem ec2-user@<SNIP>` and deploy K8s using `kubectl` as follows:
+
 ```bash
-# Create the infrastructure using the CloudFormation template.
-# Then, create an EC2 instance called EC2BookstoreAdmin.
-# When creating it, also create a new secruity group called
-# EC2BookstoreAdmin-SG.
-
-# Then, allow this security group for EKS access:
-# EC2 - Security Groups - vpc-bookstore-EksSecurityGroup
-# Edit inbound rules - Add rule - HTTPS EC2BookstoreAdmin-SG
-
-# Likewise, allow this security group for the Aurora DB access.
-
-# SSH into the Admin EC2 instance.
-chmod 400 ./key.pem
-ssh -i ./key.pem ec2-user@<SNIP>
+# Requirements for deployment.
 sudo dnf install -y mariadb105-server git make
 
-# Setup the databases.
+# Create the required databases and users with correct privileges.
+# Here, we're making sure that one service doesn't have access to another's DB.
 mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
   -e 'CREATE DATABASE IF NOT EXISTS bookstore_books;' \
   -e 'CREATE USER <SNIP> IDENTIFIED BY "<SNIP>";' \
@@ -213,7 +231,6 @@ mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
   -e 'CREATE USER <SNIP> IDENTIFIED BY "<SNIP>";' \
   -e 'GRANT ALL PRIVILEGES ON <SNIP>.* TO <SNIP>;'
 
-# Get Kubectl.
 sudo curl 'https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl' -o /usr/local/bin/kubectl
 sudo chmod +x /usr/local/bin/kubectl
 
