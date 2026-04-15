@@ -185,35 +185,23 @@ make prod-deploy-ec2-bookstore-d
 
 ### How to deploy to AWS with Kubernetes
 
-1. Create the infrastructure using the CloudFormation template.
+1. Create the infrastructure using the CloudFormation template. Then, create an EC2 instance and name it `EC2BookstoreAdmin`. This is where `kubectl` will be called for all management purposes. The four nodes where the services will be run will not be accessed directly; instead, that will be Kubernetes' job.
+
+> Network settings - edit - VPC: `bookstore-vpc` or whichever vpc was chosen with the CloudFormation template.<br>
+> Subnet: `bookstore-dev-PublicSubnet1`<br>
+> Firewall (security groups): `Create security group`<br>
+> Security group name: `EC2BookstoreAdmin-SG`. Explanation: `EC2BookstoreAdmin` doesn't have the privileges required for EKS access by default. The accesses required for DB and K8s need to be assigned to `EC2BookstoreAdmin-SG`.
 
 <br>
 
-2. Create an EC2 instance and name it `EC2BookstoreAdmin`. This is where `kubectl` will be called for all management purposes. The four nodes where the services will be run will not be accessed directly; instead, that will be Kubernetes' job.
+2. Add `EC2BookstoreAdmin-SG` to the following two access rules:
 
-<br>
-
-3. When creating `EC2BookstoreAdmin`, Select `bookstore-vpc` or whichever vpc was chosen with the CloudFormation template.
-
-<br>
-
-4. Select `bookstore-dev-PublicSubnet1` when creating `EC2BookstoreAdmin`.
-
-<br>
-
-5. `EC2BookstoreAdmin` doesn't have the privileges required for EKS access by default. So, when creating this EC2, create a security group called `EC2BookstoreAdmin-SG`.
-
-<br>
-
-6. Add `EC2BookstoreAdmin-SG` to the following two access rules:
-
-> EC2 - Security Groups - vpc-bookstore-EksSecurityGroup - Edit inbound rules - Add rule - `HTTPS` `EC2BookstoreAdmin-SG`
-
+> EC2 - Security Groups - vpc-bookstore-EksSecurityGroup - Edit inbound rules - Add rule - `HTTPS` `EC2BookstoreAdmin-SG`<br>
 > EC2 - Security Groups - bookstore-dev-DBSecurityGroup - Edit inbound rules - Add rule - `MYSQL/Aurora` `EC2BookstoreAdmin-SG`
 
 <br>
 
-7. SSH into `EC2BookstoreAdmin` with `ssh -i ./key.pem ec2-user@<SNIP>` and deploy K8s using `kubectl` as follows:
+3. SSH into `EC2BookstoreAdmin` with `ssh -i ./key.pem ec2-user@<SNIP>` and deploy K8s using `kubectl` as follows:
 
 ```bash
 # Requirements for deployment.
