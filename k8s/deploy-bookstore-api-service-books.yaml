@@ -30,3 +30,13 @@ spec:
             initialDelaySeconds: 600
             periodSeconds: 30
             failureThreshold: 3
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringException:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                      - bookstore-api-service-books
