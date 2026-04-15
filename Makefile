@@ -339,6 +339,7 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 	cd ./k8s/ && \
 		kubectl apply -f bookstore-ns.yaml
 	cd ./k8s/ && \
+		./generate_dot_env_specific_to_each_service.sh
 		kubectl create secret generic secrets-api-service-books --from-env-file=./.env.api-service-books && \
 		kubectl create secret generic secrets-api-service-customers --from-env-file=./.env.api-service-customers && \
 		kubectl create secret generic secrets-crm-service-customers --from-env-file=./.env.crm-service-customers
@@ -355,7 +356,6 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 		kubectl apply -f deploy-bookstore-bff-desktop.yaml && \
 		kubectl apply -f deploy-bookstore-bff-mobile.yaml && \
 		kubectl apply -f deploy-bookstore-crm-service-customers.yaml
-
 
 # ====
 # Misc
