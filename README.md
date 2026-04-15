@@ -265,6 +265,8 @@ watch --color --interval 0.2 'kubectl get pods'
 # 1. Enable ssh access for the nodes.
 # 2. SSH into them.
 # 3. `/var/log/pods/` contains the logs.
+# 4. Keep in mind that the logs are deleted when the pods are deleted.
+#    So, keep the pods running.
 
 # ============
 # Redeployment
