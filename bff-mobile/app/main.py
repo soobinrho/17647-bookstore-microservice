@@ -6,7 +6,9 @@ from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.shared_library.input_data_validations import check_is_authenticated_request
+from app.shared_library.input_data_validations import (
+    check_is_authenticated_request,
+)
 from app.shared_library.models import (
     BookRequestBody,
     CustomerRequestBody,

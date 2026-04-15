@@ -31,40 +31,18 @@ DB_USER = os.environ.get("DB_USER", None)
 DB_PASS = os.environ.get("DB_PASS", None)
 DB_URL = os.environ.get("DB_URL", None)
 DB_DATABASE = os.environ.get("DB_DATABASE", None)
+
+print(f"[INFO] DB_URL = {DB_URL}")
+list_env_vars = [DB_USER, DB_PASS, DB_URL, DB_DATABASE]
 should_raise_exception = False
-if DB_USER is None:
-    print("[ERROR] DB_USER is None")
-    should_raise_exception = True
-if DB_PASS is None:
-    print("[ERROR] DB_PASS is None")
-    should_raise_exception = True
-if DB_URL is None:
-    print("[ERROR] DB_URL is None")
-    should_raise_exception = True
-if DB_DATABASE is None:
-    print("[ERROR] DB_DATABASE is None")
-    should_raise_exception = True
+for env_var in list_env_vars:
+    if env_var is None:
+        print(f"[ERROR] {env_var} = None")
+        should_raise_exception = True
 if should_raise_exception:
-    # [DEBUG]
-    print(f"[DEBUG] DB_USER = {DB_USER}")
-    print(f"[DEBUG] DB_PASS = {DB_PASS}")
-    print(f"[DEBUG] DB_URL = {DB_USER}")
-    print(f"[DEBUG] DB_DATABASE = {DB_DATABASE}")
-    print(
-        f"[DEBUG] BOOKSTORE_API_SERVICE_BOOKS_SERVICE_HOST = {os.environ.get('BOOKSTORE_API_SERVICE_BOOKS_SERVICE_HOST', None)}"
+    raise Exception(
+        "[ERROR] Required credentials were not found in the environment variables"
     )
-    print(
-        f"[DEBUG] BOOKSTORE-API-SERVICE-BOOKS_SERVICE_HOST = {os.environ.get('BOOKSTORE-API-SERVICE-BOOKS_SERVICE_HOST', None)}"
-    )
-    print(
-        f"[DEBUG] BOOKSTORE_API_SERVICE_BOOKS_SERVICE_PORT = {os.environ.get('BOOKSTORE_API_SERVICE_BOOKS_SERVICE_PORT', None)}"
-    )
-    print(
-        f"[DEBUG] BOOKSTORE-API-SERVICE-BOOKS_SERVICE_PORT = {os.environ.get('BOOKSTORE-API-SERVICE-BOOKS_SERVICE_PORT', None)}"
-    )
-    # raise Exception(
-    #     "[ERROR] Required credentials were not found in the environment variables"
-    # )
 
 engine = create_engine(
     f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}/{DB_DATABASE}", echo=False

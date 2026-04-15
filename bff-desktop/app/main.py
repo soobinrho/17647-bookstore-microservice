@@ -6,7 +6,9 @@ from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.shared_library.input_data_validations import check_is_authenticated_request
+from app.shared_library.input_data_validations import (
+    check_is_authenticated_request,
+)
 from app.shared_library.models import (
     BookRequestBody,
     CustomerRequestBody,
@@ -31,10 +33,8 @@ if API_SERVICES_LOAD_BALANCER_URL is None:
         "BOOKSTORE_API_SERVICE_BOOKS_SERVICE_PORT", None
     )
     API_SERVICE_BOOKS_URL = f"{API_SERVICE_BOOKS_URL}:{API_SERVICE_BOOKS_PORT}"
-    # API_SERVICE_BOOKS_URL = (
-    #     "http://bookstore-api-service-books.bookstore-ns.svc.cluster.local:3000"
-    # )
     print(f"[INFO] API_SERVICE_BOOKS_URL = {API_SERVICE_BOOKS_URL}")
+
     API_SERVICE_CUSTOMERS_URL = os.environ.get(
         "BOOKSTORE_API_SERVICE_CUSTOMERS_SERVICE_HOST", None
     )
@@ -44,9 +44,6 @@ if API_SERVICES_LOAD_BALANCER_URL is None:
     API_SERVICE_CUSTOMERS_URL = (
         f"{API_SERVICE_CUSTOMERS_URL}:{API_SERVICE_CUSTOMERS_PORT}"
     )
-    # API_SERVICE_CUSTOMERS_URL = (
-    #     "http://bookstore-api-service-customers.bookstore-ns.svc.cluster.local:3000"
-    # )
     print(f"[INFO] API_SERVICE_CUSTOMERS_URL = {API_SERVICE_CUSTOMERS_URL}")
 else:
     API_SERVICE_BOOKS_URL = API_SERVICES_LOAD_BALANCER_URL
