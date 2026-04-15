@@ -261,6 +261,11 @@ kubectl get services
 kubectl get pods
 watch --color --interval 0.2 'kubectl get pods'
 
+# How to retrieve logs from local nodes.
+# 1. Enable ssh access for the nodes.
+# 2. SSH into them.
+# 3. `/var/log/pods/` contains the logs.
+
 # ============
 # Redeployment
 # ============
