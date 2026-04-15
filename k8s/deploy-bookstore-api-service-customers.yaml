@@ -32,7 +32,7 @@ spec:
             failureThreshold: 3
       affinity:
         podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringException:
+          requiredDuringSchedulingIgnoredDuringExecution:
             - topologyKey: "kubernetes.io/hostname"
               labelSelector:
                 matchExpressions:
