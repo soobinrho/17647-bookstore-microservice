@@ -82,14 +82,14 @@ test-desktop-customers: ensure-env-file-exists
 		--env DB_DATABASE=${DB_CUSTOMERS_DATABASE} \
 		--env KAFKA_TOPIC=${KAFKA_TOPIC} \
 		--env KAFKA_BROKER_0_URL=${KAFKA_BROKER_0_URL} \
-		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_0_URL} \
-		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_1_URL} \
+		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_2_URL} \
 		soobinrho/17647-bookstore-api-service-customers:latest
 	docker run --detach --name dev-bookstore-crm-service-customers \
 		--env KAFKA_TOPIC=${KAFKA_TOPIC} \
 		--env KAFKA_BROKER_0_URL=${KAFKA_BROKER_0_URL} \
-		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_0_URL} \
-		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_1_URL} \
+		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_2_URL} \
 		--env SMTP_SERVER_URL=${SMTP_SERVER_URL} \
 		--env SMTP_SERVER_PORT=${SMTP_SERVER_PORT} \
 		--env SMTP_SERVER_ID=${SMTP_SERVER_ID} \
@@ -137,14 +137,14 @@ test-mobile-customers: ensure-env-file-exists
 		--env DB_DATABASE=${DB_CUSTOMERS_DATABASE} \
 		--env KAFKA_TOPIC=${KAFKA_TOPIC} \
 		--env KAFKA_BROKER_0_URL=${KAFKA_BROKER_0_URL} \
-		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_0_URL} \
-		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_1_URL} \
+		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_2_URL} \
 		soobinrho/17647-bookstore-api-service-customers:latest
 	docker run --detach --name dev-bookstore-crm-service-customers \
 		--env KAFKA_TOPIC=${KAFKA_TOPIC} \
 		--env KAFKA_BROKER_0_URL=${KAFKA_BROKER_0_URL} \
-		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_0_URL} \
-		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_1_URL} \
+		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_2_URL} \
 		--env SMTP_SERVER_URL=${SMTP_SERVER_URL} \
 		--env SMTP_SERVER_PORT=${SMTP_SERVER_PORT} \
 		--env SMTP_SERVER_ID=${SMTP_SERVER_ID} \
@@ -266,8 +266,8 @@ prod-deploy-ec2-bookstore-a: ensure-env-file-exists
 		--env DB_DATABASE=${DB_CUSTOMERS_DATABASE} \
 		--env KAFKA_TOPIC=${KAFKA_TOPIC} \
 		--env KAFKA_BROKER_0_URL=${KAFKA_BROKER_0_URL} \
-		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_0_URL} \
-		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_1_URL} \
+		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_2_URL} \
 		soobinrho/17647-bookstore-api-service-customers:latest
 
 prod-deploy-ec2-bookstore-b: ensure-env-file-exists
@@ -284,6 +284,7 @@ prod-deploy-ec2-bookstore-b: ensure-env-file-exists
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
+		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_PROD} \
 		soobinrho/17647-bookstore-api-service-books:latest
 
 prod-deploy-ec2-bookstore-c: ensure-env-file-exists
@@ -300,6 +301,7 @@ prod-deploy-ec2-bookstore-c: ensure-env-file-exists
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
+		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_PROD} \
 		soobinrho/17647-bookstore-api-service-books:latest
 
 prod-deploy-ec2-bookstore-d: ensure-env-file-exists
@@ -317,8 +319,8 @@ prod-deploy-ec2-bookstore-d: ensure-env-file-exists
 		--env DB_DATABASE=${DB_CUSTOMERS_DATABASE} \
 		--env KAFKA_TOPIC=${KAFKA_TOPIC} \
 		--env KAFKA_BROKER_0_URL=${KAFKA_BROKER_0_URL} \
-		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_0_URL} \
-		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_0_URL} \
+		--env KAFKA_BROKER_1_URL=${KAFKA_BROKER_1_URL} \
+		--env KAFKA_BROKER_2_URL=${KAFKA_BROKER_2_URL} \
 		soobinrho/17647-bookstore-api-service-customers:latest
 
 prod-cleanup:
@@ -337,7 +339,9 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 	cd ./k8s/ && \
 		kubectl apply -f bookstore-ns.yaml
 	cd ./k8s/ && \
-	  kubectl create secret generic prod-secrets --from-env-file=../.env
+		kubectl create secret generic secrets-api-service-books --from-env-file=./.env.api-service-books && \
+		kubectl create secret generic secrets-api-service-customers --from-env-file=./.env.api-service-customers && \
+		kubectl create secret generic secrets-crm-service-customers --from-env-file=./.env.crm-service-customers
 	cd ./k8s/ && \
 		kubectl apply -f service-bookstore-api-service-books.yaml && \
 		kubectl apply -f service-bookstore-api-service-customers.yaml && \

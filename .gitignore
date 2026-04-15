@@ -211,3 +211,6 @@ __marimo__/
 *.pem
 
 *secret*.yaml
+
+.env.*
+!.env.example
