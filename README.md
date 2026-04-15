@@ -201,11 +201,11 @@ make prod-deploy-ec2-bookstore-d
 
 <br>
 
-3. Obtain `labuser.pem` from AWS and `chmod 400 ./labuser.pem`.
+3. EKS - Clusters - `bookstore-vpc-BookstoreEKSCluster` - Create access entry - Next - `AmazonEKSClusterAdminPolicy` - Add policy - Create.
 
 <br>
 
-4. Securely copy `.env` from local development host to `EC2BookstoreAdmin`.
+4. Obtain `labuser.pem` from AWS and `chmod 400 ./labuser.pem` and securely copy `.env` from local development host to `EC2BookstoreAdmin`.
 
 ```bash
 scp -i labsuser.pem ./.env ec2-user@<SNIP>.amazonaws.com:.env
@@ -244,7 +244,7 @@ aws_access_key_id=<SNIP>
 aws_secret_access=<SNIP>
 aws_session_token=<SNIP>' > ~/.aws/credentials
 aws eks list-clusters
-aws eks update-kubeconfig --name vpc-bookstore-BookstoreEKSCluster --region us-east-1
+aws eks update-kubeconfig --name bookstore-vpc-BookstoreEKSCluster --region us-east-1
 
 # Confirm the creds.
 kubectl config get-contexts
