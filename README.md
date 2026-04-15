@@ -259,6 +259,7 @@ make prod-deploy-k8s-bookstore
 # ===================
 kubectl get services
 kubectl get pods
+watch --color --interval 0.2 'kubectl get pods'
 
 # ============
 # Redeployment
