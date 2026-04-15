@@ -354,6 +354,7 @@ prod-cleanup:
 prod-deploy-k8s-bookstore: ensure-env-file-exists
 	cd ./k8s/ && \
 		kubectl delete deployments --all --namespace bookstore-ns && \
+		kubectl delete pods --all --namespace bookstore-ns
 		kubectl delete secrets --all --namespace bookstore-ns && \
 		kubectl delete services --all --namespace bookstore-ns
 	cd ./k8s/ && \

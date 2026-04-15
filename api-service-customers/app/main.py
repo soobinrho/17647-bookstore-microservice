@@ -36,7 +36,10 @@ if DB_URL is not None:
     DB_URL = (
         str(DB_URL).replace("'", "").replace('"', "").replace("/", "").replace("\\", "")
     )
-print(f"[INFO] DB_URL = {DB_URL}")
+print(f"[DEBUG] DB_USER = {DB_USER}")
+print(f"[DEBUG] DB_PASS = {DB_PASS}")
+print(f"[DEBUG] DB_URL = {DB_URL}")
+print(f"[DEBUG] DB_DATABASE = {DB_DATABASE}")
 list_env_vars = [DB_USER, DB_PASS, DB_URL, DB_DATABASE]
 should_raise_exception = False
 for env_var in list_env_vars:
