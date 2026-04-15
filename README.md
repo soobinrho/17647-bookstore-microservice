@@ -218,6 +218,9 @@ scp -i labsuser.pem ./.env ec2-user@<SNIP>.amazonaws.com:.env
 ```bash
 # Requirements for deployment.
 sudo dnf install -y mariadb105-server git make
+git clone https://github.com/soobinrho/17647-bookstore-microservice
+cd 17647-bookstore-microservice/
+mv ../.env ./
 
 # Create the required databases and users with correct privileges.
 # Here, we're making sure that one service doesn't have access to another's DB.
