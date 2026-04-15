@@ -13,10 +13,27 @@ DB_USER = os.environ.get("DB_USER", None)
 DB_PASS = os.environ.get("DB_PASS", None)
 DB_URL = os.environ.get("DB_URL", None)
 DB_DATABASE = os.environ.get("DB_DATABASE", None)
-if DB_USER is None or DB_PASS is None or DB_URL is None or DB_DATABASE is None:
+
+if DB_URL is not None:
+    DB_URL = (
+        str(DB_URL).replace("'", "").replace('"', "").replace("/", "").replace("\\", "")
+    )
+print(f"[DEBUG] DB_USER = {DB_USER}")
+print(f"[DEBUG] DB_PASS = {DB_PASS}")
+print(f"[DEBUG] DB_URL = {DB_URL}")
+print(f"[DEBUG] DB_DATABASE = {DB_DATABASE}")
+list_env_vars = [DB_USER, DB_PASS, DB_URL, DB_DATABASE]
+should_raise_exception = False
+for env_var in list_env_vars:
+    if env_var is None:
+        print(f"[ERROR] {env_var} = None")
+        should_raise_exception = True
+if should_raise_exception:
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"
     )
+
+
 engine = create_engine(
     f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}/{DB_DATABASE}", echo=False
 )
