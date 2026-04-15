@@ -23,13 +23,14 @@ spec:
           envFrom:
             - secretRef:
                 name: secrets-api-service-books
-          livenessProbe:
-            httpGet:
-              path: /status
-              port: 3000
-            initialDelaySeconds: 600
-            periodSeconds: 30
-            failureThreshold: 3
+          # [DEBUG] Disabling livenessprobe until the infinite error crash loop gets resolved.
+          # livenessProbe:
+          #   httpGet:
+          #     path: /status
+          #     port: 3000
+          #   initialDelaySeconds: 600
+          #   periodSeconds: 30
+          #   failureThreshold: 3
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -40,3 +41,4 @@ spec:
                     operator: In
                     values:
                       - bookstore-api-service-books
+                      - bookstore-api-service-customers
