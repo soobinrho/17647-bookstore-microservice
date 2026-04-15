@@ -17,6 +17,7 @@ spec:
         - name: bookstore-bff-desktop
           image: soobinrho/17647-bookstore-bff-desktop:latest
           imagePullPolicy: Always
+          terminationMessagePath: "/tmp/k8s_termination_message.log"
           ports:
           - containerPort: 80
           livenessProbe:

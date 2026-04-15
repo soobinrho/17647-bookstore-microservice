@@ -17,6 +17,7 @@ spec:
         - name: bookstore-api-service-books
           image: soobinrho/17647-bookstore-api-service-books:latest
           imagePullPolicy: Always
+          terminationMessagePath: "/tmp/k8s_termination_message.log"
           ports:
           - containerPort: 3000
           stdin: true

@@ -16,6 +16,7 @@ spec:
         - name: bookstore-crm-service-customers
           image: soobinrho/17647-bookstore-crm-service-customers:latest
           imagePullPolicy: Always
+          terminationMessagePath: "/tmp/k8s_termination_message.log"
           ports:
           - containerPort: 587
           envFrom:
