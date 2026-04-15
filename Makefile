@@ -345,7 +345,9 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 		kubectl apply -f service-bookstore-api-service-books.yaml && \
 		kubectl apply -f service-bookstore-api-service-customers.yaml && \
 		kubectl apply -f service-bookstore-crm-service-customers.yaml && \
-		sleep 5  # Wait for services to get registered before deployments.
+		echo '[INFO] Waiting for services to get registered before deployments...' && \
+		echo '[INFO] This is so that the hostname and port of the services get populated as env variables properly.' && \
+		sleep 5
 	cd ./k8s/ && \
 		kubectl apply -f lb-bookstore-bff-desktop.yaml && \
 		kubectl apply -f lb-bookstore-bff-mobile.yaml
