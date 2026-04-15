@@ -42,6 +42,10 @@ DB_DATABASE = os.environ.get("DB_DATABASE", None)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", None)
 API_RELATED_BOOKS_URL = os.environ.get("API_RELATED_BOOKS_URL", None)
 
+if DB_URL is not None:
+    DB_URL = (
+        str(DB_URL).replace("'", "").replace('"', "").replace("/", "").replace("\\", "")
+    )
 print(f"[INFO] DB_URL = {DB_URL}")
 list_env_vars = [
     DB_USER,

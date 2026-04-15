@@ -32,6 +32,10 @@ DB_PASS = os.environ.get("DB_PASS", None)
 DB_URL = os.environ.get("DB_URL", None)
 DB_DATABASE = os.environ.get("DB_DATABASE", None)
 
+if DB_URL is not None:
+    DB_URL = (
+        str(DB_URL).replace("'", "").replace('"', "").replace("/", "").replace("\\", "")
+    )
 print(f"[INFO] DB_URL = {DB_URL}")
 list_env_vars = [DB_USER, DB_PASS, DB_URL, DB_DATABASE]
 should_raise_exception = False
