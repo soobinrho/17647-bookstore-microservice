@@ -45,9 +45,26 @@ if DB_DATABASE is None:
     print("[ERROR] DB_DATABASE is None")
     should_raise_exception = True
 if should_raise_exception:
-    raise Exception(
-        "[ERROR] Required credentials were not found in the environment variables"
+    # [DEBUG]
+    print(f"[DEBUG] DB_USER = {DB_USER}")
+    print(f"[DEBUG] DB_PASS = {DB_PASS}")
+    print(f"[DEBUG] DB_URL = {DB_USER}")
+    print(f"[DEBUG] DB_DATABASE = {DB_DATABASE}")
+    print(
+        f"[DEBUG] BOOKSTORE_API_SERVICE_BOOKS_SERVICE_HOST = {os.environ.get('BOOKSTORE_API_SERVICE_BOOKS_SERVICE_HOST', None)}"
     )
+    print(
+        f"[DEBUG] BOOKSTORE-API-SERVICE-BOOKS_SERVICE_HOST = {os.environ.get('BOOKSTORE-API-SERVICE-BOOKS_SERVICE_HOST', None)}"
+    )
+    print(
+        f"[DEBUG] BOOKSTORE_API_SERVICE_BOOKS_SERVICE_PORT = {os.environ.get('BOOKSTORE_API_SERVICE_BOOKS_SERVICE_PORT', None)}"
+    )
+    print(
+        f"[DEBUG] BOOKSTORE-API-SERVICE-BOOKS_SERVICE_PORT = {os.environ.get('BOOKSTORE-API-SERVICE-BOOKS_SERVICE_PORT', None)}"
+    )
+    # raise Exception(
+    #     "[ERROR] Required credentials were not found in the environment variables"
+    # )
 
 engine = create_engine(
     f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}/{DB_DATABASE}", echo=False

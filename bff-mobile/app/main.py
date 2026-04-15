@@ -24,29 +24,29 @@ API_SERVICE_CUSTOMERS_URL = ""
 API_SERVICES_LOAD_BALANCER_URL = os.environ.get("API_SERVICES_LOAD_BALANCER_URL", None)
 if API_SERVICES_LOAD_BALANCER_URL is None:
     # These values are automatically populated by K8s for all services.
-    # API_SERVICE_BOOKS_URL = os.environ.get(
-    #     "BOOKSTORE_API_SERVICE_BOOKS_SERVICE_HOST", None
-    # )
-    # API_SERVICE_BOOKS_PORT = os.environ.get(
-    #     "BOOKSTORE_API_SERVICE_BOOKS_SERVICE_PORT", None
-    # )
-    # API_SERVICE_BOOKS_URL = f"{API_SERVICE_BOOKS_URL}:{API_SERVICE_BOOKS_PORT}"
-    API_SERVICE_BOOKS_URL = (
-        "http://bookstore-api-service-books.bookstore-ns.svc.cluster.local:3000"
+    API_SERVICE_BOOKS_URL = os.environ.get(
+        "BOOKSTORE_API_SERVICE_BOOKS_SERVICE_HOST", None
     )
+    API_SERVICE_BOOKS_PORT = os.environ.get(
+        "BOOKSTORE_API_SERVICE_BOOKS_SERVICE_PORT", None
+    )
+    API_SERVICE_BOOKS_URL = f"{API_SERVICE_BOOKS_URL}:{API_SERVICE_BOOKS_PORT}"
+    # API_SERVICE_BOOKS_URL = (
+    #     "http://bookstore-api-service-books.bookstore-ns.svc.cluster.local:3000"
+    # )
     print(f"[INFO] API_SERVICE_BOOKS_URL = {API_SERVICE_BOOKS_URL}")
-    # API_SERVICE_CUSTOMERS_URL = os.environ.get(
-    #     "BOOKSTORE_API_SERVICE_CUSTOMERS_SERVICE_HOST", None
-    # )
-    # API_SERVICE_CUSTOMERS_PORT = os.environ.get(
-    #     "BOOKSTORE_API_SERVICE_CUSTOMERS_SERVICE_PORT", None
-    # )
-    # API_SERVICE_CUSTOMERS_URL = (
-    #     f"{API_SERVICE_CUSTOMERS_URL}:{API_SERVICE_CUSTOMERS_PORT}"
-    # )
-    API_SERVICE_CUSTOMERS_URL = (
-        "http://bookstore-api-service-customers.bookstore-ns.svc.cluster.local:3000"
+    API_SERVICE_CUSTOMERS_URL = os.environ.get(
+        "BOOKSTORE_API_SERVICE_CUSTOMERS_SERVICE_HOST", None
     )
+    API_SERVICE_CUSTOMERS_PORT = os.environ.get(
+        "BOOKSTORE_API_SERVICE_CUSTOMERS_SERVICE_PORT", None
+    )
+    API_SERVICE_CUSTOMERS_URL = (
+        f"{API_SERVICE_CUSTOMERS_URL}:{API_SERVICE_CUSTOMERS_PORT}"
+    )
+    # API_SERVICE_CUSTOMERS_URL = (
+    #     "http://bookstore-api-service-customers.bookstore-ns.svc.cluster.local:3000"
+    # )
     print(f"[INFO] API_SERVICE_CUSTOMERS_URL = {API_SERVICE_CUSTOMERS_URL}")
 else:
     API_SERVICE_BOOKS_URL = API_SERVICES_LOAD_BALANCER_URL
