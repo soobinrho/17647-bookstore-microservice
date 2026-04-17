@@ -125,15 +125,16 @@ ssh -i ./key.pem ec2-user@<SNIP>
 sudo dnf install -y mariadb105-server git make
 
 # Ensure that the books API cannot access the customers DB and vice versa.
-mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
-  -e 'CREATE DATABASE IF NOT EXISTS bookstore_books;' \
-  -e 'CREATE USER <SNIP> IDENTIFIED BY "<SNIP>";' \
-  -e 'GRANT ALL PRIVILEGES ON <SNIP>.* TO <SNIP>;'
+source .env
+mysql -h $DB_URL -u $DB_ADMIN_USER -p"${DB_ADMIN_PASS}" \
+  -e "CREATE DATABASE IF NOT EXISTS ${DB_BOOKS_DATABASE};" \
+  -e "CREATE USER ${DB_BOOKS_USER} IDENTIFIED BY ${DB_BOOKS_PASS};" \
+  -e "GRANT ALL PRIVILEGES ON ${DB_BOOKS_DATABASE}.* TO ${DB_BOOKS_USER};"
 
-mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
-  -e 'CREATE DATABASE IF NOT EXISTS bookstore_customers;' \
-  -e 'CREATE USER <SNIP> IDENTIFIED BY "<SNIP>";' \
-  -e 'GRANT ALL PRIVILEGES ON <SNIP>.* TO <SNIP>;'
+mysql -h $DB_URL -u $DB_ADMIN_USER -p"${DB_ADMIN_PASS}" \
+  -e "CREATE DATABASE IF NOT EXISTS ${DB_CUSTOMERS_DATABASE};" \
+  -e "CREATE USER ${DB_CUSTOMERS_USER} IDENTIFIED BY ${DB_CUSTOMERS_PASS};" \
+  -e "GRANT ALL PRIVILEGES ON ${DB_CUSTOMERS_DATABASE}.* TO ${DB_CUSTOMERS_USER};"
 
 # In each EC2, download this repository so that the Makefile can be
 # used for deployment and pulled whenever there's an update in the repo.
@@ -224,15 +225,16 @@ mv ../.env ./
 
 # Create the required databases and users with correct privileges.
 # Here, we're making sure that one service doesn't have access to another's DB.
-mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
-  -e 'CREATE DATABASE IF NOT EXISTS bookstore_books;' \
-  -e 'CREATE USER <SNIP> IDENTIFIED BY "<SNIP>";' \
-  -e 'GRANT ALL PRIVILEGES ON <SNIP>.* TO <SNIP>;'
+source .env
+mysql -h $DB_URL -u $DB_ADMIN_USER -p"${DB_ADMIN_PASS}" \
+  -e "CREATE DATABASE IF NOT EXISTS ${DB_BOOKS_DATABASE};" \
+  -e "CREATE USER ${DB_BOOKS_USER} IDENTIFIED BY ${DB_BOOKS_PASS};" \
+  -e "GRANT ALL PRIVILEGES ON ${DB_BOOKS_DATABASE}.* TO ${DB_BOOKS_USER};"
 
-mysql -h <SNIP>.rds.amazonaws.com -u <SNIP> -p'<SNIP>' \
-  -e 'CREATE DATABASE IF NOT EXISTS bookstore_customers;' \
-  -e 'CREATE USER <SNIP> IDENTIFIED BY "<SNIP>";' \
-  -e 'GRANT ALL PRIVILEGES ON <SNIP>.* TO <SNIP>;'
+mysql -h $DB_URL -u $DB_ADMIN_USER -p"${DB_ADMIN_PASS}" \
+  -e "CREATE DATABASE IF NOT EXISTS ${DB_CUSTOMERS_DATABASE};" \
+  -e "CREATE USER ${DB_CUSTOMERS_USER} IDENTIFIED BY ${DB_CUSTOMERS_PASS};" \
+  -e "GRANT ALL PRIVILEGES ON ${DB_CUSTOMERS_DATABASE}.* TO ${DB_CUSTOMERS_USER};"
 
 sudo curl 'https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl' -o /usr/local/bin/kubectl
 sudo chmod +x /usr/local/bin/kubectl
