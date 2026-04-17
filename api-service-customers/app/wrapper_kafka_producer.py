@@ -8,16 +8,23 @@ KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC", None)
 KAFKA_BROKER_0_URL = os.environ.get("KAFKA_BROKER_0_URL", None)
 KAFKA_BROKER_1_URL = os.environ.get("KAFKA_BROKER_1_URL", None)
 KAFKA_BROKER_2_URL = os.environ.get("KAFKA_BROKER_2_URL", None)
-if (
-    KAFKA_TOPIC is None
-    or KAFKA_BROKER_0_URL is None
-    or KAFKA_BROKER_1_URL is None
-    or KAFKA_BROKER_2_URL is None
-):
+should_raise_exception = False
+if KAFKA_TOPIC is None:
+    print("[ERROR] KAFKA_TOPIC = None")
+    should_raise_exception = True
+if KAFKA_BROKER_0_URL is None:
+    print("[ERROR] KAFKA_BROKER_0_URL = None")
+    should_raise_exception = True
+if KAFKA_BROKER_1_URL is None:
+    print("[ERROR] KAFKA_BROKER_1_URL = None")
+    should_raise_exception = True
+if KAFKA_BROKER_2_URL is None:
+    print("[ERROR] KAFKA_BROKER_2_URL = None")
+    should_raise_exception = True
+if should_raise_exception:
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"
     )
-
 
 # K8s includes something like DB_USER='...' to include the quotes themselves too.
 # Thus, sanitize it so that the env vars do not start with or end with quotes.

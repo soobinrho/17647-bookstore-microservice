@@ -9,12 +9,26 @@ SMTP_SERVER_URL = os.environ.get("SMTP_SERVER_URL", None)
 SMTP_SERVER_PORT = os.environ.get("SMTP_SERVER_PORT", None)
 SMTP_SERVER_ID = os.environ.get("SMTP_SERVER_ID", None)
 SMTP_SERVER_PASS = os.environ.get("SMTP_SERVER_PASS", None)
-if (
-    SMTP_SERVER_URL is None
-    or SMTP_SERVER_PORT is None
-    or SMTP_SERVER_ID is None
-    or SMTP_SERVER_PASS is None
-):
+list_env_vars = [
+    SMTP_SERVER_URL,
+    SMTP_SERVER_PORT,
+    SMTP_SERVER_ID,
+    SMTP_SERVER_PASS,
+]
+should_raise_exception = False
+if SMTP_SERVER_URL is None:
+    print("[ERROR] SMTP_SERVER_URL = None")
+    should_raise_exception = True
+if SMTP_SERVER_PORT is None:
+    print("[ERROR] SMTP_SERVER_PORT = None")
+    should_raise_exception = True
+if SMTP_SERVER_ID is None:
+    print("[ERROR] SMTP_SERVER_ID = None")
+    should_raise_exception = True
+if SMTP_SERVER_PASS is None:
+    print("[ERROR] SMTP_SERVER_PASS = None")
+    should_raise_exception = True
+if should_raise_exception:
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"
     )

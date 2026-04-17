@@ -3,15 +3,13 @@ import os
 import signal
 
 from confluent_kafka import Consumer
+from shared_library.input_data_validations import sanitize_env_var
 from wrapper_email import send_email
-
-from app.shared_library.input_data_validations import sanitize_env_var
 
 KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC", None)
 KAFKA_BROKER_0_URL = os.environ.get("KAFKA_BROKER_0_URL", None)
 KAFKA_BROKER_1_URL = os.environ.get("KAFKA_BROKER_1_URL", None)
 KAFKA_BROKER_2_URL = os.environ.get("KAFKA_BROKER_2_URL", None)
-
 list_env_vars = [
     KAFKA_TOPIC,
     KAFKA_BROKER_0_URL,
@@ -19,10 +17,18 @@ list_env_vars = [
     KAFKA_BROKER_2_URL,
 ]
 should_raise_exception = False
-for env_var in list_env_vars:
-    if env_var is None:
-        print(f"[ERROR] {env_var} = None")
-        should_raise_exception = True
+if KAFKA_TOPIC is None:
+    print("[ERROR] KAFKA_TOPIC = None")
+    should_raise_exception = True
+if KAFKA_BROKER_0_URL is None:
+    print("[ERROR] KAFKA_BROKER_0_URL = None")
+    should_raise_exception = True
+if KAFKA_BROKER_1_URL is None:
+    print("[ERROR] KAFKA_BROKER_1_URL = None")
+    should_raise_exception = True
+if KAFKA_BROKER_2_URL is None:
+    print("[ERROR] KAFKA_BROKER_2_URL = None")
+    should_raise_exception = True
 if should_raise_exception:
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"

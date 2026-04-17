@@ -44,20 +44,28 @@ DB_PORT = os.environ.get("DB_PORT", None)
 DB_DATABASE = os.environ.get("DB_DATABASE", None)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", None)
 API_RELATED_BOOKS_URL = os.environ.get("API_RELATED_BOOKS_URL", None)
-list_env_vars = [
-    DB_USER,
-    DB_PASS,
-    DB_URL,
-    DB_PORT,
-    DB_DATABASE,
-    GEMINI_API_KEY,
-    API_RELATED_BOOKS_URL,
-]
 should_raise_exception = False
-for env_var in list_env_vars:
-    if env_var is None:
-        print(f"[ERROR] {env_var} = None")
-        should_raise_exception = True
+if DB_USER is None:
+    print("[ERROR] DB_USER = None")
+    should_raise_exception = True
+if DB_PASS is None:
+    print("[ERROR] DB_PASS = None")
+    should_raise_exception = True
+if DB_URL is None:
+    print("[ERROR] DB_URL = None")
+    should_raise_exception = True
+if DB_PORT is None:
+    print("[ERROR] DB_PORT = None")
+    should_raise_exception = True
+if DB_DATABASE is None:
+    print("[ERROR] DB_DATABASE = None")
+    should_raise_exception = True
+if GEMINI_API_KEY is None:
+    print("[ERROR] GEMINI_API_KEY = None")
+    should_raise_exception = True
+if API_RELATED_BOOKS_URL is None:
+    print("[ERROR] API_RELATED_BOOKS_URL = None")
+    should_raise_exception = True
 if should_raise_exception:
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"
