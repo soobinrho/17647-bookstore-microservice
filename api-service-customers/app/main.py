@@ -31,15 +31,6 @@ DB_USER = os.environ.get("DB_USER", None)
 DB_PASS = os.environ.get("DB_PASS", None)
 DB_URL = os.environ.get("DB_URL", None)
 DB_DATABASE = os.environ.get("DB_DATABASE", None)
-
-if DB_URL is not None:
-    DB_URL = (
-        str(DB_URL).replace("'", "").replace('"', "").replace("/", "").replace("\\", "")
-    )
-print(f"[DEBUG] DB_USER = {DB_USER}")
-print(f"[DEBUG] DB_PASS = {DB_PASS}")
-print(f"[DEBUG] DB_URL = {DB_URL}")
-print(f"[DEBUG] DB_DATABASE = {DB_DATABASE}")
 list_env_vars = [DB_USER, DB_PASS, DB_URL, DB_DATABASE]
 should_raise_exception = False
 for env_var in list_env_vars:
@@ -51,10 +42,15 @@ if should_raise_exception:
         "[ERROR] Required credentials were not found in the environment variables"
     )
 
-engine = create_engine(
-    f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}/{DB_DATABASE}", echo=False
-)
+str_db_connection = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}/{DB_DATABASE}"
+engine = create_engine(str_db_connection, echo=False)
 SQLModel.metadata.create_all(engine)
+
+# str_db_connection behaves normally in deployments without K8s but
+# tend to behave differently in K8s deployments, hence the need for this.
+str_db_connection = str_db_connection.replace(DB_USER, "<SNIP>")
+str_db_connection = str_db_connection.replace(DB_PASS, "<SNIP>")
+print(f"[DEBUG] str_db_connection = {str_db_connection}")
 
 app = FastAPI(
     title="Bookstore API Service for Customers Data",

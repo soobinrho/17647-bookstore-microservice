@@ -41,15 +41,6 @@ DB_URL = os.environ.get("DB_URL", None)
 DB_DATABASE = os.environ.get("DB_DATABASE", None)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", None)
 API_RELATED_BOOKS_URL = os.environ.get("API_RELATED_BOOKS_URL", None)
-
-if DB_URL is not None:
-    DB_URL = (
-        str(DB_URL).replace("'", "").replace('"', "").replace("/", "").replace("\\", "")
-    )
-print(f"[DEBUG] DB_USER = {DB_USER}")
-print(f"[DEBUG] DB_PASS = {DB_PASS}")
-print(f"[DEBUG] DB_URL = {DB_URL}")
-print(f"[DEBUG] DB_DATABASE = {DB_DATABASE}")
 list_env_vars = [
     DB_USER,
     DB_PASS,
@@ -68,10 +59,15 @@ if should_raise_exception:
         "[ERROR] Required credentials were not found in the environment variables"
     )
 
-engine = create_engine(
-    f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}/{DB_DATABASE}", echo=False
-)
+str_db_connection = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}/{DB_DATABASE}"
+engine = create_engine(str_db_connection, echo=False)
 SQLModel.metadata.create_all(engine)
+
+# str_db_connection behaves normally in deployments without K8s but
+# tend to behave differently in K8s deployments, hence the need for this.
+str_db_connection = str_db_connection.replace(DB_USER, "<SNIP>")
+str_db_connection = str_db_connection.replace(DB_PASS, "<SNIP>")
+print(f"[DEBUG] str_db_connection = {str_db_connection}")
 
 app = FastAPI(
     title="Bookstore API Service for Books Data",
@@ -287,49 +283,50 @@ async def get_books_duplicate_enpoint(ISBN):
 @app.get("/books/{ISBN}/related-books", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_related_books(ISBN):
     CIRCUIT_BREAKER_TIMEOUT = 3  # Seconds.
-    if check_circuit_breaker_open():
-        if not check_should_circuit_breaker_close():
-            return RESPONSE_503_CIRCUIT_BREAKER_OPEN
-        else:
-            # This is the circuit breaker's half-open state in which a re-attempt should
-            # be made. If the re-attempt fails, the clock resets. If the re-attempt
-            # suceeds, the circuit breaker closes and resumes normal operation.
-            async with httpx.AsyncClient(timeout=CIRCUIT_BREAKER_TIMEOUT) as client:
-                try:
-                    res = await client.get(f"{API_RELATED_BOOKS_URL}/{ISBN}")
-                except httpx.TimeoutException:
-                    print("[INFO] reset_circuit_breaker_time()")
-                    reset_circuit_breaker_time()
-                    return RESPONSE_503_CIRCUIT_BREAKER_OPEN
-                else:
-                    print("[INFO] close_circuit_breaker()")
-                    close_circuit_breaker()
-                    if str(res.status_code) == "200":
-                        return res.json()
-                    elif str(res.status_code) == "204":
-                        return RESPONSE_NO_CONTENT
-                    else:
-                        return RESOPNSE_500_SERVER_ERROR
-
-    async with httpx.AsyncClient(timeout=CIRCUIT_BREAKER_TIMEOUT) as client:
-        try:
-            res = await client.get(f"{API_RELATED_BOOKS_URL}/{ISBN}")
-        except httpx.TimeoutException:
-            print("[INFO] check_circuit_breaker_open() = False")
-            print("[INFO] httpx.TimeoutException")
-            print("[INFO] open_circuit_breaker()")
-            open_circuit_breaker()
-            return JSONResponse(
-                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-                content={"message": "Please try again later."},
-            )
-        else:
-            if str(res.status_code) == "200":
-                return res.json()
-            elif str(res.status_code) == "204":
-                return RESPONSE_NO_CONTENT
+    with Session(engine) as db_session:
+        if check_circuit_breaker_open(db_session):
+            if not check_should_circuit_breaker_close(db_session):
+                return RESPONSE_503_CIRCUIT_BREAKER_OPEN
             else:
-                return RESOPNSE_500_SERVER_ERROR
+                # This is the circuit breaker's half-open state in which a re-attempt should
+                # be made. If the re-attempt fails, the clock resets. If the re-attempt
+                # suceeds, the circuit breaker closes and resumes normal operation.
+                async with httpx.AsyncClient(timeout=CIRCUIT_BREAKER_TIMEOUT) as client:
+                    try:
+                        res = await client.get(f"{API_RELATED_BOOKS_URL}/{ISBN}")
+                    except httpx.TimeoutException:
+                        print("[INFO] reset_circuit_breaker_time(db_session)")
+                        reset_circuit_breaker_time(db_session)
+                        return RESPONSE_503_CIRCUIT_BREAKER_OPEN
+                    else:
+                        print("[INFO] close_circuit_breaker(db_session)")
+                        close_circuit_breaker(db_session)
+                        if str(res.status_code) == "200":
+                            return res.json()
+                        elif str(res.status_code) == "204":
+                            return RESPONSE_NO_CONTENT
+                        else:
+                            return RESOPNSE_500_SERVER_ERROR
+
+        async with httpx.AsyncClient(timeout=CIRCUIT_BREAKER_TIMEOUT) as client:
+            try:
+                res = await client.get(f"{API_RELATED_BOOKS_URL}/{ISBN}")
+            except httpx.TimeoutException:
+                print("[INFO] check_circuit_breaker_open(db_session) = False")
+                print("[INFO] httpx.TimeoutException")
+                print("[INFO] open_circuit_breaker(db_session)")
+                open_circuit_breaker(db_session)
+                return JSONResponse(
+                    status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                    content={"message": "Please try again later."},
+                )
+            else:
+                if str(res.status_code) == "200":
+                    return res.json()
+                elif str(res.status_code) == "204":
+                    return RESPONSE_NO_CONTENT
+                else:
+                    return RESOPNSE_500_SERVER_ERROR
 
 
 # =============
