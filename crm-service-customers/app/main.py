@@ -1,5 +1,6 @@
 import json
 import os
+import signal
 
 from confluent_kafka import Consumer
 from wrapper_email import send_email
@@ -35,8 +36,31 @@ KAFKA_BROKER_1_URL = sanitize_env_var(KAFKA_BROKER_1_URL)
 KAFKA_BROKER_2_URL = sanitize_env_var(KAFKA_BROKER_2_URL)
 
 
-def listen_for_kafka_messages():
-    while True:
+# Source: https://stackoverflow.com/a/31464349
+class class_sig_term_handler:
+    kill_now = False
+
+    def __init__(self):
+        signal.signal(signal.SIGINT, self.exit_gracefully)
+        signal.signal(signal.SIGTERM, self.exit_gracefully)
+
+    def exit_gracefully(self, signum, frame):
+        self.kill_now = True
+
+
+def main():
+    print(f"[INFO] Starting to listen for the Kafka topic {KAFKA_TOPIC}")
+    consumer = Consumer({
+        "bootstrap.servers": ",".join([
+            KAFKA_BROKER_0_URL,
+            KAFKA_BROKER_1_URL,
+            KAFKA_BROKER_2_URL,
+        ]),
+        "group.id": "customers",
+    })
+    consumer.subscribe([KAFKA_TOPIC])
+    sig_term_handler = class_sig_term_handler()
+    while not sig_term_handler.kill_now:
         msg = consumer.poll(1.0)
 
         if msg is None:
@@ -59,17 +83,8 @@ def listen_for_kafka_messages():
             email_to=customer_email,
             email_subject="Activate your book store account",
         )
+    consumer.close()
 
 
-print(f"[INFO] Starting to listen for the Kafka topic {KAFKA_TOPIC}")
-consumer = Consumer({
-    "bootstrap.servers": ",".join([
-        KAFKA_BROKER_0_URL,
-        KAFKA_BROKER_1_URL,
-        KAFKA_BROKER_2_URL,
-    ]),
-    "group.id": "customers",
-})
-consumer.subscribe([KAFKA_TOPIC])
-listen_for_kafka_messages()
-consumer.close()
+if __name__ == "__main__":
+    main()
