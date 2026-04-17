@@ -4,6 +4,8 @@ import os
 from confluent_kafka import Consumer
 from wrapper_email import send_email
 
+from app.shared_library.input_data_validations import sanitize_env_var
+
 KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC", None)
 KAFKA_BROKER_0_URL = os.environ.get("KAFKA_BROKER_0_URL", None)
 KAFKA_BROKER_1_URL = os.environ.get("KAFKA_BROKER_1_URL", None)
@@ -24,6 +26,13 @@ if should_raise_exception:
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"
     )
+
+# K8s includes something like DB_USER='...' to include the quotes themselves too.
+# Thus, sanitize it so that the env vars do not start with or end with quotes.
+KAFKA_TOPIC = sanitize_env_var(KAFKA_TOPIC)
+KAFKA_BROKER_0_URL = sanitize_env_var(KAFKA_BROKER_0_URL)
+KAFKA_BROKER_1_URL = sanitize_env_var(KAFKA_BROKER_1_URL)
+KAFKA_BROKER_2_URL = sanitize_env_var(KAFKA_BROKER_2_URL)
 
 
 def listen_for_kafka_messages():

@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 
 from app.shared_library.input_data_validations import (
     check_is_authenticated_request,
+    sanitize_env_var,
 )
 from app.shared_library.models import (
     BookRequestBody,
@@ -51,8 +52,8 @@ if API_SERVICES_LOAD_BALANCER_URL is None:
     # )
     print(f"[INFO] API_SERVICE_CUSTOMERS_URL = {API_SERVICE_CUSTOMERS_URL}")
 else:
-    API_SERVICE_BOOKS_URL = API_SERVICES_LOAD_BALANCER_URL
-    API_SERVICE_CUSTOMERS_URL = API_SERVICES_LOAD_BALANCER_URL
+    API_SERVICE_BOOKS_URL = sanitize_env_var(API_SERVICES_LOAD_BALANCER_URL)
+    API_SERVICE_CUSTOMERS_URL = sanitize_env_var(API_SERVICES_LOAD_BALANCER_URL)
 
 if API_SERVICE_BOOKS_URL is None or API_SERVICE_CUSTOMERS_URL is None:
     print(

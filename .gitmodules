@@ -10,6 +10,6 @@
 [submodule "bff-mobile/app/shared_library"]
 	path = bff-mobile/app/shared_library
 	url = https://github.com/soobinrho/17647-bookstore-shared-library
-[submodule "crm-service-customers/shared_library"]
-	path = crm-service-customers/shared_library
-	url = https://github.com/soobinrho/17647-bookstore-shared-library.git
+[submodule "crm-service-customers/app/shared_library"]
+	path = crm-service-customers/app/shared_library
+	url = https://github.com/soobinrho/17647-bookstore-shared-library

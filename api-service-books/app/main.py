@@ -11,6 +11,7 @@ from app.shared_library.input_data_validations import (
     check_is_authenticated_request,
     check_is_valid_price,
     check_is_valid_quantity,
+    sanitize_env_var,
 )
 from app.shared_library.models import BookRequestBody, Books
 from app.shared_library.responses import (
@@ -62,8 +63,17 @@ if should_raise_exception:
         "[ERROR] Required credentials were not found in the environment variables"
     )
 
+# K8s includes something like DB_USER='...' to include the quotes themselves too.
+# Thus, sanitize it so that the env vars do not start with or end with quotes.
+DB_USER = sanitize_env_var(DB_USER)
+DB_PASS = sanitize_env_var(DB_PASS)
+DB_URL = sanitize_env_var(DB_URL)
+DB_PORT = int(float(sanitize_env_var(DB_PORT)))
+DB_DATABASE = sanitize_env_var(DB_DATABASE)
+GEMINI_API_KEY = sanitize_env_var(GEMINI_API_KEY)
+API_RELATED_BOOKS_URL = sanitize_env_var(API_RELATED_BOOKS_URL)
+
 # Reference: https://docs.sqlalchemy.org/en/21/core/engines.html#creating-urls-programmatically
-DB_PORT = int(float(DB_PORT))
 url_db_connection = URL.create(
     "mysql+pymysql",
     username=DB_USER,

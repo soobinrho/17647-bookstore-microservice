@@ -3,6 +3,8 @@ import smtplib
 import ssl
 from email.mime.text import MIMEText
 
+from app.shared_library.input_data_validations import sanitize_env_var
+
 SMTP_SERVER_URL = os.environ.get("SMTP_SERVER_URL", None)
 SMTP_SERVER_PORT = os.environ.get("SMTP_SERVER_PORT", None)
 SMTP_SERVER_ID = os.environ.get("SMTP_SERVER_ID", None)
@@ -16,6 +18,14 @@ if (
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"
     )
+
+
+# K8s includes something like DB_USER='...' to include the quotes themselves too.
+# Thus, sanitize it so that the env vars do not start with or end with quotes.
+SMTP_SERVER_URL = sanitize_env_var(SMTP_SERVER_URL)
+SMTP_SERVER_PORT = sanitize_env_var(SMTP_SERVER_PORT)
+SMTP_SERVER_ID = sanitize_env_var(SMTP_SERVER_ID)
+SMTP_SERVER_PASS = sanitize_env_var(SMTP_SERVER_PASS)
 
 
 def send_email(
