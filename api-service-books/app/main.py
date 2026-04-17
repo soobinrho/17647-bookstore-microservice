@@ -63,6 +63,7 @@ if should_raise_exception:
     )
 
 # Reference: https://docs.sqlalchemy.org/en/21/core/engines.html#creating-urls-programmatically
+DB_PORT = int(float(DB_PORT))
 url_db_connection = URL.create(
     "mysql+pymysql",
     username=DB_USER,
