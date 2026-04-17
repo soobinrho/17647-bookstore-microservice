@@ -3,6 +3,7 @@ import os
 from fastapi import BackgroundTasks, FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy import URL
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from app.shared_library.input_data_validations import (
@@ -30,8 +31,9 @@ print(f"[INFO] IS_DEV = {IS_DEV}")
 DB_USER = os.environ.get("DB_USER", None)
 DB_PASS = os.environ.get("DB_PASS", None)
 DB_URL = os.environ.get("DB_URL", None)
+DB_PORT = os.environ.get("DB_PORT", None)
 DB_DATABASE = os.environ.get("DB_DATABASE", None)
-list_env_vars = [DB_USER, DB_PASS, DB_URL, DB_DATABASE]
+list_env_vars = [DB_USER, DB_PASS, DB_URL, DB_PORT, DB_DATABASE]
 should_raise_exception = False
 for env_var in list_env_vars:
     if env_var is None:
@@ -42,15 +44,19 @@ if should_raise_exception:
         "[ERROR] Required credentials were not found in the environment variables"
     )
 
-str_db_connection = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}/{DB_DATABASE}"
-engine = create_engine(str_db_connection, echo=False)
+# Reference: https://docs.sqlalchemy.org/en/21/core/engines.html#creating-urls-programmatically
+url_db_connection = URL.create(
+    "mysql+pymysql",
+    username=DB_USER,
+    password=DB_PASS,
+    host=DB_URL,
+    port=DB_PORT,
+    database=DB_DATABASE,
+)
+print(f'[INFO] Connecting to "{url_db_connection}"...')
+engine = create_engine(url_db_connection, echo=False)
+print(f'[INFO] DB connection successfully established: "{url_db_connection}"')
 SQLModel.metadata.create_all(engine)
-
-# str_db_connection behaves normally in deployments without K8s but
-# tend to behave differently in K8s deployments, hence the need for this.
-str_db_connection = str_db_connection.replace(DB_USER, "<SNIP>")
-str_db_connection = str_db_connection.replace(DB_PASS, "<SNIP>")
-print(f"[DEBUG] str_db_connection = {str_db_connection}")
 
 app = FastAPI(
     title="Bookstore API Service for Customers Data",

@@ -55,7 +55,8 @@ test-desktop-books: ensure-env-file-exists
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
-		--env DB_URL='host.docker.internal:3306' \
+		--env DB_URL='host.docker.internal' \
+		--env DB_PORT='3306' \
 		--env DB_USER=${DB_BOOKS_USER} \
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
@@ -76,7 +77,8 @@ test-desktop-customers: ensure-env-file-exists
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
-		--env DB_URL='host.docker.internal:3307' \
+		--env DB_URL='host.docker.internal' \
+		--env DB_PORT='3307' \
 		--env DB_USER=${DB_CUSTOMERS_USER} \
 		--env DB_PASS=${DB_CUSTOMERS_PASS} \
 		--env DB_DATABASE=${DB_CUSTOMERS_DATABASE} \
@@ -110,7 +112,8 @@ test-mobile-books: ensure-env-file-exists
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
-		--env DB_URL='host.docker.internal:3306' \
+		--env DB_URL='host.docker.internal' \
+		--env DB_PORT='3306' \
 		--env DB_USER=${DB_BOOKS_USER} \
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
@@ -131,7 +134,8 @@ test-mobile-customers: ensure-env-file-exists
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
-		--env DB_URL='host.docker.internal:3307' \
+		--env DB_URL='host.docker.internal' \
+		--env DB_PORT='3307' \
 		--env DB_USER=${DB_CUSTOMERS_USER} \
 		--env DB_PASS=${DB_CUSTOMERS_PASS} \
 		--env DB_DATABASE=${DB_CUSTOMERS_DATABASE} \
@@ -204,7 +208,8 @@ test-related-books-no-delay: ensure-env-file-exists cleanup cleanup-only-related
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
-		--env DB_URL='host.docker.internal:3306' \
+		--env DB_URL='host.docker.internal' \
+		--env DB_PORT='3306' \
 		--env DB_USER=${DB_BOOKS_USER} \
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
@@ -232,7 +237,8 @@ test-related-books-delayed: ensure-env-file-exists cleanup cleanup-only-related-
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
-		--env DB_URL='host.docker.internal:3306' \
+		--env DB_URL='host.docker.internal' \
+		--env DB_PORT='3306' \
 		--env DB_USER=${DB_BOOKS_USER} \
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
@@ -261,6 +267,7 @@ prod-deploy-ec2-bookstore-a: ensure-env-file-exists
 	docker run --detach --name bookstore-api-service-customers \
 		-p 3000:3000 \
 		--env DB_URL=${DB_URL} \
+		--env DB_PORT=${DB_PORT} \
 		--env DB_USER=${DB_CUSTOMERS_USER} \
 		--env DB_PASS=${DB_CUSTOMERS_PASS} \
 		--env DB_DATABASE=${DB_CUSTOMERS_DATABASE} \
@@ -280,6 +287,7 @@ prod-deploy-ec2-bookstore-b: ensure-env-file-exists
 	docker run --detach --name bookstore-api-service-books \
 		-p 3000:3000 \
 		--env DB_URL=${DB_URL} \
+		--env DB_PORT=${DB_PORT} \
 		--env DB_USER=${DB_BOOKS_USER} \
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
@@ -297,6 +305,7 @@ prod-deploy-ec2-bookstore-c: ensure-env-file-exists
 	docker run --detach --name bookstore-api-service-books \
 		-p 3000:3000 \
 		--env DB_URL=${DB_URL} \
+		--env DB_PORT=${DB_PORT} \
 		--env DB_USER=${DB_BOOKS_USER} \
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
@@ -314,6 +323,7 @@ prod-deploy-ec2-bookstore-d: ensure-env-file-exists
 	docker run --detach --name bookstore-api-service-customers \
 		-p 3000:3000 \
 		--env DB_URL=${DB_URL} \
+		--env DB_PORT=${DB_PORT} \
 		--env DB_USER=${DB_CUSTOMERS_USER} \
 		--env DB_PASS=${DB_CUSTOMERS_PASS} \
 		--env DB_DATABASE=${DB_CUSTOMERS_DATABASE} \
