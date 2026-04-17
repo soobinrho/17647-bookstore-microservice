@@ -20,10 +20,15 @@ spec:
           terminationMessagePath: "/tmp/k8s_termination_message.log"
           ports:
           - containerPort: 80
+          startupProbe:
+            httpGet:
+              path: /status
+              port: 80
+            periodSeconds: 5
+            failureThreshold: 70
           livenessProbe:
             httpGet:
               path: /status
               port: 80
-            initialDelaySeconds: 600
             periodSeconds: 30
             failureThreshold: 3

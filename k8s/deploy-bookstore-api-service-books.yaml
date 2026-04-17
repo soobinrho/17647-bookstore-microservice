@@ -24,11 +24,16 @@ spec:
           envFrom:
             - secretRef:
                 name: secrets-api-service-books
+          startupProbe:
+            httpGet:
+              path: /status
+              port: 3000
+            periodSeconds: 5
+            failureThreshold: 70
           livenessProbe:
             httpGet:
               path: /status
               port: 3000
-            initialDelaySeconds: 600
             periodSeconds: 30
             failureThreshold: 3
       affinity:
