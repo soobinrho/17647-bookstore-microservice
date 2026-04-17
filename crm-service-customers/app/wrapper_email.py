@@ -3,7 +3,7 @@ import smtplib
 import ssl
 from email.mime.text import MIMEText
 
-from app.shared_library.input_data_validations import sanitize_env_var
+from shared_library.input_data_validations import sanitize_env_var
 
 SMTP_SERVER_URL = os.environ.get("SMTP_SERVER_URL", None)
 SMTP_SERVER_PORT = os.environ.get("SMTP_SERVER_PORT", None)
