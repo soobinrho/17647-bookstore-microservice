@@ -323,6 +323,44 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 
 <br>
 
+- **Load DB connection URL programmatically**: This is what took me more than ten hours to debug:
+
+```py
+# Do not. This causes problems because of how Docker and K8s treats
+# env variables differently which become super difficult to debug.
+engine = create_engine(f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}:{DB_PORT}/{DB_DATABASE}", echo=False)
+
+# Do. This prevents a lot of the problems.
+# Reference: https://docs.sqlalchemy.org/en/21/core/engines.html#creating-urls-programmatically
+url_db_connection = URL.create(
+    "mysql+pymysql",
+    username=DB_USER,
+    password=DB_PASS,
+    host=DB_URL,
+    port=DB_PORT,
+    database=DB_DATABASE,
+)
+engine = create_engine(url_db_connection, echo=False)
+```
+
+<br>
+
+- **K8s tends to treat quotes in env vars**: In contrast to Docker where something like `DB_USER='soobin'` gets read as `soobin`, K8s could read it as `'soobin'`. I am not completely sure about this behavior, but this caused many hours of debugging as well. Always try to sanitize it with:
+
+```py
+def sanitize_env_var(env_var: str) -> str:
+    sanitized = str(env_var).strip()
+    if sanitized.startswith('"') or sanitized.startswith("'"):
+        sanitized = sanitized[1:]
+    if sanitized.endswith('"') or sanitized.endswith("'"):
+        sanitized = sanitized[:-1]
+    return sanitized
+```
+```
+```
+
+<br>
+
 #### Networking in Kubernetes
 
 Reference: https://kubernetes.io/docs/tutorials/services/connect-applications-service/
