@@ -13,7 +13,7 @@ from app.shared_library.input_data_validations import (
     check_is_valid_quantity,
     sanitize_env_var,
 )
-from app.shared_library.models import BookRequestBody, Books
+from app.shared_library.models import BookRequestBody, Books, Misc
 from app.shared_library.responses import (
     RESOPNSE_500_SERVER_ERROR,
     RESPONSE_503_CIRCUIT_BREAKER_OPEN,
@@ -93,7 +93,7 @@ url_db_connection = URL.create(
 print(f'[INFO] Connecting to "{url_db_connection}"...')
 engine = create_engine(url_db_connection, echo=False)
 print(f'[INFO] DB connection successfully established: "{url_db_connection}"')
-SQLModel.metadata.create_all(engine)
+SQLModel.metadata.create_all(engine, tables=[Books.__table__, Misc.__table__])
 
 app = FastAPI(
     title="Bookstore API Service for Books Data",

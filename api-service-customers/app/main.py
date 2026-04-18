@@ -76,7 +76,7 @@ url_db_connection = URL.create(
 print(f'[INFO] Connecting to "{url_db_connection}"...')
 engine = create_engine(url_db_connection, echo=False)
 print(f'[INFO] DB connection successfully established: "{url_db_connection}"')
-SQLModel.metadata.create_all(engine)
+SQLModel.metadata.create_all(engine, tables=[Customers.__table__])
 
 app = FastAPI(
     title="Bookstore API Service for Customers Data",
