@@ -263,6 +263,10 @@ kubectl get services
 kubectl get pods
 watch --color --interval 0.2 'kubectl get pods'
 
+# How to test if a Kafka producer server is up:
+sudo apt install kafkacat
+kcat -b <SNIP>:9092 -t topic.name
+
 # How to retrieve logs from local nodes.
 # 1. Enable ssh access for the nodes.
 # 2. SSH into them.
