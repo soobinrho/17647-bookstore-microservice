@@ -33,7 +33,7 @@ if API_SERVICES_LOAD_BALANCER_URL is None:
     API_SERVICE_BOOKS_PORT = os.environ.get(
         "BOOKSTORE_API_SERVICE_BOOKS_SERVICE_PORT", None
     )
-    API_SERVICE_BOOKS_URL = f"{API_SERVICE_BOOKS_URL}:{API_SERVICE_BOOKS_PORT}"
+    API_SERVICE_BOOKS_URL = f"http://{API_SERVICE_BOOKS_URL}:{API_SERVICE_BOOKS_PORT}"
     # API_SERVICE_BOOKS_URL = (
     #     "http://bookstore-api-service-books.bookstore-ns.svc.cluster.local:3000"
     # )
@@ -45,7 +45,7 @@ if API_SERVICES_LOAD_BALANCER_URL is None:
         "BOOKSTORE_API_SERVICE_CUSTOMERS_SERVICE_PORT", None
     )
     API_SERVICE_CUSTOMERS_URL = (
-        f"{API_SERVICE_CUSTOMERS_URL}:{API_SERVICE_CUSTOMERS_PORT}"
+        f"http://{API_SERVICE_CUSTOMERS_URL}:{API_SERVICE_CUSTOMERS_PORT}"
     )
     # API_SERVICE_CUSTOMERS_URL = (
     #     "http://bookstore-api-service-customers.bookstore-ns.svc.cluster.local:3000"
