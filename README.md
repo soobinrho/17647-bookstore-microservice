@@ -356,8 +356,6 @@ def sanitize_env_var(env_var: str) -> str:
         sanitized = sanitized[:-1]
     return sanitized
 ```
-```
-```
 
 <br>
 
