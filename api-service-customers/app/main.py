@@ -7,7 +7,6 @@ from sqlalchemy import URL
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from app.shared_library.input_data_validations import (
-    check_is_authenticated_request,
     check_is_valid_email,
     check_is_valid_state_abbr,
     sanitize_env_var,
@@ -19,15 +18,10 @@ from app.shared_library.models import (
 from app.shared_library.responses import (
     RESPONSE_INVALID_EMAIL,
     RESPONSE_INVALID_STATE,
-    RESPONSE_UNAUTHENTICATED,
 )
 from app.wrapper_kafka_producer import produce_kafka_message
 
 from .metadata import contact, description, tags_metadata
-
-IS_DEV = os.environ.get("IS_DEV", None)
-IS_DEV = True if IS_DEV is not None else False
-print(f"[INFO] IS_DEV = {IS_DEV}")
 
 DB_USER = os.environ.get("DB_USER", None)
 DB_PASS = os.environ.get("DB_PASS", None)
@@ -96,17 +90,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"detail": exc.errors()},
     )
-
-
-@app.middleware("http")
-async def middleware_main(req: Request, call_next_api):
-    if not IS_DEV and not check_is_authenticated_request(
-        req.url.path, req.headers.get("Authorization", None)
-    ):
-        return RESPONSE_UNAUTHENTICATED
-
-    res = await call_next_api(req)
-    return res
 
 
 def create_customer(customer: Customers) -> None:
