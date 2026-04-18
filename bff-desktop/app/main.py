@@ -99,7 +99,12 @@ async def post_books(book_request_body: BookRequestBody, response: Response):
         json=json.loads(book_request_body.model_dump_json()),
     )
     response.status_code = res.status_code
-    response.body = res.content
+    try:
+        body = res.json()
+        return body
+    except Exception:
+        body = res.content
+        return body
 
 
 @app.put("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
@@ -113,28 +118,48 @@ async def put_books(
         json=json.loads(book_request_body.model_dump_json()),
     )
     response.status_code = res.status_code
-    response.body = res.content
+    try:
+        body = res.json()
+        return body
+    except Exception:
+        body = res.content
+        return body
 
 
 @app.get("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_books(ISBN, response: Response):
     res = httpx.get(f"{API_SERVICE_BOOKS_URL}/books/{ISBN}")
     response.status_code = res.status_code
-    response.body = res.content
+    try:
+        body = res.json()
+        return body
+    except Exception:
+        body = res.content
+        return body
 
 
 @app.get("/books/isbn/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_books_duplicate_enpoint(ISBN, response: Response):
     res = await httpx.get(f"{API_SERVICE_BOOKS_URL}/books/isbn/{ISBN}")
     response.status_code = res.status_code
-    response.body = res.content
+    try:
+        body = res.json()
+        return body
+    except Exception:
+        body = res.content
+        return body
 
 
 @app.get("/books/{ISBN}/related-books", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_related_books(ISBN, response: Response):
     res = httpx.get(f"{API_SERVICE_BOOKS_URL}/books/{ISBN}/related-books")
     response.status_code = res.status_code
-    response.body = res.content
+    try:
+        body = res.json()
+        return body
+    except Exception:
+        body = res.content
+        return body
 
 
 # =========
@@ -149,21 +174,36 @@ async def post_customers(
         json=json.loads(customer_request_body.model_dump_json()),
     )
     response.status_code = res.status_code
-    response.body = res.content
+    try:
+        body = res.json()
+        return body
+    except Exception:
+        body = res.content
+        return body
 
 
 @app.get("/customers/{id}", tags=["customers"], status_code=status.HTTP_200_OK)
 async def get_customers(id: int, response: Response):
     res = httpx.get(f"{API_SERVICE_CUSTOMERS_URL}/customers/{id}")
     response.status_code = res.status_code
-    response.body = res.content
+    try:
+        body = res.json()
+        return body
+    except Exception:
+        body = res.content
+        return body
 
 
 @app.get("/customers", tags=["customers"], status_code=status.HTTP_200_OK)
 async def get_customers_by_userId(userId, response: Response):
     res = httpx.get(f"{API_SERVICE_CUSTOMERS_URL}/customers", params={"userId": userId})
     response.status_code = res.status_code
-    response.body = res.content
+    try:
+        body = res.json()
+        return body
+    except Exception:
+        body = res.content
+        return body
 
 
 # =============

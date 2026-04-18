@@ -49,6 +49,7 @@ test-desktop-books: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-bff-desktop \
 		-p 80:80 \
 		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
 		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-desktop:latest
 	docker run --detach --name dev-bookstore-api-service-books \
@@ -71,6 +72,7 @@ test-desktop-customers: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-bff-desktop \
 		-p 80:80 \
 		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
 		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-desktop:latest
 	docker run --detach --name dev-bookstore-api-service-customers \
@@ -106,6 +108,7 @@ test-mobile-books: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-bff-mobile \
 		-p 80:80 \
 		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
 		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-mobile:latest
 	docker run --detach --name dev-bookstore-api-service-books \
@@ -128,6 +131,7 @@ test-mobile-customers: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-bff-mobile \
 		-p 80:80 \
 		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
 		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-mobile:latest
 	docker run --detach --name dev-bookstore-api-service-customers \
@@ -195,6 +199,7 @@ test-related-books-no-delay: ensure-env-file-exists cleanup cleanup-only-related
 	docker run --detach --name dev-bookstore-related-books-no-delay \
 		-p 8080:8080 \
 		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
 		pmerson/book-recommendations-ms \
 		--delay=0
 	echo '[INFO] Port 8080: dev-bookstore-related-books-no-delay'
@@ -224,6 +229,7 @@ test-related-books-delayed: ensure-env-file-exists cleanup cleanup-only-related-
 	docker run --detach --name dev-bookstore-related-books-delayed \
 		-p 8080:8080 \
 		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
 		pmerson/book-recommendations-ms \
 		--delay=5000
 	echo '[INFO] Port 8080: dev-bookstore-related-books-delayed'
