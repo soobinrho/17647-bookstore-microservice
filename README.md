@@ -359,6 +359,10 @@ def sanitize_env_var(env_var: str) -> str:
 
 <br>
 
+- **Handling data in distributed and scalable systems**: is a hard problem with all the handling of locks, racing conditions, and transaction rollbacks. Available solutions include the [Saga pattern](https://microservices.io/patterns/data/saga.html), the [database per service pattern](https://microservices.io/patterns/data/database-per-service.html), the service data replication pattern, and the [CQRS (Command Query Responsibility Segregation) pattern](https://microservices.io/patterns/data/cqrs.html), a good example of which is using a relational database for writes and an Elasticsearch for reads.
+
+<br>
+
 #### Networking in Kubernetes
 
 Reference: https://kubernetes.io/docs/tutorials/services/connect-applications-service/
