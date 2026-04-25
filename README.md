@@ -11,23 +11,15 @@ A bookstore backend built in the microservice architecture.
 | Service | Where & How |
 | --------------- | ----------- |
 | **API Services** | Python FastAPI deployed as scalable microservices on Kubernetes (AWS EKS). |
-| **Database** | MySQL deployed on an AWS Aurora cluster of MySQL instances. |
+| **Database** | MySQL deployed on an AWS Aurora cluster of MySQL instances. CQRS (Command Query Responsibility Segregation) pattern is used for data handling. AWS Aurora Cluster consisting of MySQL instances is the primary data store, while a MongoDB instance handles all queries. CQRS increases design complexity but increases the throughput of queries and can scale well. CQRS is therefore suitable for read-intensive use cases. |
 | **BFF (Backends For Frontends)** | Routes desktop and mobile traffic separately with API composition based on `X-Client-Type: {Web\|iOS\|Android}`. Handles basic authentication with JSON Web Tokens and forwards traffic to either `bookstore-api-service-books` or `bookstore-api-service-customers`. |
 | **LLM for Book Summary Dummy Data Generation** | External API calls to Gemini using their generous free tier for `gemini-2.5-flash-lite`. |
 | **Deployment** | I found [`Makefile`](https://github.com/soobinrho/17647-bookstore-microservice/blob/main/Makefile) super helpful here. |
 
 <br>
 
-TODO: Create architecture diagram using Miro. State which software patterns are used.
-
-TODO: In the diagram, do not include services hosted by Professor Merson: MongoDB, Kafka
-
-CQRS (Command Query Responsibility Segregation) pattern is used for data handling.
-AWS Aurora Cluster consisting of MySQL instances is the primary data store, while the query view consists of a MongoDB instance.
-
-
-
-/* Note: This architecture diagram was drawn using [Miro](https://miro.com/app/board/uXjVJQnm8pU=/?share_link_id=654789809049).
+<img width="1897" height="1185" alt="architecture_diagram" src="https://github.com/user-attachments/assets/3b670013-d18a-491f-8bfe-07020923d21e" /><br>
+\* Note: This architecture diagram was drawn using [Miro](https://miro.com/app/board/uXjVJQnm8pU=/?share_link_id=654789809049).
 
 <br>
 
