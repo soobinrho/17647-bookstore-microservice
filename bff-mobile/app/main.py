@@ -68,6 +68,7 @@ app = FastAPI(
     description=description,
     tags_metadata=tags_metadata,
     contact=contact,
+    docs_url="/",
 )
 
 
