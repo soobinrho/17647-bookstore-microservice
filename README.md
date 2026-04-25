@@ -19,6 +19,16 @@ A bookstore backend built in the microservice architecture.
 
 <br>
 
+TODO: Create architecture diagram using Miro. State which software patterns are used.
+
+CQRS (Command Query Responsibility Segregation) pattern is used for data handling.
+AWS Aurora Cluster consisting of MySQL instances is the primary data store, while the query view consists of a MongoDB instance.
+
+
+/* Note: This architecture diagram was drawn using [Miro](https://miro.com/app/board/uXjVJQnm8pU=/?share_link_id=654789809049).
+
+<br>
+
 ### API Endpoints
 
 | **Resource** | **GET** | **POST** | **PUT** |
@@ -359,7 +369,15 @@ def sanitize_env_var(env_var: str) -> str:
 
 <br>
 
-- **Handling data in distributed and scalable systems**: is a hard problem with all the handling of locks, racing conditions, and transaction rollbacks. Available solutions include the [Saga pattern](https://microservices.io/patterns/data/saga.html), the [database per service pattern](https://microservices.io/patterns/data/database-per-service.html), the service data replication pattern, and the [CQRS (Command Query Responsibility Segregation) pattern](https://microservices.io/patterns/data/cqrs.html), a good example of which is using a relational database for writes and an Elasticsearch for reads.
+- **Handling data in distributed and scalable systems**: is a hard problem with all the handling of locks, racing conditions, and transaction rollbacks. Consistency can be prioritized even in distributed systems, (e.g. see Cassandra's optional configurations) but that comes with a huge price of increased time requirements for each transaction. Thus, a lot of systems are better off opting for eventual consistency and availability over strict consistency.
+
+<br>
+
+- **Good solutions for handling data in scalable systems** include the [Saga pattern](https://microservices.io/patterns/data/saga.html), the [database per service pattern](https://microservices.io/patterns/data/database-per-service.html), the service data replication pattern, and the [CQRS (Command Query Responsibility Segregation) pattern](https://microservices.io/patterns/data/cqrs.html), in which the primary data store handles all commands (write operations), while the query view handles all queries (read operations): e.g. a relational database and Elasticsearch.
+
+<br>
+
+- **CQRS Tradeoffs**: Reduced response time for queries. Better scability. On the other hand, queries may operate on stale data depending on how the data from the primary data store syncs with the query view. Design complexity increases.
 
 <br>
 
