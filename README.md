@@ -10,19 +10,21 @@ A bookstore backend built in the microservice architecture.
 
 | Service | Where & How |
 | --------------- | ----------- |
-| **API Services** | Python FastAPI deployed on multiple AWS EC2 instances for passive redundancy. |
-| **Database** | MySQL deployed on AWS Aurora MySQL instances. |
-| **BFF (Backends For Frontends)** | BFF's for desktop and mobile deployed as FastAPI servers on AWS EC2 instances on multiple regions. AWS load balancer routes traffic based on HTTP header `X-Client-Type: {Web\|iOS\|Android}`. |
-| **LLM for Book Summary Generation** | External API calls to Gemini using their generous free tier for `gemini-2.5-flash-lite`. |
-
-\* Note: This deliverable also includes a Kubernetes architecture, but I excluded it from this table because I don't forsee myself using Kubernetes for my projects for now (I'll use a simpler architecture until I absolutely need to use K8s).
+| **API Services** | Python FastAPI deployed as scalable microservices on Kubernetes (AWS EKS). |
+| **Database** | MySQL deployed on an AWS Aurora cluster of MySQL instances. |
+| **BFF (Backends For Frontends)** | Routes desktop and mobile traffic separately with API composition based on `X-Client-Type: {Web\|iOS\|Android}`. Handles basic authentication with JSON Web Tokens and forwards traffic to either `bookstore-api-service-books` or `bookstore-api-service-customers`. |
+| **LLM for Book Summary Dummy Data Generation** | External API calls to Gemini using their generous free tier for `gemini-2.5-flash-lite`. |
+| **Deployment** | I found [`Makefile`](https://github.com/soobinrho/17647-bookstore-microservice/blob/main/Makefile) super helpful here. |
 
 <br>
 
 TODO: Create architecture diagram using Miro. State which software patterns are used.
 
+TODO: In the diagram, do not include services hosted by Professor Merson: MongoDB, Kafka
+
 CQRS (Command Query Responsibility Segregation) pattern is used for data handling.
 AWS Aurora Cluster consisting of MySQL instances is the primary data store, while the query view consists of a MongoDB instance.
+
 
 
 /* Note: This architecture diagram was drawn using [Miro](https://miro.com/app/board/uXjVJQnm8pU=/?share_link_id=654789809049).
