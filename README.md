@@ -27,8 +27,10 @@ A bookstore backend built in the microservice architecture.
 
 | **Resource** | **GET** | **POST** | **PUT** |
 | -------- | --- | ---- | --- |
-| `/books` | N/A | Create a new book. | N/A |
-| `/books/{ISBN}` | Retrieve a book. | N/A | Update an existing book. |
+| `/cmd/books` | N/A | Create a new book. | N/A |
+| `/cmd/books/{ISBN}` | N/A | N/A | Update an existing book. |
+| `/books?keyword={keyword}` | Retrieve books matching a keyword (case insensitive). | N/A | N/A |
+| `/books/{ISBN}` | Retrieve a book. | N/A | N/A |
 | `/books/isbn/{ISBN}` | Retrieve a book. | N/A | N/A |
 | `/customers` | N/A | Create a new customer. | N/A |
 | `/customers/{id}` | Retrieve a customer. | N/A | N/A |
