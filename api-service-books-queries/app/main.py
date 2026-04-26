@@ -105,9 +105,49 @@ def get_book_by_ISBN(ISBN: str) -> Books:
         return book
 
 
+def get_is_valid_keyword(keyword: str) -> bool:
+    keyword = str(keyword)
+    for c in keyword:
+        if not c.isalpha():
+            return False
+    return True
+
+
+def get_book_by_keyword(keyword: str) -> Books | None:
+    # [TODO] Get a wrapper for the MongoDB. Return none if no mongo db in test environments.
+    return None
+
+
 # =====
 # Books
 # =====
+@app.get("/books", tags=["books"], status_code=status.HTTP_200_OK)
+async def get_books_by_keyword(keyword: str):
+    if not get_is_valid_keyword(keyword):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "message": "Retrieval failed. The keyword query parameter must be a-z or A-Z."
+            },
+        )
+    book = get_book_by_keyword(keyword)
+    genre = str(book.genre)
+    if genre.isnumeric():
+        genre = float(genre)
+        if genre.is_integer():
+            genre = int(genre)
+    return {
+        "ISBN": str(book.ISBN),
+        "title": str(book.title),
+        "Author": str(book.author),
+        "description": str(book.description),
+        "genre": genre,
+        "price": float(book.price),
+        "quantity": int(book.quantity),
+        "summary": str(book.summary),
+    }
+
+
 @app.get("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_books(ISBN):
     book = get_book_by_ISBN(ISBN)
@@ -118,6 +158,8 @@ async def get_books(ISBN):
         )
 
     book = get_book_by_ISBN(ISBN)
+    if book is None:
+        return RESPONSE_NO_CONTENT
     genre = str(book.genre)
     if genre.isnumeric():
         genre = float(genre)
