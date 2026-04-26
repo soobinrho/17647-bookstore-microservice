@@ -1,0 +1,5 @@
+.env*
+__pycache__
+README.md
+.venv
+.ruff_cache
