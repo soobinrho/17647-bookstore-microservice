@@ -8,7 +8,6 @@ from fastapi.responses import JSONResponse
 
 from app.shared_library.input_data_validations import (
     check_is_authenticated_request,
-    sanitize_env_var,
 )
 from app.shared_library.models import (
     BookRequestBody,
@@ -22,19 +21,36 @@ IS_DEV = os.environ.get("IS_DEV", None)
 IS_DEV = True if IS_DEV is not None else False
 print(f"[INFO] IS_DEV = {IS_DEV}")
 
-API_SERVICE_BOOKS_URL = ""
+API_SERVICE_BOOKS_COMMANDS_URL = ""
+API_SERVICE_BOOKS_QUERIES_URL = ""
 API_SERVICE_CUSTOMERS_URL = ""
-API_SERVICES_LOAD_BALANCER_URL = os.environ.get("API_SERVICES_LOAD_BALANCER_URL", None)
-if API_SERVICES_LOAD_BALANCER_URL is None:
+if IS_DEV:
+    API_SERVICE_BOOKS_COMMANDS_URL = "http://host.docker.internal:3000"
+    API_SERVICE_BOOKS_QUERIES_URL = "http://host.docker.internal:3001"
+    API_SERVICE_CUSTOMERS_URL = "http://host.docker.internal:3003"
+else:
     # These values are automatically populated by K8s for all services.
-    API_SERVICE_BOOKS_URL = os.environ.get(
-        "BOOKSTORE_API_SERVICE_BOOKS_SERVICE_HOST", None
+    API_SERVICE_BOOKS_COMMANDS_URL = os.environ.get(
+        "BOOKSTORE_API_SERVICE_BOOKS_COMMANDS_SERVICE_HOST", None
     )
-    API_SERVICE_BOOKS_PORT = os.environ.get(
-        "BOOKSTORE_API_SERVICE_BOOKS_SERVICE_PORT", None
+    API_SERVICE_BOOKS_COMMANDS_PORT = os.environ.get(
+        "BOOKSTORE_API_SERVICE_BOOKS_COMMANDS_SERVICE_PORT", None
     )
-    API_SERVICE_BOOKS_URL = f"http://{API_SERVICE_BOOKS_URL}:{API_SERVICE_BOOKS_PORT}"
-    print(f"[INFO] API_SERVICE_BOOKS_URL = {API_SERVICE_BOOKS_URL}")
+    API_SERVICE_BOOKS_COMMANDS_URL = (
+        f"http://{API_SERVICE_BOOKS_COMMANDS_URL}:{API_SERVICE_BOOKS_COMMANDS_PORT}"
+    )
+    print(f"[INFO] API_SERVICE_BOOKS_COMMANDS_URL = {API_SERVICE_BOOKS_COMMANDS_URL}")
+
+    API_SERVICE_BOOKS_QUERIES_URL = os.environ.get(
+        "BOOKSTORE_API_SERVICE_BOOKS_QUERIES_SERVICE_HOST", None
+    )
+    API_SERVICE_BOOKS_QUERIES_PORT = os.environ.get(
+        "BOOKSTORE_API_SERVICE_BOOKS_QUERIES_SERVICE_PORT", None
+    )
+    API_SERVICE_BOOKS_QUERIES_URL = (
+        f"http://{API_SERVICE_BOOKS_QUERIES_URL}:{API_SERVICE_BOOKS_QUERIES_PORT}"
+    )
+    print(f"[INFO] API_SERVICE_BOOKS_QUERIES_URL = {API_SERVICE_BOOKS_QUERIES_URL}")
 
     API_SERVICE_CUSTOMERS_URL = os.environ.get(
         "BOOKSTORE_API_SERVICE_CUSTOMERS_SERVICE_HOST", None
@@ -46,17 +62,15 @@ if API_SERVICES_LOAD_BALANCER_URL is None:
         f"http://{API_SERVICE_CUSTOMERS_URL}:{API_SERVICE_CUSTOMERS_PORT}"
     )
     print(f"[INFO] API_SERVICE_CUSTOMERS_URL = {API_SERVICE_CUSTOMERS_URL}")
-else:
-    API_SERVICE_BOOKS_URL = sanitize_env_var(API_SERVICES_LOAD_BALANCER_URL)
-    API_SERVICE_CUSTOMERS_URL = sanitize_env_var(API_SERVICES_LOAD_BALANCER_URL)
-
-if API_SERVICE_BOOKS_URL is None or API_SERVICE_CUSTOMERS_URL is None:
-    print(
-        "[ERROR] All of API_SERVICES_LOAD_BALANCER_URL, API_SERVICE_BOOKS_URL, API_SERVICE_CUSTOMERS_URL are None"
-    )
+if (
+    API_SERVICE_BOOKS_COMMANDS_URL is None
+    or API_SERVICE_BOOKS_QUERIES_URL is None
+    or API_SERVICE_CUSTOMERS_URL is None
+):
     raise Exception(
         "[ERROR] Required credentials were not found in the environment variables"
     )
+
 
 app = FastAPI(
     title="Bookstore BFF (Backend For Frontend) for Desktop",
@@ -96,7 +110,7 @@ async def middleware_main(req: Request, call_next_api):
 @app.post("/books", tags=["books"], status_code=status.HTTP_201_CREATED)
 async def post_books(book_request_body: BookRequestBody, response: Response):
     res = httpx.post(
-        f"{API_SERVICE_BOOKS_URL}/books",
+        f"{API_SERVICE_BOOKS_COMMANDS_URL}/books",
         json=json.loads(book_request_body.model_dump_json()),
     )
     response.status_code = res.status_code
@@ -115,7 +129,7 @@ async def put_books(
     response: Response,
 ):
     res = httpx.put(
-        f"{API_SERVICE_BOOKS_URL}/books/{ISBN}",
+        f"{API_SERVICE_BOOKS_COMMANDS_URL}/books/{ISBN}",
         json=json.loads(book_request_body.model_dump_json()),
     )
     response.status_code = res.status_code
@@ -129,7 +143,7 @@ async def put_books(
 
 @app.get("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_books(ISBN, response: Response):
-    res = httpx.get(f"{API_SERVICE_BOOKS_URL}/books/{ISBN}")
+    res = httpx.get(f"{API_SERVICE_BOOKS_QUERIES_URL}/books/{ISBN}")
     response.status_code = res.status_code
     try:
         body = res.json()
@@ -141,7 +155,7 @@ async def get_books(ISBN, response: Response):
 
 @app.get("/books/isbn/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_books_duplicate_enpoint(ISBN, response: Response):
-    res = await httpx.get(f"{API_SERVICE_BOOKS_URL}/books/isbn/{ISBN}")
+    res = await httpx.get(f"{API_SERVICE_BOOKS_QUERIES_URL}/books/isbn/{ISBN}")
     response.status_code = res.status_code
     try:
         body = res.json()
@@ -153,7 +167,19 @@ async def get_books_duplicate_enpoint(ISBN, response: Response):
 
 @app.get("/books/{ISBN}/related-books", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_related_books(ISBN, response: Response):
-    res = httpx.get(f"{API_SERVICE_BOOKS_URL}/books/{ISBN}/related-books")
+    res = httpx.get(f"{API_SERVICE_BOOKS_QUERIES_URL}/books/{ISBN}/related-books")
+    response.status_code = res.status_code
+    try:
+        body = res.json()
+        return body
+    except Exception:
+        body = res.content
+        return body
+
+
+@app.get("/books", tags=["books"], status_code=status.HTTP_200_OK)
+async def get_books_by_keyword(keyword: str, response: Response):
+    res = httpx.get(f"{API_SERVICE_BOOKS_QUERIES_URL}/books?keyword={keyword}")
     response.status_code = res.status_code
     try:
         body = res.json()

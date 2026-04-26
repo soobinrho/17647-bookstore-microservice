@@ -85,20 +85,9 @@ make test-create-db
 # need port 3000, so I tested one combination at a time.
 make build
 
-# Test from http://localhost/docs for all books API endpoints /w desktop BFF.
-make test-desktop-books
-make cleanup
-
-# Test from http://localhost/docs for all customers API endpoints /w desktop BFF.
-make test-desktop-customers
-make cleanup
-
-# Test from http://localhost/docs for all books API endpoints /w mobile BFF.
-make test-mobile-books
-make cleanup
-
-# Test from http://localhost/docs for all customers API endpoints /w mobile BFF.
-make test-mobile-customers
+# Test from http://localhost:80 for the desktop routes and
+# http://localhost:81 for the mobile routes.
+make test  # See if all services work as expected.
 make cleanup
 
 # How to test the `/books/{ISBN}/related-books` endpoint:
@@ -108,84 +97,6 @@ make cleanup
 
 # Final cleanup.
 make cleanup-including-db
-```
-
-<br>
-
-### How to deploy to AWS without Kubernetes
-
-```bash
-
-# Populate all required env variables.
-cp .env.example .env
-
-# Build Docker images and push to Docker Hub. In my case,
-# they were pushed to https://hub.docker.com/repositories/soobinrho
-make build
-make push
-
-# To create the required database on the AWS Aurora cluster,
-# SSH in to any of the EC2 instances.
-chmod 400 ./key.pem
-ssh -i ./key.pem ec2-user@<SNIP>
-sudo dnf install -y mariadb105-server git make
-
-# Ensure that the books API cannot access the customers DB and vice versa.
-source .env
-mysql -h $DB_URL -u $DB_ADMIN_USER -p"${DB_ADMIN_PASS}" \
-  -e "CREATE DATABASE IF NOT EXISTS ${DB_BOOKS_DATABASE};" \
-  -e "CREATE USER ${DB_BOOKS_USER} IDENTIFIED BY '${DB_BOOKS_PASS}';" \
-  -e "GRANT ALL PRIVILEGES ON ${DB_BOOKS_DATABASE}.* TO ${DB_BOOKS_USER};"
-
-mysql -h $DB_URL -u $DB_ADMIN_USER -p"${DB_ADMIN_PASS}" \
-  -e "CREATE DATABASE IF NOT EXISTS ${DB_CUSTOMERS_DATABASE};" \
-  -e "CREATE USER ${DB_CUSTOMERS_USER} IDENTIFIED BY '${DB_CUSTOMERS_PASS}';" \
-  -e "GRANT ALL PRIVILEGES ON ${DB_CUSTOMERS_DATABASE}.* TO ${DB_CUSTOMERS_USER};"
-
-# In each EC2, download this repository so that the Makefile can be
-# used for deployment and pulled whenever there's an update in the repo.
-git clone https://github.com/soobinrho/17647-bookstore-microservice
-cd 17647-bookstore-microservice
-
-# In each EC2, find its public IP address.
-ec2-metadata --public-ipv4
-
-# Transfer the .env file over to each of the EC2 instances.
-scp -i labsuser.pem ./.env ec2-user@<SNIP>:~/17647-bookstore-microservice/
-
-# Go to each of the EC2 instances and run the API services and BFF's.
-sudo dnf install -y make
-make prod-deploy-ec2-bookstore-a
-make prod-deploy-ec2-bookstore-b
-make prod-deploy-ec2-bookstore-c
-make prod-deploy-ec2-bookstore-d
-
-# ===================
-# Debugging Workflows
-# ===================
-docker logs -f bookstore-bff-mobile
-docker logs -f bookstore-bff-desktop
-docker logs -f bookstore-api-service-books
-docker logs -f bookstore-api-service-customers
-docker exec -it bookstore-bff-mobile bash
-docker exec -it bookstore-bff-desktop bash
-docker exec -it bookstore-api-service-books bash
-docker exec -it bookstore-api-service-customers bash
-
-# ============
-# Redeployment
-# ============
-# Whenever a new update has been made to the source code,
-# build and push the container images.
-make build
-make push
-
-# On EC2's, deploy the new images.
-make prod-cleanup
-make prod-deploy-ec2-bookstore-a
-make prod-deploy-ec2-bookstore-b
-make prod-deploy-ec2-bookstore-c
-make prod-deploy-ec2-bookstore-d
 ```
 
 <br>
@@ -334,7 +245,9 @@ Up to this point, I only had experience with Hetzner and DigitalOcean.
 ```py
 # Do not. This causes problems because of how Docker and K8s treats
 # env variables differently which become super difficult to debug.
-engine = create_engine(f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}:{DB_PORT}/{DB_DATABASE}", echo=False)
+engine = create_engine(
+    f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_URL}:{DB_PORT}/{DB_DATABASE}", echo=False
+)
 
 # Do. This prevents a lot of the problems.
 # Reference: https://docs.sqlalchemy.org/en/21/core/engines.html#creating-urls-programmatically

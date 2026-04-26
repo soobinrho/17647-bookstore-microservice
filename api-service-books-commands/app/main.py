@@ -20,6 +20,10 @@ from app.shared_library.responses import (
 from .metadata import contact, description, tags_metadata
 from .wrapper_book_summary import get_book_500_words_summary
 
+IS_DEV = os.environ.get("IS_DEV", None)
+IS_DEV = True if IS_DEV is not None else False
+print(f"[INFO] IS_DEV = {IS_DEV}")
+
 DB_USER = os.environ.get("DB_USER", None)
 DB_PASS = os.environ.get("DB_PASS", None)
 DB_URL = os.environ.get("DB_URL", None)
