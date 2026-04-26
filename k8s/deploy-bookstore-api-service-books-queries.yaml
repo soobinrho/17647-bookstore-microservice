@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bookstore-api-service-books
+  name: bookstore-api-service-books-queries
   namespace: bookstore-ns
 spec:
   selector:
     matchLabels:
-      app: bookstore-api-service-books
+      app: bookstore-api-service-books-queries
   replicas: 1
   template:
     metadata:
       labels:
-        app: bookstore-api-service-books
+        app: bookstore-api-service-books-queries
     spec:
       containers:
-        - name: bookstore-api-service-books
-          image: soobinrho/17647-bookstore-api-service-books:latest
+        - name: bookstore-api-service-books-queries
+          image: soobinrho/17647-bookstore-api-service-books-queries:latest
           imagePullPolicy: Always
           terminationMessagePath: "/tmp/k8s_termination_message.log"
           ports:
@@ -23,7 +23,7 @@ spec:
           stdin: true
           envFrom:
             - secretRef:
-                name: secrets-api-service-books
+                name: secrets-api-service-books-queries
           startupProbe:
             httpGet:
               path: /status
@@ -45,4 +45,4 @@ spec:
                   - key: "app"
                     operator: In
                     values:
-                      - bookstore-api-service-books
+                      - bookstore-api-service-books-queries

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-api-service-books-commands
+  namespace: bookstore-ns
+spec:
+  selector:
+    matchLabels:
+      app: bookstore-api-service-books-commands
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: bookstore-api-service-books-commands
+    spec:
+      containers:
+        - name: bookstore-api-service-books-commands
+          image: soobinrho/17647-bookstore-api-service-books-commands:latest
+          imagePullPolicy: Always
+          terminationMessagePath: "/tmp/k8s_termination_message.log"
+          ports:
+          - containerPort: 3000
+          stdin: true
+          envFrom:
+            - secretRef:
+                name: secrets-api-service-books-commands
+          startupProbe:
+            httpGet:
+              path: /status
+              port: 3000
+            periodSeconds: 5
+            failureThreshold: 70
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 3000
+            periodSeconds: 30
+            failureThreshold: 3
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                      - bookstore-api-service-books-commands

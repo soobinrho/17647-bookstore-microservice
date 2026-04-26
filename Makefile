@@ -9,9 +9,12 @@ ensure-env-file-exists:
 	test -s ./.env || { echo '[ERROR] .env file not found.'; exit 1; }
 
 build:
-	cd ./api-service-books/ && \
-		docker build -t soobinrho/17647-bookstore-api-service-books:latest \
-		-t soobinrho/17647-bookstore-api-service-books:$(GIT_HASH) .
+	cd ./api-service-books-commands/ && \
+		docker build -t soobinrho/17647-bookstore-api-service-books-commands:latest \
+		-t soobinrho/17647-bookstore-api-service-books-commands:$(GIT_HASH) .
+	cd ./api-service-books-queries/ && \
+		docker build -t soobinrho/17647-bookstore-api-service-books-queries:latest \
+		-t soobinrho/17647-bookstore-api-service-books-queries:$(GIT_HASH) .
 	cd ./api-service-customers/ && \
 		docker build -t soobinrho/17647-bookstore-api-service-customers:latest \
 		-t soobinrho/17647-bookstore-api-service-customers:$(GIT_HASH) .
@@ -26,9 +29,12 @@ build:
 		-t soobinrho/17647-bookstore-crm-service-customers:$(GIT_HASH) .
 
 push:
-	cd ./api-service-books/ && \
-		docker push soobinrho/17647-bookstore-api-service-books:latest && \
-		docker push soobinrho/17647-bookstore-api-service-books:$(GIT_HASH)
+	cd ./api-service-books-commands/ && \
+		docker push soobinrho/17647-bookstore-api-service-books-commands:latest && \
+		docker push soobinrho/17647-bookstore-api-service-books-commands:$(GIT_HASH)
+	cd ./api-service-books-queries/ && \
+		docker push soobinrho/17647-bookstore-api-service-books-queries:latest && \
+		docker push soobinrho/17647-bookstore-api-service-books-queries:$(GIT_HASH)
 	cd ./api-service-customers/ && \
 		docker push soobinrho/17647-bookstore-api-service-customers:latest && \
 		docker push soobinrho/17647-bookstore-api-service-customers:$(GIT_HASH)
@@ -52,7 +58,7 @@ test-desktop-books: ensure-env-file-exists
 		--env IS_DEV='1' \
 		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-desktop:latest
-	docker run --detach --name dev-bookstore-api-service-books \
+	docker run --detach --name dev-bookstore-api-service-books-commands \
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
@@ -62,11 +68,18 @@ test-desktop-books: ensure-env-file-exists
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
+		soobinrho/17647-bookstore-api-service-books-commands:latest
+	docker run --detach --name dev-bookstore-api-service-books-queries \
+		-p 3001:3000 \
+		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
+		--env DB_URL='host.docker.internal' \
+		--env DB_PORT='3306' \
+		--env DB_USER=${DB_BOOKS_USER} \
+		--env DB_PASS=${DB_BOOKS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
-		soobinrho/17647-bookstore-api-service-books:latest
-	docker ps
-	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
-	echo '[INFO] Port 3000: dev-bookstore-api-service-books'
+		soobinrho/17647-bookstore-api-service-books-queries:latest
 
 test-desktop-customers: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-bff-desktop \
@@ -99,10 +112,6 @@ test-desktop-customers: ensure-env-file-exists
 		--env SMTP_SERVER_ID=${SMTP_SERVER_ID} \
 		--env SMTP_SERVER_PASS=${SMTP_SERVER_PASS} \
 		soobinrho/17647-bookstore-crm-service-customers:latest
-	docker ps
-	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
-	echo '[INFO] Port 3000: dev-bookstore-api-service-customers'
-	echo '[INFO] Port N/A: dev-bookstore-crm-service-customers'
 
 test-mobile-books: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-bff-mobile \
@@ -111,7 +120,7 @@ test-mobile-books: ensure-env-file-exists
 		--env IS_DEV='1' \
 		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-mobile:latest
-	docker run --detach --name dev-bookstore-api-service-books \
+	docker run --detach --name dev-bookstore-api-service-books-commands \
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
@@ -121,11 +130,18 @@ test-mobile-books: ensure-env-file-exists
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
+		soobinrho/17647-bookstore-api-service-books-commands:latest
+	docker run --detach --name dev-bookstore-api-service-books-queries \
+		-p 3001:3000 \
+		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
+		--env DB_URL='host.docker.internal' \
+		--env DB_PORT='3306' \
+		--env DB_USER=${DB_BOOKS_USER} \
+		--env DB_PASS=${DB_BOOKS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
-		soobinrho/17647-bookstore-api-service-books:latest
-	docker ps
-	echo '[INFO] Port 80: dev-bookstore-bff-mobile'
-	echo '[INFO] Port 3000: dev-bookstore-api-service-books'
+		soobinrho/17647-bookstore-api-service-books-queries:latest
 
 test-mobile-customers: ensure-env-file-exists
 	docker run --detach --name dev-bookstore-bff-mobile \
@@ -158,10 +174,6 @@ test-mobile-customers: ensure-env-file-exists
 		--env SMTP_SERVER_ID=${SMTP_SERVER_ID} \
 		--env SMTP_SERVER_PASS=${SMTP_SERVER_PASS} \
 		soobinrho/17647-bookstore-crm-service-customers:latest
-	docker ps
-	echo '[INFO] Port 80: dev-bookstore-bff-mobile'
-	echo '[INFO] Port 3000: dev-bookstore-api-service-customers'
-	echo '[INFO] Port N/A: dev-bookstore-crm-service-customers'
 
 test-create-db: ensure-env-file-exists
 	docker run --detach --name dev-db-books \
@@ -209,7 +221,7 @@ test-related-books-no-delay: ensure-env-file-exists cleanup cleanup-only-related
 		--env IS_DEV='1' \
 		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-desktop:latest
-	docker run --detach --name dev-bookstore-api-service-books \
+	docker run --detach --name dev-bookstore-api-service-books-commands \
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
@@ -219,11 +231,18 @@ test-related-books-no-delay: ensure-env-file-exists cleanup cleanup-only-related
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
+		soobinrho/17647-bookstore-api-service-books-commands:latest
+	docker run --detach --name dev-bookstore-api-service-books-queries \
+		-p 3001:3000 \
+		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
+		--env DB_URL='host.docker.internal' \
+		--env DB_PORT='3306' \
+		--env DB_USER=${DB_BOOKS_USER} \
+		--env DB_PASS=${DB_BOOKS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
-		soobinrho/17647-bookstore-api-service-books:latest
-	docker ps
-	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
-	echo '[INFO] Port 3000: dev-bookstore-api-service-books'
+		soobinrho/17647-bookstore-api-service-books-queries:latest
 
 test-related-books-delayed: ensure-env-file-exists cleanup cleanup-only-related-books
 	docker run --detach --name dev-bookstore-related-books-delayed \
@@ -239,7 +258,7 @@ test-related-books-delayed: ensure-env-file-exists cleanup cleanup-only-related-
 		--env IS_DEV='1' \
 		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-desktop:latest
-	docker run --detach --name dev-bookstore-api-service-books \
+	docker run --detach --name dev-bookstore-api-service-books-commands \
 		-p 3000:3000 \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
@@ -249,11 +268,18 @@ test-related-books-delayed: ensure-env-file-exists cleanup cleanup-only-related-
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
+		soobinrho/17647-bookstore-api-service-books-commands:latest
+	docker run --detach --name dev-bookstore-api-service-books-queries \
+		-p 3001:3000 \
+		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
+		--env DB_URL='host.docker.internal' \
+		--env DB_PORT='3306' \
+		--env DB_USER=${DB_BOOKS_USER} \
+		--env DB_PASS=${DB_BOOKS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
-		soobinrho/17647-bookstore-api-service-books:latest
-	docker ps
-	echo '[INFO] Port 80: dev-bookstore-bff-desktop'
-	echo '[INFO] Port 3000: dev-bookstore-api-service-books'
+		soobinrho/17647-bookstore-api-service-books-queries:latest
 
 cleanup-only-related-books:
 	-bash -c '{ docker ps -aq --filter "name=dev-bookstore-related-books"; }' \
@@ -289,8 +315,9 @@ prod-deploy-ec2-bookstore-b: ensure-env-file-exists
 		-p 80:80 \
 		--env API_SERVICES_LOAD_BALANCER_URL=${API_SERVICES_LOAD_BALANCER_URL} \
 		soobinrho/17647-bookstore-bff-desktop:latest
-	docker pull soobinrho/17647-bookstore-api-service-books:latest
-	docker run --detach --name bookstore-api-service-books \
+	docker pull soobinrho/17647-bookstore-api-service-books-commands:latest
+	docker pull soobinrho/17647-bookstore-api-service-books-queries:latest
+	docker run --detach --name bookstore-api-service-books-commands \
 		-p 3000:3000 \
 		--env DB_URL=${DB_URL} \
 		--env DB_PORT=${DB_PORT} \
@@ -298,8 +325,16 @@ prod-deploy-ec2-bookstore-b: ensure-env-file-exists
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
+		soobinrho/17647-bookstore-api-service-books-commands:latest
+	docker run --detach --name bookstore-api-service-books-queries \
+		-p 3001:3000 \
+		--env DB_URL=${DB_URL} \
+		--env DB_PORT=${DB_PORT} \
+		--env DB_USER=${DB_BOOKS_USER} \
+		--env DB_PASS=${DB_BOOKS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_PROD} \
-		soobinrho/17647-bookstore-api-service-books:latest
+		soobinrho/17647-bookstore-api-service-books-queries:latest
 
 prod-deploy-ec2-bookstore-c: ensure-env-file-exists
 	docker pull soobinrho/17647-bookstore-bff-mobile:latest
@@ -307,8 +342,9 @@ prod-deploy-ec2-bookstore-c: ensure-env-file-exists
 		-p 80:80 \
 		--env API_SERVICES_LOAD_BALANCER_URL=${API_SERVICES_LOAD_BALANCER_URL} \
 		soobinrho/17647-bookstore-bff-mobile:latest
-	docker pull soobinrho/17647-bookstore-api-service-books:latest
-	docker run --detach --name bookstore-api-service-books \
+	docker pull soobinrho/17647-bookstore-api-service-books-commands:latest
+	docker pull soobinrho/17647-bookstore-api-service-books-queries:latest
+	docker run --detach --name bookstore-api-service-books-commands \
 		-p 3000:3000 \
 		--env DB_URL=${DB_URL} \
 		--env DB_PORT=${DB_PORT} \
@@ -316,8 +352,16 @@ prod-deploy-ec2-bookstore-c: ensure-env-file-exists
 		--env DB_PASS=${DB_BOOKS_PASS} \
 		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
+		soobinrho/17647-bookstore-api-service-books-commands:latest
+	docker run --detach --name bookstore-api-service-books-queries \
+		-p 3001:3000 \
+		--env DB_URL=${DB_URL} \
+		--env DB_PORT=${DB_PORT} \
+		--env DB_USER=${DB_BOOKS_USER} \
+		--env DB_PASS=${DB_BOOKS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
 		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_PROD} \
-		soobinrho/17647-bookstore-api-service-books:latest
+		soobinrho/17647-bookstore-api-service-books-queries:latest
 
 prod-deploy-ec2-bookstore-d: ensure-env-file-exists
 	docker pull soobinrho/17647-bookstore-bff-mobile:latest
@@ -353,11 +397,13 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 		kubectl apply -f bookstore-ns.yaml
 	cd ./k8s/ && \
 		./generate_dot_env_specific_to_each_service.sh && \
-		kubectl create secret generic secrets-api-service-books --from-env-file=./.env.api-service-books && \
+		kubectl create secret generic secrets-api-service-books-commands --from-env-file=./.env.api-service-books-commands && \
+		kubectl create secret generic secrets-api-service-books-queries --from-env-file=./.env.api-service-books-queries && \
 		kubectl create secret generic secrets-api-service-customers --from-env-file=./.env.api-service-customers && \
 		kubectl create secret generic secrets-crm-service-customers --from-env-file=./.env.crm-service-customers
 	cd ./k8s/ && \
-		kubectl apply -f service-bookstore-api-service-books.yaml && \
+		kubectl apply -f service-bookstore-api-service-books-commands.yaml && \
+		kubectl apply -f service-bookstore-api-service-books-queries.yaml && \
 		kubectl apply -f service-bookstore-api-service-customers.yaml && \
 		kubectl apply -f service-bookstore-crm-service-customers.yaml && \
 		echo '[INFO] Waiting for services to get registered before deployments...' && \
@@ -367,7 +413,8 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 		kubectl apply -f lb-bookstore-bff-desktop.yaml && \
 		kubectl apply -f lb-bookstore-bff-mobile.yaml
 	cd ./k8s/ && \
-		kubectl apply -f deploy-bookstore-api-service-books.yaml && \
+		kubectl apply -f deploy-bookstore-api-service-books-commands.yaml && \
+		kubectl apply -f deploy-bookstore-api-service-books-queries.yaml && \
 		kubectl apply -f deploy-bookstore-api-service-customers.yaml && \
 		kubectl apply -f deploy-bookstore-bff-desktop.yaml && \
 		kubectl apply -f deploy-bookstore-bff-mobile.yaml && \
