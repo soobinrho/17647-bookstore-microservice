@@ -1,6 +1,3 @@
-[submodule "api-service-books/app/shared_library"]
-	path = api-service-books/app/shared_library
-	url = https://github.com/soobinrho/17647-bookstore-shared-library
 [submodule "api-service-customers/app/shared_library"]
 	path = api-service-customers/app/shared_library
 	url = https://github.com/soobinrho/17647-bookstore-shared-library
@@ -12,4 +9,10 @@
 	url = https://github.com/soobinrho/17647-bookstore-shared-library
 [submodule "crm-service-customers/app/shared_library"]
 	path = crm-service-customers/app/shared_library
+	url = https://github.com/soobinrho/17647-bookstore-shared-library
+[submodule "api-service-books-commands/app/shared_library"]
+	path = api-service-books-commands/app/shared_library
+	url = https://github.com/soobinrho/17647-bookstore-shared-library
+[submodule "api-service-books-queries/app/shared_library"]
+	path = api-service-books-queries/app/shared_library
 	url = https://github.com/soobinrho/17647-bookstore-shared-library

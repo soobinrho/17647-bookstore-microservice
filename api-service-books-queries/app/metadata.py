@@ -3,7 +3,7 @@
 # ============================================
 # Reference: https://fastapi.tiangolo.com/tutorial/metadata/
 description = """
-## Bookstore API Service for Books Data
+## Bookstore API Service for Books Data (All read operations)
 
 Reference: https://github.com/soobinrho/17647-bookstore-microservice
 
