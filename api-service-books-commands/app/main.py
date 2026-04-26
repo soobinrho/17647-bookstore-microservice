@@ -16,6 +16,7 @@ from app.shared_library.responses import (
     RESPONSE_INVALID_PRICE,
     RESPONSE_INVALID_QUANTITY,
 )
+from app.shared_library.utils import get_unix_epoch_now
 
 from .metadata import contact, description, tags_metadata
 from .wrapper_book_summary import get_book_500_words_summary
@@ -153,6 +154,7 @@ async def post_books(
         genre=book_request_body.genre,
         price=book_request_body.price,
         quantity=book_request_body.quantity,
+        last_updated_datetime_unix_epoch=get_unix_epoch_now(),
     )
     create_book(book)
     book = get_book_by_ISBN(book_request_body.ISBN)
@@ -200,6 +202,7 @@ async def put_books(book_request_body: BookRequestBody, ISBN: str | int | float 
         book.genre = book_request_body.genre
         book.price = book_request_body.price
         book.quantity = book_request_body.quantity
+        book.last_updated_datetime_unix_epoch = get_unix_epoch_now()
         session.add(book)
         session.commit()
 

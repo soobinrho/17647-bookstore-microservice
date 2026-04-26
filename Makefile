@@ -52,7 +52,7 @@ push:
 # Tests
 # =====
 test-create-db: ensure-env-file-exists
-	docker run --detach --name dev-db-books \
+	docker run --detach --name dev-db-books-commands \
 		-p 3306:3306 \
 		--add-host host.docker.internal:host-gateway \
 		--env MARIADB_RANDOM_ROOT_PASSWORD='True' \
@@ -60,6 +60,12 @@ test-create-db: ensure-env-file-exists
 		--env MARIADB_PASSWORD=${DB_BOOKS_COMMANDS_PASS} \
 		--env MARIADB_DATABASE=${DB_BOOKS_COMMANDS_DATABASE} \
 		mariadb:latest
+	docker run --detach --name dev-db-books-queries \
+		-p 27017:27017 \
+		--add-host host.docker.internal:host-gateway \
+		--env MONGO_INITDB_ROOT_USERNAME=${DB_BOOKS_QUERIES_USER} \
+		--env MONGO_INITDB_ROOT_PASSWORD=${DB_BOOKS_QUERIES_PASS} \
+		mongo:latest
 	docker run --detach --name dev-db-customers \
 		-p 3307:3306 \
 		--add-host host.docker.internal:host-gateway \
@@ -96,10 +102,11 @@ test: ensure-env-file-exists
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
 		--env DB_URL='host.docker.internal' \
-		--env DB_PORT='3306' \
-		--env DB_USER=${DB_BOOKS_COMMANDS_USER} \
-		--env DB_PASS=${DB_BOOKS_COMMANDS_PASS} \
-		--env DB_DATABASE=${DB_BOOKS_COMMANDS_DATABASE} \
+		--env DB_PORT='27017' \
+		--env DB_USER=${DB_BOOKS_QUERIES_USER} \
+		--env DB_PASS=${DB_BOOKS_QUERIES_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_QUERIES_DATABASE} \
+		--env DB_COLLECTION=${DB_BOOKS_QUERIES_COLLECTION} \
 		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
 		soobinrho/17647-bookstore-api-service-books-queries:latest
 	docker run --detach --name dev-bookstore-api-service-customers \
@@ -160,9 +167,9 @@ test-related-books-no-delay: ensure-env-file-exists cleanup cleanup-only-related
 		--env IS_DEV='1' \
 		--env DB_URL='host.docker.internal' \
 		--env DB_PORT='3306' \
-		--env DB_USER=${DB_BOOKS_USER} \
-		--env DB_PASS=${DB_BOOKS_PASS} \
-		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
+		--env DB_USER=${DB_BOOKS_COMMANDS_USER} \
+		--env DB_PASS=${DB_BOOKS_COMMANDS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_COMMANDS_DATABASE} \
 		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
 		soobinrho/17647-bookstore-api-service-books-commands:latest
 	docker run --detach --name dev-bookstore-api-service-books-queries \
@@ -170,10 +177,11 @@ test-related-books-no-delay: ensure-env-file-exists cleanup cleanup-only-related
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
 		--env DB_URL='host.docker.internal' \
-		--env DB_PORT='3306' \
-		--env DB_USER=${DB_BOOKS_USER} \
-		--env DB_PASS=${DB_BOOKS_PASS} \
-		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
+		--env DB_PORT='27017' \
+		--env DB_USER=${DB_BOOKS_QUERIES_USER} \
+		--env DB_PASS=${DB_BOOKS_QUERIES_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_QUERIES_DATABASE} \
+		--env DB_COLLECTION=${DB_BOOKS_QUERIES_COLLECTION} \
 		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
 		soobinrho/17647-bookstore-api-service-books-queries:latest
 
@@ -196,9 +204,9 @@ test-related-books-delayed: ensure-env-file-exists cleanup cleanup-only-related-
 		--env IS_DEV='1' \
 		--env DB_URL='host.docker.internal' \
 		--env DB_PORT='3306' \
-		--env DB_USER=${DB_BOOKS_USER} \
-		--env DB_PASS=${DB_BOOKS_PASS} \
-		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
+		--env DB_USER=${DB_BOOKS_COMMANDS_USER} \
+		--env DB_PASS=${DB_BOOKS_COMMANDS_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_COMMANDS_DATABASE} \
 		--env GEMINI_API_KEY=${GEMINI_API_KEY} \
 		soobinrho/17647-bookstore-api-service-books-commands:latest
 	docker run --detach --name dev-bookstore-api-service-books-queries \
@@ -206,10 +214,11 @@ test-related-books-delayed: ensure-env-file-exists cleanup cleanup-only-related-
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
 		--env DB_URL='host.docker.internal' \
-		--env DB_PORT='3306' \
-		--env DB_USER=${DB_BOOKS_USER} \
-		--env DB_PASS=${DB_BOOKS_PASS} \
-		--env DB_DATABASE=${DB_BOOKS_DATABASE} \
+		--env DB_PORT='27017' \
+		--env DB_USER=${DB_BOOKS_QUERIES_USER} \
+		--env DB_PASS=${DB_BOOKS_QUERIES_PASS} \
+		--env DB_DATABASE=${DB_BOOKS_QUERIES_DATABASE} \
+		--env DB_COLLECTION=${DB_BOOKS_QUERIES_COLLECTION} \
 		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
 		soobinrho/17647-bookstore-api-service-books-queries:latest
 
@@ -256,8 +265,8 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 # Misc
 # ====
 .SILENT: ensure-env-file-exists \
-	test \
 	test-create-db \
+	test \
 	cleanup \
 	cleanup-including-db \
 	test-related-books-no-delay \

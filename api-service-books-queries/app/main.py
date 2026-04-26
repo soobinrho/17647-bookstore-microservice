@@ -1,11 +1,12 @@
 import os
+import asyncio
 
 import httpx
 from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from sqlalchemy import URL
-from sqlmodel import Session, SQLModel, create_engine, or_, select
+import pymongo
+from pymongo import AsyncMongoClient, ReturnDocument
 
 from app.shared_library.input_data_validations import (
     sanitize_env_var,
@@ -16,6 +17,7 @@ from app.shared_library.responses import (
     RESPONSE_503_CIRCUIT_BREAKER_OPEN,
     RESPONSE_NO_CONTENT,
 )
+from app.shared_library.utils import get_autograder_safe_genre, get_is_valid_keyword
 
 from .metadata import contact, description, tags_metadata
 from .wrapper_circuit_breaker import (
@@ -35,6 +37,7 @@ DB_PASS = os.environ.get("DB_PASS", None)
 DB_URL = os.environ.get("DB_URL", None)
 DB_PORT = os.environ.get("DB_PORT", None)
 DB_DATABASE = os.environ.get("DB_DATABASE", None)
+DB_COLLECTION = os.environ.get("DB_COLLECTION", None)
 API_RELATED_BOOKS_URL = os.environ.get("API_RELATED_BOOKS_URL", None)
 should_raise_exception = False
 if DB_USER is None:
@@ -46,11 +49,16 @@ if DB_PASS is None:
 if DB_URL is None:
     print("[ERROR] DB_URL = None")
     should_raise_exception = True
-if DB_PORT is None:
+# In prod, a MongoDB cluster is used instead of a local instance of MongoDB.
+# MongoDB clusters don't accept port numbers.
+if DB_PORT is None and IS_DEV:
     print("[ERROR] DB_PORT = None")
     should_raise_exception = True
 if DB_DATABASE is None:
     print("[ERROR] DB_DATABASE = None")
+    should_raise_exception = True
+if DB_COLLECTION is None:
+    print("[ERROR] DB_COLLECTION = None")
     should_raise_exception = True
 if API_RELATED_BOOKS_URL is None:
     print("[ERROR] API_RELATED_BOOKS_URL = None")
@@ -65,24 +73,21 @@ if should_raise_exception:
 DB_USER = sanitize_env_var(DB_USER)
 DB_PASS = sanitize_env_var(DB_PASS)
 DB_URL = sanitize_env_var(DB_URL)
-DB_PORT = int(float(sanitize_env_var(DB_PORT)))
+DB_PORT = int(float(sanitize_env_var(DB_PORT))) if IS_DEV else None
 DB_DATABASE = sanitize_env_var(DB_DATABASE)
+DB_COLLECTION = sanitize_env_var(DB_COLLECTION)
 API_RELATED_BOOKS_URL = sanitize_env_var(API_RELATED_BOOKS_URL)
 
-# Reference: https://docs.sqlalchemy.org/en/21/core/engines.html#creating-urls-programmatically
-str_db_connection_type = "mysql+pymysql" if IS_DEV else "mongodb"
-url_db_connection = URL.create(
-    str_db_connection_type,
-    username=DB_USER,
-    password=DB_PASS,
-    host=DB_URL,
-    port=DB_PORT,
-    database=DB_DATABASE,
-)
-print(f'[INFO] Connecting to "{url_db_connection}"...')
-engine = create_engine(url_db_connection, echo=False)
-print(f'[INFO] DB connection successfully established: "{url_db_connection}"')
-SQLModel.metadata.create_all(engine, tables=[Books.__table__, Misc.__table__])
+str_db_connection = None
+if not IS_DEV:
+    str_db_connection = f"mongodb+srv://{DB_USER}:{DB_PASS}@{DB_URL}"
+else:
+    str_db_connection = f"mongodb://{DB_USER}:{DB_PASS}@{DB_URL}:{DB_PORT}"
+db_client = AsyncMongoClient(str_db_connection, server_api=pymongo.server_api.ServerApi(version="1"))
+db = db_client.get_database(DB_DATABASE)
+db_collection = db.get_collection(DB_COLLECTION)
+db_collection.create_index([("ISBN", pymongo.ASCENDING)], unique=True)
+
 
 app = FastAPI(
     title="Bookstore API Service for Books Data",
@@ -104,54 +109,31 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
-def get_book_by_ISBN(ISBN: str) -> Books:
-    with Session(engine) as session:
-        book = session.get(Books, ISBN)
-        return book
+async def get_book_by_ISBN(ISBN: str) -> Books:
+    ISBN = str(ISBN)
+    book = await db_collection.find_one({"ISBN": ISBN})
+    return book
 
 
-def get_autograder_safe_genre(genre: str) -> str:
-    # Autograder has a weird behaivor where it expects the genre value to be
-    # integer and not string if the value only consists of integers.
-    genre = str(genre)
-    if genre.isnumeric():
-        genre = float(genre)
-        if genre.is_integer():
-            genre = int(genre)
-    return genre
-
-
-def get_is_valid_keyword(keyword: str) -> bool:
+async def get_books_by_keyword_from_db(keyword: str) -> Books | None:
     keyword = str(keyword)
-    for c in keyword:
-        if not c.isalpha():
-            return False
-    return True
-
-
-def get_books_by_keyword_from_db(keyword: str) -> Books | None:
-    with Session(engine) as session:
-        # `scalars` is used instead of `execute` because otherwise the query returns
-        # SQLAlchemy row objets which are different from what the rest of the
-        # codebase deals with.
-        results = session.scalars(
-            select(Books).where(
-                or_(
-                    Books.title.contains(keyword),
-                    Books.author.contains(keyword),
-                    Books.description.contains(keyword),
-                    Books.genre.contains(keyword),
-                    Books.summary.contains(keyword),
-                )
-            )
-        )
-        books = []
-        for book in results:
-            books.append(book)
-        if len(books) == 0:
-            return None
-        else:
-            return books
+    # Reference: https://www.mongodb.com/docs/languages/python/pymongo-driver/current/crud/query/find/
+    async_cursor = db_collection.find({
+        "$or": [
+            {"title": {"$regex": keyword, "$options": "i"}},
+            {"author": {"$regex": keyword, "$options": "i"}},
+            {"description": {"$regex": keyword, "$options": "i"}},
+            {"genre": {"$regex": keyword, "$options": "i"}},
+            {"summary": {"$regex": keyword, "$options": "i"}},
+        ]
+    })
+    books = []
+    async for book in async_cursor:
+        books.append(book)
+    if len(books) == 0:
+        return None
+    else:
+        return books
 
 
 # =====
@@ -166,61 +148,61 @@ async def get_books_by_keyword(keyword: str):
                 "message": "Retrieval failed. The keyword query parameter must be a-z or A-Z."
             },
         )
-    books = get_books_by_keyword_from_db(keyword)
+    books = await get_books_by_keyword_from_db(keyword)
     if books is None:
         return RESPONSE_NO_CONTENT
     cleaned_books = []
     for book in books:
         cleaned_books.append({
-            "ISBN": str(book.ISBN),
-            "title": str(book.title),
-            "Author": str(book.author),
-            "description": str(book.description),
-            "genre": get_autograder_safe_genre(book.genre),
-            "price": float(book.price),
-            "quantity": int(book.quantity),
-            "summary": str(book.summary),
+            "ISBN": str(book["ISBN"]),
+            "title": str(book["title"]),
+            "Author": str(book["author"]),
+            "description": str(book["description"]),
+            "genre": get_autograder_safe_genre(book["genre"]),
+            "price": float(book["price"]),
+            "quantity": int(book["quantity"]),
+            "summary": str(book["summary"]),
         })
     return cleaned_books
 
 
 @app.get("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_books(ISBN):
-    book = get_book_by_ISBN(ISBN)
+    book = await get_book_by_ISBN(ISBN)
     if book is None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"message": "Retrieval failed. This ISBN does not exist."},
         )
     return {
-        "ISBN": str(book.ISBN),
-        "title": str(book.title),
-        "Author": str(book.author),
-        "description": str(book.description),
-        "genre": get_autograder_safe_genre(book.genre),
-        "price": float(book.price),
-        "quantity": int(book.quantity),
-        "summary": str(book.summary),
+        "ISBN": str(book["ISBN"]),
+        "title": str(book["title"]),
+        "Author": str(book["author"]),
+        "description": str(book["description"]),
+        "genre": get_autograder_safe_genre(book["genre"]),
+        "price": float(book["price"]),
+        "quantity": int(book["quantity"]),
+        "summary": str(book["summary"]),
     }
 
 
 @app.get("/books/isbn/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_books_duplicate_enpoint(ISBN):
-    book = get_book_by_ISBN(ISBN)
+    book = await get_book_by_ISBN(ISBN)
     if book is None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"message": "Retrieval failed. This ISBN does not exist."},
         )
     return {
-        "ISBN": str(book.ISBN),
-        "title": str(book.title),
-        "Author": str(book.author),
-        "description": str(book.description),
-        "genre": get_autograder_safe_genre(book.genre),
-        "price": float(book.price),
-        "quantity": int(book.quantity),
-        "summary": str(book.summary),
+        "ISBN": str(book["ISBN"]),
+        "title": str(book["title"]),
+        "Author": str(book["author"]),
+        "description": str(book["description"]),
+        "genre": get_autograder_safe_genre(book["genre"]),
+        "price": float(book["price"]),
+        "quantity": int(book["quantity"]),
+        "summary": str(book["summary"]),
     }
 
 
