@@ -94,7 +94,7 @@ make build
 # Test from http://localhost:80 for the desktop routes and
 # http://localhost:81 for the mobile routes.
 make test  # See if all services work as expected.
-make test-sync-data  # Test CQRS
+make test-sync-data  # Test CQRS whenever data created, updated, or deleted.
 make cleanup
 
 # How to test the `/books/{ISBN}/related-books` endpoint:
