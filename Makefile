@@ -146,6 +146,7 @@ test: ensure-env-file-exists
 		soobinrho/17647-bookstore-crm-service-customers:latest
 
 test-sync-data:	ensure-env-file-exists
+	docker container rm dev-bookstore-cronjob-sync-data || true
 	docker run --detach --name dev-bookstore-cronjob-sync-data \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
