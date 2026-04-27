@@ -1,6 +1,5 @@
 # Reference: https://docs.astral.sh/uv/guides/integration/fastapi/#deployment
 FROM python:3.12-slim
-EXPOSE 587/TCP
 
 # Install uv.
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/

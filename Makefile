@@ -27,6 +27,9 @@ build:
 	cd ./crm-service-customers/ && \
 		docker build -t soobinrho/17647-bookstore-crm-service-customers:latest \
 		-t soobinrho/17647-bookstore-crm-service-customers:$(GIT_HASH) .
+	cd ./cronjob-sync-data/ && \
+		docker build -t soobinrho/17647-bookstore-cronjob-sync-data:latest \
+		-t soobinrho/17647-bookstore-cronjob-sync-data:$(GIT_HASH) .
 
 push:
 	cd ./api-service-books-commands/ && \
@@ -47,6 +50,9 @@ push:
 	cd ./crm-service-customers/ && \
 		docker push soobinrho/17647-bookstore-crm-service-customers:latest && \
  		docker push soobinrho/17647-bookstore-crm-service-customers:$(GIT_HASH)
+	cd ./cronjob-sync-data/ && \
+		docker push soobinrho/17647-bookstore-cronjob-sync-data:latest && \
+		docker push soobinrho/17647-bookstore-cronjob-sync-data:$(GIT_HASH)
 
 # =====
 # Tests
@@ -108,6 +114,11 @@ test: ensure-env-file-exists
 		--env DB_DATABASE=${DB_BOOKS_QUERIES_DATABASE} \
 		--env DB_COLLECTION=${DB_BOOKS_QUERIES_COLLECTION} \
 		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
+		--env DB_BOOKS_COMMANDS_URL='host.docker.internal' \
+		--env DB_BOOKS_COMMANDS_PORT='3306' \
+		--env DB_BOOKS_COMMANDS_USER=${DB_BOOKS_COMMANDS_USER} \
+		--env DB_BOOKS_COMMANDS_PASS=${DB_BOOKS_COMMANDS_PASS} \
+		--env DB_BOOKS_COMMANDS_DATABASE=${DB_BOOKS_COMMANDS_DATABASE} \
 		soobinrho/17647-bookstore-api-service-books-queries:latest
 	docker run --detach --name dev-bookstore-api-service-customers \
 		-p 3003:3000 \
@@ -133,6 +144,23 @@ test: ensure-env-file-exists
 		--env SMTP_SERVER_ID=${SMTP_SERVER_ID} \
 		--env SMTP_SERVER_PASS=${SMTP_SERVER_PASS} \
 		soobinrho/17647-bookstore-crm-service-customers:latest
+
+test-sync-data:	ensure-env-file-exists
+	docker run --detach --name dev-bookstore-cronjob-sync-data \
+		--add-host host.docker.internal:host-gateway \
+		--env IS_DEV='1' \
+		--env DB_BOOKS_COMMANDS_URL='host.docker.internal' \
+		--env DB_BOOKS_COMMANDS_PORT='3306' \
+		--env DB_BOOKS_COMMANDS_USER=${DB_BOOKS_COMMANDS_USER} \
+		--env DB_BOOKS_COMMANDS_PASS=${DB_BOOKS_COMMANDS_PASS} \
+		--env DB_BOOKS_COMMANDS_DATABASE=${DB_BOOKS_COMMANDS_DATABASE} \
+		--env DB_BOOKS_QUERIES_URL='host.docker.internal' \
+		--env DB_BOOKS_QUERIES_PORT='27017' \
+		--env DB_BOOKS_QUERIES_USER=${DB_BOOKS_QUERIES_USER} \
+		--env DB_BOOKS_QUERIES_PASS=${DB_BOOKS_QUERIES_PASS} \
+		--env DB_BOOKS_QUERIES_DATABASE=${DB_BOOKS_QUERIES_DATABASE} \
+		--env DB_BOOKS_QUERIES_COLLECTION=${DB_BOOKS_QUERIES_COLLECTION} \
+		soobinrho/17647-bookstore-cronjob-sync-data:latest
 
 cleanup:
 	# `-` is there to suppress any error in case there's no container running.
@@ -242,6 +270,7 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 		kubectl create secret generic secrets-api-service-books-queries --from-env-file=./.env.api-service-books-queries && \
 		kubectl create secret generic secrets-api-service-customers --from-env-file=./.env.api-service-customers && \
 		kubectl create secret generic secrets-crm-service-customers --from-env-file=./.env.crm-service-customers
+		kubectl create secret generic secrets-crojob-bookstore-sync-data --from-env-file=./.env.cronjob-sync-data && \
 	cd ./k8s/ && \
 		kubectl apply -f service-bookstore-api-service-books-commands.yaml && \
 		kubectl apply -f service-bookstore-api-service-books-queries.yaml && \
@@ -259,7 +288,8 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 		kubectl apply -f deploy-bookstore-api-service-customers.yaml && \
 		kubectl apply -f deploy-bookstore-bff-desktop.yaml && \
 		kubectl apply -f deploy-bookstore-bff-mobile.yaml && \
-		kubectl apply -f deploy-bookstore-crm-service-customers.yaml
+		kubectl apply -f deploy-bookstore-crm-service-customers.yaml && \
+		kubectl apply -f cronjob-bookstore-sync-data.yaml
 
 # ====
 # Misc

@@ -1,23 +1,31 @@
-import os
-import asyncio
-
 import httpx
+import pymongo
 from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-import pymongo
-from pymongo import AsyncMongoClient, ReturnDocument
+from pymongo import AsyncMongoClient
 
-from app.shared_library.input_data_validations import (
-    sanitize_env_var,
+from app.shared_library.constants import (
+    COLNAME_AUTHOR,
+    COLNAME_DESCRIPTION,
+    COLNAME_GENRE,
+    COLNAME_ISBN,
+    COLNAME_PRICE,
+    COLNAME_QUANTITY,
+    COLNAME_SUMMARY,
+    COLNAME_TITLE,
 )
-from app.shared_library.models import Books, Misc
+from app.shared_library.models import Books
 from app.shared_library.responses import (
     RESOPNSE_500_SERVER_ERROR,
     RESPONSE_503_CIRCUIT_BREAKER_OPEN,
     RESPONSE_NO_CONTENT,
 )
-from app.shared_library.utils import get_autograder_safe_genre, get_is_valid_keyword
+from app.shared_library.utils import (
+    get_autograder_safe_genre,
+    get_env_vars_for_api_service_books_queries,
+    get_is_valid_keyword,
+)
 
 from .metadata import contact, description, tags_metadata
 from .wrapper_circuit_breaker import (
@@ -28,65 +36,20 @@ from .wrapper_circuit_breaker import (
     reset_circuit_breaker_time,
 )
 
-IS_DEV = os.environ.get("IS_DEV", None)
-IS_DEV = True if IS_DEV is not None else False
-print(f"[INFO] IS_DEV = {IS_DEV}")
-
-DB_USER = os.environ.get("DB_USER", None)
-DB_PASS = os.environ.get("DB_PASS", None)
-DB_URL = os.environ.get("DB_URL", None)
-DB_PORT = os.environ.get("DB_PORT", None)
-DB_DATABASE = os.environ.get("DB_DATABASE", None)
-DB_COLLECTION = os.environ.get("DB_COLLECTION", None)
-API_RELATED_BOOKS_URL = os.environ.get("API_RELATED_BOOKS_URL", None)
-should_raise_exception = False
-if DB_USER is None:
-    print("[ERROR] DB_USER = None")
-    should_raise_exception = True
-if DB_PASS is None:
-    print("[ERROR] DB_PASS = None")
-    should_raise_exception = True
-if DB_URL is None:
-    print("[ERROR] DB_URL = None")
-    should_raise_exception = True
-# In prod, a MongoDB cluster is used instead of a local instance of MongoDB.
-# MongoDB clusters don't accept port numbers.
-if DB_PORT is None and IS_DEV:
-    print("[ERROR] DB_PORT = None")
-    should_raise_exception = True
-if DB_DATABASE is None:
-    print("[ERROR] DB_DATABASE = None")
-    should_raise_exception = True
-if DB_COLLECTION is None:
-    print("[ERROR] DB_COLLECTION = None")
-    should_raise_exception = True
-if API_RELATED_BOOKS_URL is None:
-    print("[ERROR] API_RELATED_BOOKS_URL = None")
-    should_raise_exception = True
-if should_raise_exception:
-    raise Exception(
-        "[ERROR] Required credentials were not found in the environment variables"
-    )
-
-# K8s includes something like DB_USER='...' to include the quotes themselves too.
-# Thus, sanitize it so that the env vars do not start with or end with quotes.
-DB_USER = sanitize_env_var(DB_USER)
-DB_PASS = sanitize_env_var(DB_PASS)
-DB_URL = sanitize_env_var(DB_URL)
-DB_PORT = int(float(sanitize_env_var(DB_PORT))) if IS_DEV else None
-DB_DATABASE = sanitize_env_var(DB_DATABASE)
-DB_COLLECTION = sanitize_env_var(DB_COLLECTION)
-API_RELATED_BOOKS_URL = sanitize_env_var(API_RELATED_BOOKS_URL)
+CONFIGS = get_env_vars_for_api_service_books_queries()
 
 str_db_connection = None
-if not IS_DEV:
-    str_db_connection = f"mongodb+srv://{DB_USER}:{DB_PASS}@{DB_URL}"
+if not CONFIGS["IS_DEV"]:
+    str_db_connection = (
+        f"mongodb+srv://{CONFIGS['DB_USER']}:{CONFIGS['DB_PASS']}@{CONFIGS['DB_URL']}"
+    )
 else:
-    str_db_connection = f"mongodb://{DB_USER}:{DB_PASS}@{DB_URL}:{DB_PORT}"
-db_client = AsyncMongoClient(str_db_connection, server_api=pymongo.server_api.ServerApi(version="1"))
-db = db_client.get_database(DB_DATABASE)
-db_collection = db.get_collection(DB_COLLECTION)
-db_collection.create_index([("ISBN", pymongo.ASCENDING)], unique=True)
+    str_db_connection = f"mongodb://{CONFIGS['DB_USER']}:{CONFIGS['DB_PASS']}@{CONFIGS['DB_URL']}:{CONFIGS['DB_PORT']}"
+db_client = AsyncMongoClient(
+    str_db_connection, server_api=pymongo.server_api.ServerApi(version="1")
+)
+db = db_client.get_database(CONFIGS["DB_DATABASE"])
+db_collection = db.get_collection(CONFIGS["DB_COLLECTION"])
 
 
 app = FastAPI(
@@ -111,29 +74,23 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 async def get_book_by_ISBN(ISBN: str) -> Books:
     ISBN = str(ISBN)
-    book = await db_collection.find_one({"ISBN": ISBN})
+    book = await db_collection.find_one({COLNAME_ISBN: ISBN})
     return book
 
 
-async def get_books_by_keyword_from_db(keyword: str) -> Books | None:
+def get_async_cursor_books_by_keyword_from_db(keyword: str):
     keyword = str(keyword)
     # Reference: https://www.mongodb.com/docs/languages/python/pymongo-driver/current/crud/query/find/
     async_cursor = db_collection.find({
         "$or": [
-            {"title": {"$regex": keyword, "$options": "i"}},
-            {"author": {"$regex": keyword, "$options": "i"}},
-            {"description": {"$regex": keyword, "$options": "i"}},
-            {"genre": {"$regex": keyword, "$options": "i"}},
-            {"summary": {"$regex": keyword, "$options": "i"}},
+            {COLNAME_TITLE: {"$regex": keyword, "$options": "i"}},
+            {COLNAME_AUTHOR: {"$regex": keyword, "$options": "i"}},
+            {COLNAME_DESCRIPTION: {"$regex": keyword, "$options": "i"}},
+            {COLNAME_GENRE: {"$regex": keyword, "$options": "i"}},
+            {COLNAME_SUMMARY: {"$regex": keyword, "$options": "i"}},
         ]
     })
-    books = []
-    async for book in async_cursor:
-        books.append(book)
-    if len(books) == 0:
-        return None
-    else:
-        return books
+    return async_cursor
 
 
 # =====
@@ -148,21 +105,21 @@ async def get_books_by_keyword(keyword: str):
                 "message": "Retrieval failed. The keyword query parameter must be a-z or A-Z."
             },
         )
-    books = await get_books_by_keyword_from_db(keyword)
-    if books is None:
-        return RESPONSE_NO_CONTENT
+    async_cursor = get_async_cursor_books_by_keyword_from_db(keyword)
     cleaned_books = []
-    for book in books:
+    async for book in async_cursor:
         cleaned_books.append({
-            "ISBN": str(book["ISBN"]),
-            "title": str(book["title"]),
-            "Author": str(book["author"]),
-            "description": str(book["description"]),
-            "genre": get_autograder_safe_genre(book["genre"]),
-            "price": float(book["price"]),
-            "quantity": int(book["quantity"]),
-            "summary": str(book["summary"]),
+            "ISBN": str(book[COLNAME_ISBN]),
+            "title": str(book[COLNAME_TITLE]),
+            "Author": str(book[COLNAME_AUTHOR]),
+            "description": str(book[COLNAME_DESCRIPTION]),
+            "genre": get_autograder_safe_genre(book[COLNAME_GENRE]),
+            "price": float(book[COLNAME_PRICE]),
+            "quantity": int(book[COLNAME_QUANTITY]),
+            "summary": str(book[COLNAME_SUMMARY]),
         })
+    if len(cleaned_books) == 0:
+        return RESPONSE_NO_CONTENT
     return cleaned_books
 
 
@@ -175,14 +132,14 @@ async def get_books(ISBN):
             content={"message": "Retrieval failed. This ISBN does not exist."},
         )
     return {
-        "ISBN": str(book["ISBN"]),
-        "title": str(book["title"]),
-        "Author": str(book["author"]),
-        "description": str(book["description"]),
-        "genre": get_autograder_safe_genre(book["genre"]),
-        "price": float(book["price"]),
-        "quantity": int(book["quantity"]),
-        "summary": str(book["summary"]),
+        "ISBN": str(book[COLNAME_ISBN]),
+        "title": str(book[COLNAME_TITLE]),
+        "Author": str(book[COLNAME_AUTHOR]),
+        "description": str(book[COLNAME_DESCRIPTION]),
+        "genre": get_autograder_safe_genre(book[COLNAME_GENRE]),
+        "price": float(book[COLNAME_PRICE]),
+        "quantity": int(book[COLNAME_QUANTITY]),
+        "summary": str(book[COLNAME_SUMMARY]),
     }
 
 
@@ -195,64 +152,63 @@ async def get_books_duplicate_enpoint(ISBN):
             content={"message": "Retrieval failed. This ISBN does not exist."},
         )
     return {
-        "ISBN": str(book["ISBN"]),
-        "title": str(book["title"]),
-        "Author": str(book["author"]),
-        "description": str(book["description"]),
-        "genre": get_autograder_safe_genre(book["genre"]),
-        "price": float(book["price"]),
-        "quantity": int(book["quantity"]),
-        "summary": str(book["summary"]),
+        "ISBN": str(book[COLNAME_ISBN]),
+        "title": str(book[COLNAME_TITLE]),
+        "Author": str(book[COLNAME_AUTHOR]),
+        "description": str(book[COLNAME_DESCRIPTION]),
+        "genre": get_autograder_safe_genre(book[COLNAME_GENRE]),
+        "price": float(book[COLNAME_PRICE]),
+        "quantity": int(book[COLNAME_QUANTITY]),
+        "summary": str(book[COLNAME_SUMMARY]),
     }
 
 
 @app.get("/books/{ISBN}/related-books", tags=["books"], status_code=status.HTTP_200_OK)
 async def get_related_books(ISBN):
     CIRCUIT_BREAKER_TIMEOUT = 3  # Seconds.
-    with Session(engine) as db_session:
-        if check_circuit_breaker_open(db_session):
-            if not check_should_circuit_breaker_close(db_session):
-                return RESPONSE_503_CIRCUIT_BREAKER_OPEN
-            else:
-                # This is the circuit breaker's half-open state in which a re-attempt should
-                # be made. If the re-attempt fails, the clock resets. If the re-attempt
-                # suceeds, the circuit breaker closes and resumes normal operation.
-                async with httpx.AsyncClient(timeout=CIRCUIT_BREAKER_TIMEOUT) as client:
-                    try:
-                        res = await client.get(f"{API_RELATED_BOOKS_URL}/{ISBN}")
-                    except httpx.TimeoutException:
-                        print("[INFO] reset_circuit_breaker_time(db_session)")
-                        reset_circuit_breaker_time(db_session)
-                        return RESPONSE_503_CIRCUIT_BREAKER_OPEN
-                    else:
-                        print("[INFO] close_circuit_breaker(db_session)")
-                        close_circuit_breaker(db_session)
-                        if str(res.status_code) == "200":
-                            return res.json()
-                        elif str(res.status_code) == "204":
-                            return RESPONSE_NO_CONTENT
-                        else:
-                            return RESOPNSE_500_SERVER_ERROR
-
-        async with httpx.AsyncClient(timeout=CIRCUIT_BREAKER_TIMEOUT) as client:
-            try:
-                res = await client.get(f"{API_RELATED_BOOKS_URL}/{ISBN}")
-            except httpx.TimeoutException:
-                print("[INFO] check_circuit_breaker_open(db_session) = False")
-                print("[INFO] httpx.TimeoutException")
-                print("[INFO] open_circuit_breaker(db_session)")
-                open_circuit_breaker(db_session)
-                return JSONResponse(
-                    status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-                    content={"message": "Please try again later."},
-                )
-            else:
-                if str(res.status_code) == "200":
-                    return res.json()
-                elif str(res.status_code) == "204":
-                    return RESPONSE_NO_CONTENT
+    if check_circuit_breaker_open():
+        if not check_should_circuit_breaker_close():
+            return RESPONSE_503_CIRCUIT_BREAKER_OPEN
+        else:
+            # This is the circuit breaker's half-open state in which a re-attempt should
+            # be made. If the re-attempt fails, the clock resets. If the re-attempt
+            # suceeds, the circuit breaker closes and resumes normal operation.
+            async with httpx.AsyncClient(timeout=CIRCUIT_BREAKER_TIMEOUT) as client:
+                try:
+                    res = await client.get(f"{CONFIGS['API_RELATED_BOOKS_URL']}/{ISBN}")
+                except httpx.TimeoutException:
+                    print("[INFO] reset_circuit_breaker_time()")
+                    reset_circuit_breaker_time()
+                    return RESPONSE_503_CIRCUIT_BREAKER_OPEN
                 else:
-                    return RESOPNSE_500_SERVER_ERROR
+                    print("[INFO] close_circuit_breaker()")
+                    close_circuit_breaker()
+                    if str(res.status_code) == "200":
+                        return res.json()
+                    elif str(res.status_code) == "204":
+                        return RESPONSE_NO_CONTENT
+                    else:
+                        return RESOPNSE_500_SERVER_ERROR
+
+    async with httpx.AsyncClient(timeout=CIRCUIT_BREAKER_TIMEOUT) as client:
+        try:
+            res = await client.get(f"{CONFIGS['API_RELATED_BOOKS_URL']}/{ISBN}")
+        except httpx.TimeoutException:
+            print("[INFO] check_circuit_breaker_open() = False")
+            print("[INFO] httpx.TimeoutException")
+            print("[INFO] open_circuit_breaker()")
+            open_circuit_breaker()
+            return JSONResponse(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                content={"message": "Please try again later."},
+            )
+        else:
+            if str(res.status_code) == "200":
+                return res.json()
+            elif str(res.status_code) == "204":
+                return RESPONSE_NO_CONTENT
+            else:
+                return RESOPNSE_500_SERVER_ERROR
 
 
 # =============

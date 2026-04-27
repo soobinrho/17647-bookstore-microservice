@@ -16,3 +16,6 @@
 [submodule "api-service-books-queries/app/shared_library"]
 	path = api-service-books-queries/app/shared_library
 	url = https://github.com/soobinrho/17647-bookstore-shared-library
+[submodule "cronjob-sync-data/app/shared_library"]
+	path = cronjob-sync-data/app/shared_library
+	url = https://github.com/soobinrho/17647-bookstore-shared-library

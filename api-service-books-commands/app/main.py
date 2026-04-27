@@ -1,5 +1,3 @@
-import os
-
 from fastapi import BackgroundTasks, FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -9,69 +7,30 @@ from sqlmodel import Session, SQLModel, create_engine
 from app.shared_library.input_data_validations import (
     check_is_valid_price,
     check_is_valid_quantity,
-    sanitize_env_var,
 )
 from app.shared_library.models import BookRequestBody, Books, Misc
 from app.shared_library.responses import (
     RESPONSE_INVALID_PRICE,
     RESPONSE_INVALID_QUANTITY,
 )
-from app.shared_library.utils import get_unix_epoch_now
+from app.shared_library.utils import (
+    get_env_vars_for_api_service_books_commands,
+    get_unix_epoch_now,
+)
 
 from .metadata import contact, description, tags_metadata
 from .wrapper_book_summary import get_book_500_words_summary
 
-IS_DEV = os.environ.get("IS_DEV", None)
-IS_DEV = True if IS_DEV is not None else False
-print(f"[INFO] IS_DEV = {IS_DEV}")
-
-DB_USER = os.environ.get("DB_USER", None)
-DB_PASS = os.environ.get("DB_PASS", None)
-DB_URL = os.environ.get("DB_URL", None)
-DB_PORT = os.environ.get("DB_PORT", None)
-DB_DATABASE = os.environ.get("DB_DATABASE", None)
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", None)
-should_raise_exception = False
-if DB_USER is None:
-    print("[ERROR] DB_USER = None")
-    should_raise_exception = True
-if DB_PASS is None:
-    print("[ERROR] DB_PASS = None")
-    should_raise_exception = True
-if DB_URL is None:
-    print("[ERROR] DB_URL = None")
-    should_raise_exception = True
-if DB_PORT is None:
-    print("[ERROR] DB_PORT = None")
-    should_raise_exception = True
-if DB_DATABASE is None:
-    print("[ERROR] DB_DATABASE = None")
-    should_raise_exception = True
-if GEMINI_API_KEY is None:
-    print("[ERROR] GEMINI_API_KEY = None")
-    should_raise_exception = True
-if should_raise_exception:
-    raise Exception(
-        "[ERROR] Required credentials were not found in the environment variables"
-    )
-
-# K8s includes something like DB_USER='...' to include the quotes themselves too.
-# Thus, sanitize it so that the env vars do not start with or end with quotes.
-DB_USER = sanitize_env_var(DB_USER)
-DB_PASS = sanitize_env_var(DB_PASS)
-DB_URL = sanitize_env_var(DB_URL)
-DB_PORT = int(float(sanitize_env_var(DB_PORT)))
-DB_DATABASE = sanitize_env_var(DB_DATABASE)
-GEMINI_API_KEY = sanitize_env_var(GEMINI_API_KEY)
+CONFIGS = get_env_vars_for_api_service_books_commands()
 
 # Reference: https://docs.sqlalchemy.org/en/21/core/engines.html#creating-urls-programmatically
 url_db_connection = URL.create(
     "mysql+pymysql",
-    username=DB_USER,
-    password=DB_PASS,
-    host=DB_URL,
-    port=DB_PORT,
-    database=DB_DATABASE,
+    username=CONFIGS["DB_USER"],
+    password=CONFIGS["DB_PASS"],
+    host=CONFIGS["DB_URL"],
+    port=CONFIGS["DB_PORT"],
+    database=CONFIGS["DB_DATABASE"],
 )
 print(f'[INFO] Connecting to "{url_db_connection}"...')
 engine = create_engine(url_db_connection, echo=False)
