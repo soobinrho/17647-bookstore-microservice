@@ -210,6 +210,11 @@ test-related-books-no-delay: ensure-env-file-exists cleanup cleanup-only-related
 		--env DB_DATABASE=${DB_BOOKS_QUERIES_DATABASE} \
 		--env DB_COLLECTION=${DB_BOOKS_QUERIES_COLLECTION} \
 		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
+		--env DB_BOOKS_COMMANDS_URL='host.docker.internal' \
+		--env DB_BOOKS_COMMANDS_PORT='3306' \
+		--env DB_BOOKS_COMMANDS_USER=${DB_BOOKS_COMMANDS_USER} \
+		--env DB_BOOKS_COMMANDS_PASS=${DB_BOOKS_COMMANDS_PASS} \
+		--env DB_BOOKS_COMMANDS_DATABASE=${DB_BOOKS_COMMANDS_DATABASE} \
 		soobinrho/17647-bookstore-api-service-books-queries:latest
 
 test-related-books-delayed: ensure-env-file-exists cleanup cleanup-only-related-books
@@ -246,6 +251,11 @@ test-related-books-delayed: ensure-env-file-exists cleanup cleanup-only-related-
 		--env DB_DATABASE=${DB_BOOKS_QUERIES_DATABASE} \
 		--env DB_COLLECTION=${DB_BOOKS_QUERIES_COLLECTION} \
 		--env API_RELATED_BOOKS_URL=${API_RELATED_BOOKS_URL_DEV} \
+		--env DB_BOOKS_COMMANDS_URL='host.docker.internal' \
+		--env DB_BOOKS_COMMANDS_PORT='3306' \
+		--env DB_BOOKS_COMMANDS_USER=${DB_BOOKS_COMMANDS_USER} \
+		--env DB_BOOKS_COMMANDS_PASS=${DB_BOOKS_COMMANDS_PASS} \
+		--env DB_BOOKS_COMMANDS_DATABASE=${DB_BOOKS_COMMANDS_DATABASE} \
 		soobinrho/17647-bookstore-api-service-books-queries:latest
 
 cleanup-only-related-books:
