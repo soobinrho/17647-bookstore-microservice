@@ -71,10 +71,16 @@ uv run ruff check  # This ensures there's no obvious error.
 # Create an .env file.
 cp .env.example .env
 sed --in-place \
-  "s/DB_BOOKS_PASS=\"\"/DB_BOOKS_PASS=\"$(tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo)\"/g" \
+  "s/DB_BOOKS_COMMANDS_PASS=\"\"/DB_BOOKS_COMMANDS_PASS=\"$(tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo)\"/g" \
+  .env
+sed --in-place \
+  "s/DB_BOOKS_QUERIES_PASS=\"\"/DB_BOOKS_QUERIES_PASS=\"$(tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo)\"/g" \
   .env
 sed --in-place \
   "s/DB_CUSTOMERS_PASS=\"\"/DB_CUSTOMERS_PASS=\"$(tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo)\"/g" \
+  .env
+sed --in-place \
+  "s/DB_ADMIN_PASS=\"\"/DB_ADMIN_PASS=\"$(tr -dc A-Za-z0-9 </dev/urandom | head -c 32; echo)\"/g" \
   .env
 
 # Run a containerized MariaDB for testing purposes along with all backend services.
