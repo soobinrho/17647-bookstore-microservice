@@ -187,7 +187,6 @@ test-related-books-no-delay: ensure-env-file-exists cleanup cleanup-only-related
 		-p 80:80 \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
-		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-desktop:latest
 	docker run --detach --name dev-bookstore-api-service-books-commands \
 		-p 3000:3000 \
@@ -224,7 +223,6 @@ test-related-books-delayed: ensure-env-file-exists cleanup cleanup-only-related-
 		-p 80:80 \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
-		--env API_SERVICES_LOAD_BALANCER_URL='http://host.docker.internal:3000' \
 		soobinrho/17647-bookstore-bff-desktop:latest
 	docker run --detach --name dev-bookstore-api-service-books-commands \
 		-p 3000:3000 \
