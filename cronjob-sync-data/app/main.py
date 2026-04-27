@@ -46,6 +46,7 @@ db_collection = db.get_collection(CONFIGS["DB_BOOKS_QUERIES_COLLECTION"])
 
 def get_all_books_from_primary_data_store() -> list | None:
     with Session(engine) as session:
+        # `Scalars` instead of `execute` because `execute` returns row objects instead.
         rows = session.scalars(select(Books))
         books = []
         for book in rows:
