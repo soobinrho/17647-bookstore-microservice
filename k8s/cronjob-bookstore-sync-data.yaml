@@ -1,1 +1,20 @@
-concurrentPolicy: Forbid
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: bookstore-cronjob-sync-data
+  namespace: bookstore-ns
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: bookstore-cronjob-sync-data
+            image: soobinrho/17647-bookstore-cronjob-sync-data:latest
+            imagePullPolicy: Always
+            envFrom:
+              - secretRef:
+                  name: secrets-cronjob-sync-data
+          restartPolicy: OnFailure
+          concurrentPolicy: Forbid

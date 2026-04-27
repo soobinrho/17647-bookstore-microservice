@@ -1,4 +1,6 @@
 import asyncio
+import signal
+import time
 
 import pymongo
 from pymongo import AsyncMongoClient
@@ -95,38 +97,65 @@ async def delete_book_from_query_view(ISBN: str):
     await db_collection.delete_one({COLNAME_ISBN: ISBN})
 
 
+# Source: https://stackoverflow.com/a/31464349
+class class_sig_term_handler:
+    kill_now = False
+
+    def __init__(self):
+        signal.signal(signal.SIGINT, self.exit_gracefully)
+        signal.signal(signal.SIGTERM, self.exit_gracefully)
+
+    def exit_gracefully(self, signum, frame):
+        self.kill_now = True
+
+
 async def main():
     await db_collection.create_index([(COLNAME_ISBN, pymongo.ASCENDING)], unique=True)
-    books_primary = get_all_books_from_primary_data_store()
-    dict_books_view = (
-        await get_dict_all_books_and_their_last_updated_datetime_from_query_view()
-    )
-    set_should_this_book_be_deleted = set()
-    for ISBN in dict_books_view:
-        set_should_this_book_be_deleted.add(ISBN)
+    period = CONFIGS["SYNC_DATA_PERIOD_SECONDS"]
+    try:
+        period = int(period)
+    except Exception:
+        period = 60
+    sig_term_handler = class_sig_term_handler()
+    while not sig_term_handler.kill_now:
+        books_primary = get_all_books_from_primary_data_store()
+        dict_books_view = (
+            await get_dict_all_books_and_their_last_updated_datetime_from_query_view()
+        )
+        set_should_this_book_be_deleted = set()
+        for ISBN in dict_books_view:
+            set_should_this_book_be_deleted.add(ISBN)
 
-    # 1. Add or update the books depending on last_updated_datetime.
-    for book in books_primary:
-        ISBN = book.ISBN
-        should_add_or_update = False
-        if ISBN not in dict_books_view:
-            should_add_or_update = True
-        else:
-            last_updated_primary = int(book.last_updated_datetime_unix_epoch)
-            last_updated_view = int(dict_books_view[ISBN])
-            if last_updated_view < last_updated_primary:
+        # 1. Add or update the books depending on last_updated_datetime.
+        for book in books_primary:
+            ISBN = book.ISBN
+            should_add_or_update = False
+            if ISBN not in dict_books_view:
                 should_add_or_update = True
-        if should_add_or_update:
-            await add_or_update_book_from_query_view(book)
-            print(f"[INFO] Successfully added or updated a book: ISBN = {ISBN}")
-        else:
-            print(f"[INFO] Successfully checked a book is up-to-date: ISBN = {ISBN}")
-        set_should_this_book_be_deleted.discard(ISBN)
+            else:
+                last_updated_primary = int(book.last_updated_datetime_unix_epoch)
+                last_updated_view = int(dict_books_view[ISBN])
+                if last_updated_view < last_updated_primary:
+                    should_add_or_update = True
+            if should_add_or_update:
+                await add_or_update_book_from_query_view(book)
+                print(f"[INFO] Successfully added or updated a book: ISBN = {ISBN}")
+            else:
+                print(
+                    f"[INFO] Successfully checked a book is up-to-date: ISBN = {ISBN}"
+                )
+            set_should_this_book_be_deleted.discard(ISBN)
 
-    # 2. Delete if the book doesn't exist on the primary data store anymore.
-    for ISBN in list(set_should_this_book_be_deleted):
-        await delete_book_from_query_view(ISBN)
-        print(f"[INFO] Successfully deleted a deprecated book: ISBN = {ISBN}")
+        # 2. Delete if the book doesn't exist on the primary data store anymore.
+        for ISBN in list(set_should_this_book_be_deleted):
+            await delete_book_from_query_view(ISBN)
+            print(f"[INFO] Successfully deleted a deprecated book: ISBN = {ISBN}")
+
+        print(f"[INFO] Sleeping for {period} seconds...")
+        for _ in range(period):
+            time.sleep(1)
+            if sig_term_handler.kill_now:
+                break
 
 
 if __name__ == "__main__":

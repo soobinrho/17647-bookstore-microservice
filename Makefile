@@ -144,9 +144,6 @@ test: ensure-env-file-exists
 		--env SMTP_SERVER_ID=${SMTP_SERVER_ID} \
 		--env SMTP_SERVER_PASS=${SMTP_SERVER_PASS} \
 		soobinrho/17647-bookstore-crm-service-customers:latest
-
-test-sync-data:	ensure-env-file-exists
-	docker container rm dev-bookstore-cronjob-sync-data || true
 	docker run --detach --name dev-bookstore-cronjob-sync-data \
 		--add-host host.docker.internal:host-gateway \
 		--env IS_DEV='1' \
@@ -161,6 +158,7 @@ test-sync-data:	ensure-env-file-exists
 		--env DB_BOOKS_QUERIES_PASS=${DB_BOOKS_QUERIES_PASS} \
 		--env DB_BOOKS_QUERIES_DATABASE=${DB_BOOKS_QUERIES_DATABASE} \
 		--env DB_BOOKS_QUERIES_COLLECTION=${DB_BOOKS_QUERIES_COLLECTION} \
+		--env SYNC_DATA_PERIOD_SECONDS=${SYNC_DATA_PERIOD_SECONDS} \
 		soobinrho/17647-bookstore-cronjob-sync-data:latest
 
 cleanup:
@@ -278,8 +276,8 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 		kubectl create secret generic secrets-api-service-books-commands --from-env-file=./.env.api-service-books-commands && \
 		kubectl create secret generic secrets-api-service-books-queries --from-env-file=./.env.api-service-books-queries && \
 		kubectl create secret generic secrets-api-service-customers --from-env-file=./.env.api-service-customers && \
-		kubectl create secret generic secrets-crm-service-customers --from-env-file=./.env.crm-service-customers
-		kubectl create secret generic secrets-crojob-bookstore-sync-data --from-env-file=./.env.cronjob-sync-data && \
+		kubectl create secret generic secrets-crm-service-customers --from-env-file=./.env.crm-service-customers && \
+		kubectl create secret generic secrets-cronjob-sync-data --from-env-file=./.env.cronjob-sync-data
 	cd ./k8s/ && \
 		kubectl apply -f service-bookstore-api-service-books-commands.yaml && \
 		kubectl apply -f service-bookstore-api-service-books-queries.yaml && \
@@ -298,7 +296,7 @@ prod-deploy-k8s-bookstore: ensure-env-file-exists
 		kubectl apply -f deploy-bookstore-bff-desktop.yaml && \
 		kubectl apply -f deploy-bookstore-bff-mobile.yaml && \
 		kubectl apply -f deploy-bookstore-crm-service-customers.yaml && \
-		kubectl apply -f cronjob-bookstore-sync-data.yaml
+		kubectl apply -f cronjob-sync-data.yaml
 
 # ====
 # Misc
