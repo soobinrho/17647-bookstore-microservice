@@ -267,7 +267,8 @@ cleanup-only-related-books:
 # ==========================
 prod-deploy-k8s-bookstore: ensure-env-file-exists
 	cd ./k8s/ && \
-		kubectl delete namespace bookstore-ns && \
+		kubectl delete namespace bookstore-ns || true
+	cd ./k8s/ && \
 		kubectl apply -f bookstore-ns.yaml && \
 		kubectl config set-context --current --namespace=bookstore-ns
 	cd ./k8s/ && \
