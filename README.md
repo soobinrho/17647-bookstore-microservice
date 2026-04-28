@@ -178,14 +178,13 @@ kubectl get namespaces
 kubectl config set-context --current --namespace=bookstore-ns
 
 # Deploy the services.
-make prod-deploy-k8s-bookstore
+make prod-deploy-k8s-bookstore && watch --color --interval 0.2 'kubectl get pods'
 
 # ===================
 # Debugging Workflows
 # ===================
 kubectl get services
 kubectl get pods
-watch --color --interval 0.2 'kubectl get pods'
 
 # How to test if a Kafka producer server is up:
 sudo apt install kafkacat
@@ -205,12 +204,12 @@ make build
 make push
 make prod-deploy-k8s-bookstore
 
-# [TODO] After assignment is complete
-# Go to EC2 Security Groups and remove the two inbound rules I added.
-# Then, delete all manually-created resources. Then, go to
-# CloudFormation and then delete the stack.
-
-# [TODO] After graded, remove the url.txt file.
+# ===========
+# AWS Cleanup
+# ===========
+# After assignment is complete, go to EC2 Security Groups and remove the two inbound
+# rules added. Then, delete all manually-created resources. Then, go to
+# CloudFormation to delete the stack.
 
 ```
 
