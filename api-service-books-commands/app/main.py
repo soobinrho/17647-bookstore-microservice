@@ -75,10 +75,10 @@ def get_book_by_ISBN(ISBN: str) -> Books:
         return book
 
 
-def background_task_generate_summary(title: str, author: str, ISBN: str):
+def background_task_generate_summary(title: str, Author: str, ISBN: str):
     book = get_book_by_ISBN(ISBN)
     if book.summary is None:
-        summary = get_book_500_words_summary(book.title, book.author, book.ISBN)
+        summary = get_book_500_words_summary(book.title, book.Author, book.ISBN)
         with Session(engine) as session:
             book_session = session.get(Books, ISBN)
             book_session.summary = summary
@@ -108,7 +108,7 @@ async def post_books(
     book = Books(
         ISBN=book_request_body.ISBN,
         title=book_request_body.title,
-        author=book_request_body.Author,
+        Author=book_request_body.Author,
         description=book_request_body.description,
         genre=book_request_body.genre,
         price=book_request_body.price,
@@ -118,12 +118,12 @@ async def post_books(
     create_book(book)
     book = get_book_by_ISBN(book_request_body.ISBN)
     background_tasks.add_task(
-        background_task_generate_summary, book.title, book.author, book.ISBN
+        background_task_generate_summary, book.title, book.Author, book.ISBN
     )
     return {
         "ISBN": str(book.ISBN),
         "title": str(book.title),
-        "Author": str(book.author),
+        "Author": str(book.Author),
         "description": str(book.description),
         "genre": str(book.genre),
         "price": float(book.price),
@@ -156,7 +156,7 @@ async def put_books(book_request_body: BookRequestBody, ISBN: str | int | float 
     with Session(engine) as session:
         book = session.get(Books, book_request_body.ISBN)
         book.title = book_request_body.title
-        book.author = book_request_body.Author
+        book.Author = book_request_body.Author
         book.description = book_request_body.description
         book.genre = book_request_body.genre
         book.price = book_request_body.price
@@ -177,7 +177,7 @@ async def put_books(book_request_body: BookRequestBody, ISBN: str | int | float 
     return {
         "ISBN": str(book.ISBN),
         "title": str(book.title),
-        "Author": str(book.author),
+        "Author": str(book.Author),
         "description": str(book.description),
         "genre": genre,
         "price": float(book.price),

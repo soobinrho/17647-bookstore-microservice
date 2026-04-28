@@ -79,7 +79,7 @@ async def add_or_update_book_from_query_view(book: Books):
         {
             "$set": {
                 COLNAME_TITLE: book.title,
-                COLNAME_AUTHOR: book.author,
+                COLNAME_AUTHOR: book.Author,
                 COLNAME_DESCRIPTION: book.description,
                 COLNAME_GENRE: book.genre,
                 COLNAME_PRICE: book.price,
