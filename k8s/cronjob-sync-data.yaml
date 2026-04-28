@@ -5,6 +5,7 @@ metadata:
   namespace: bookstore-ns
 spec:
   schedule: "* * * * *"
+  concurrentPolicy: Forbid
   jobTemplate:
     spec:
       template:
@@ -17,4 +18,3 @@ spec:
               - secretRef:
                   name: secrets-cronjob-sync-data
           restartPolicy: OnFailure
-          concurrentPolicy: Forbid
