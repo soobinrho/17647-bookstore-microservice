@@ -5,7 +5,7 @@ metadata:
   namespace: bookstore-ns
 spec:
   schedule: "* * * * *"
-  concurrentPolicy: Forbid
+  concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       template:
