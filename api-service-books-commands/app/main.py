@@ -89,7 +89,7 @@ def background_task_generate_summary(title: str, author: str, ISBN: str):
 # =====
 # Books
 # =====
-@app.post("/books", tags=["books"], status_code=status.HTTP_201_CREATED)
+@app.post("/cmd/books", tags=["books"], status_code=status.HTTP_201_CREATED)
 async def post_books(
     book_request_body: BookRequestBody, background_tasks: BackgroundTasks
 ):
@@ -131,7 +131,7 @@ async def post_books(
     }
 
 
-@app.put("/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
+@app.put("/cmd/books/{ISBN}", tags=["books"], status_code=status.HTTP_200_OK)
 async def put_books(book_request_body: BookRequestBody, ISBN: str | int | float | bool):
     if book_request_body.ISBN != ISBN:
         return JSONResponse(
