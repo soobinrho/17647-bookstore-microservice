@@ -107,7 +107,7 @@ async def middleware_main(req: Request, call_next_api):
 # =====
 # Books
 # =====
-@app.post("/books", tags=["books"], status_code=status.HTTP_201_CREATED)
+@app.post("/cmd/books", tags=["books"], status_code=status.HTTP_201_CREATED)
 async def post_books(book_request_body: BookRequestBody, response: Response):
     res = httpx.post(
         f"{API_SERVICE_BOOKS_COMMANDS_URL}/cmd/books",
@@ -129,7 +129,7 @@ async def put_books(
     response: Response,
 ):
     res = httpx.put(
-        f"{API_SERVICE_BOOKS_COMMANDS_URL}/books/{ISBN}",
+        f"{API_SERVICE_BOOKS_COMMANDS_URL}/cmd/books/{ISBN}",
         json=json.loads(book_request_body.model_dump_json()),
     )
     response.status_code = res.status_code
