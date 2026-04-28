@@ -267,10 +267,12 @@ cleanup-only-related-books:
 # ==========================
 prod-deploy-k8s-bookstore: ensure-env-file-exists
 	cd ./k8s/ && \
-		kubectl delete all --all --namespace=bookstore-ns && \
-		kubectl delete secrets --all
+		kubectl delete namespace bookstore-ns && \
+		kubectl apply -f bookstore-ns.yaml && \
+		kubectl config set-context --current --namespace=bookstore-ns
 	cd ./k8s/ && \
-		kubectl apply -f bookstore-ns.yaml
+		kubectl delete all --all --namespace=bookstore-ns && \
+		kubectl delete secrets --all 
 	cd ./k8s/ && \
 		./generate_dot_env_specific_to_each_service.sh && \
 		kubectl create secret generic secrets-api-service-books-commands --from-env-file=./.env.api-service-books-commands && \
