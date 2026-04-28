@@ -268,7 +268,7 @@ cleanup-only-related-books:
 prod-deploy-k8s-bookstore: ensure-env-file-exists
 	cd ./k8s/ && \
 		kubectl delete all --all --namespace=bookstore-ns && \
-		kubectl delete secrets --all --namespace=bookstore-ns
+		kubectl delete secrets --all
 	cd ./k8s/ && \
 		kubectl apply -f bookstore-ns.yaml
 	cd ./k8s/ && \
